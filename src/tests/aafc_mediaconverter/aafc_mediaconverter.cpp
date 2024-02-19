@@ -65,21 +65,21 @@ char** list_files(const char* dir, int* len) {
 
 #else
 	// TODO: actually do something in linux enviroment haha
-	DIR* dir;
+	DIR* dirc;
 	struct dirent* entry;
 
-	if (!(dir = opendir(directory)))
+	if (!(dirc = opendir(dir)))
 		return NULL;
 
-	while ((entry = readdir(dir)) != NULL) {
+	while ((entry = readdir(dirc)) != NULL) {
 		if (entry->d_type == DT_REG) {
 			snprintf(abs_file_path, sizeof(abs_file_path), "%s/%s", dir, entry->d_name);
-			files = realloc(files, (*len + 1) * sizeof(char*));
+			files = (char**)realloc(files, (*len + 1) * sizeof(char*));
 			files[*len] = strdup(abs_file_path);
-			(*length)++;
+			(*len)++;
 		}
 	}
-	closedir(dir);
+	closedir(dirc);
 #endif
 
 	return files;

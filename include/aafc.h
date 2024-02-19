@@ -1,6 +1,9 @@
 #ifndef AAFC_H
 #define AAFC_H 1
 
+#include <cstring>
+#include <cmath>
+
 #ifdef _WIN32
 #define EXPORT inline __declspec(dllexport)
 #else
