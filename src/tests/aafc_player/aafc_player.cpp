@@ -211,7 +211,6 @@ int main(int argc, char* argv[]) {
 		adata = GrabHeader(aafcfile);
 		asmpls = LoadAAFC(aafcfile);
 		if (asmpls == NULL) {
-			// Handle the error, for example, log it and exit
 			fprintf(stderr, "Failed to load AAFC\n");
 			return -1;
 		}

@@ -31,6 +31,10 @@ extern "C" {
     }
 
     EXPORT unsigned char* aafc_export(float* samples, int freq, unsigned char channels, int samplelength, unsigned char bps = 16, unsigned char sampletype = 1, bool forcemono = false, int samplerateoverride = 0) {
+        if (!samples) {
+            return nullptr;
+        }
+
         AAFC_HEADER header {
             .freq = freq,
             .channels = channels,
@@ -44,7 +48,7 @@ extern "C" {
         if (forcemono && channels != 1) {
             forceMono(samples, header, channels, samplelength);
         }
-        if (samplerateoverride != 0) {
+        if (samplerateoverride != 0 && samplerateoverride != freq) {
             rsptr = resampleAudio(rsptr, header, samplerateoverride, freq, channels, samplelength);
         }
 
@@ -58,6 +62,10 @@ extern "C" {
                     break;
                 }
                 case 2: {
+                    if (channels > 1) {
+                        rsptr = force_independent_channels(rsptr, channels, samplelength);
+                    }
+
                     smpl = encode_adpcm(rsptr, samplelength, audioDataSize);
                     break;
                 }
@@ -70,6 +78,7 @@ extern "C" {
                     break;
                 }
                 default: {
+                    free(rsptr);
                     printf("AAFC ERROR: Invalid sample type!\n");
                     return nullptr;
                 }
@@ -112,6 +121,13 @@ extern "C" {
                 }
                 case 2: {
                     decode_adpcm(bytes, rsptr, sampleCount);
+                    if (header->channels > 1) {
+                        float* itrsamples = force_interleave_channels(rsptr, header->channels, sampleCount);
+                        if (itrsamples) {
+                            free(samples);
+                            samples = itrsamples;
+                        }
+                    }
                     break;
                 }
                 case 3: {
@@ -129,7 +145,7 @@ extern "C" {
                 }
             }
 
-            if (rsptr) {
+            if (rsptr || samples) {
                 return samples;
             }
             else {
@@ -161,6 +177,8 @@ extern "C" {
             int sampleCount = header->samplelength;
             int bps = header->bps;
             const int boffst = sizeof(AAFC_HEADER);
+
+            //TODO: support more sample types
 
             if (bps == 8) {
                 char* smpraw = reinterpret_cast<char*>(const_cast<unsigned char*>(bytes + boffst));

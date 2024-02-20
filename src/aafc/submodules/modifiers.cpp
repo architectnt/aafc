@@ -37,6 +37,7 @@ static float* resampleAudio(float* input, AAFC_HEADER& header, int samplerateove
     int resampledlen = (int)(samplelength * ratio);
 
     float* rsmpled = (float*)malloc(resampledlen * sizeof(float));
+    memset(rsmpled, 0, resampledlen);
 
     for (int ch = 0; ch < channels; ++ch) {
         for (int i = 0; i < resampledlen; ++i) {
@@ -62,4 +63,36 @@ static float* resampleAudio(float* input, AAFC_HEADER& header, int samplerateove
     header.samplelength = resampledlen;
 
     return rsmpled;
+}
+
+static float* force_independent_channels(float* input, unsigned char channels, int samplelength) {
+    float* output = (float*)malloc(samplelength * sizeof(float));
+
+    int splen = samplelength / channels;
+    for (int ch = 0; ch < channels; ch++) {
+        for (int i = 0; i < splen; i++) {
+            *(output + (i + splen * ch)) = *(input + (i * channels + ch));
+        }
+    }
+
+    return output;
+}
+
+static float* force_interleave_channels(float* input, unsigned char channels, int samplelength) {
+    if (!input || channels <= 0 || samplelength <= 0) {
+        return nullptr;
+    }
+
+    float* output = (float*)malloc(samplelength * sizeof(float));
+    if (!output) {
+        return nullptr;
+    }
+
+    int splen = samplelength / channels;
+    for (int i = 0; i < splen; i++) {
+        for (int ch = 0; ch < channels; ch++) {
+            *(output + (i * channels + ch)) = *(input + (i + splen * ch));
+        }
+    }
+    return output;
 }

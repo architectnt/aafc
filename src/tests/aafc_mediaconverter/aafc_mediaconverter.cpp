@@ -64,7 +64,6 @@ char** list_files(const char* dir, int* len) {
 	FindClose(fhndl);
 
 #else
-	// TODO: actually do something in linux enviroment haha
 	DIR* dirc;
 	struct dirent* entry;
 
@@ -160,21 +159,16 @@ char* get_dir_name(const char* path) {
 		return NULL;
 	}
 
-	// Find the last slash
 	const char* last_slash = strrchr(path, '/');
 	if (!last_slash) {
 		last_slash = strrchr(path, '\\');
 	}
 
-	// No slash found, entire path is the directory name
 	if (!last_slash) {
 		return strdup(path);
 	}
 
-	// Path ends with a slash, ignore it
 	if (*(last_slash + 1) == '\0') {
-		// Find the second to last slash
-		const char* end = last_slash;
 		while (last_slash > path) {
 			last_slash--;
 			if (*last_slash == '/' || *last_slash == '\\') {
@@ -188,7 +182,7 @@ char* get_dir_name(const char* path) {
 		}
 	}
 	else {
-		last_slash++; // Move past the slash
+		last_slash++;
 	}
 
 	size_t len = strlen(last_slash);
@@ -209,7 +203,6 @@ char* add_fext(const char* filename, const char* extension) {
 	size_t filename_len = strlen(filename);
 	size_t extension_len = strlen(extension);
 
-	// Allocate memory for the new filename plus the extension and null terminator
 	char* new_filename = (char*)malloc(filename_len + extension_len + 1);
 	if (new_filename == NULL) {
 		perror("Failed to allocate memory");
