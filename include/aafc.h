@@ -10,9 +10,12 @@
 #define EXPORT
 #endif
 
+#define AAFC_STRING "AAFC"
+#define AAFCVERSION 2;
+
 struct AAFC_HEADER {
-    const char headr[5] = "AAFC";
-    const int version = 2;
+    char headr[5];
+    int version;
     int freq;
     unsigned char channels;
     int samplelength;
@@ -20,7 +23,11 @@ struct AAFC_HEADER {
     unsigned char sampletype;
 };
 
+
+
 // Compares if the input is a valid AAFC format
 bool header_valid(const unsigned char* bytes);
+
+bool create_header(AAFC_HEADER* h, int freq, unsigned char channels, int samplelength, unsigned char bps, unsigned char sampletype);
 
 #endif

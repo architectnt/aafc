@@ -8,6 +8,7 @@
 
 #include "common.h"
 #include "aafc.h"
+#include "helpers.h"
 #include <cmath>
 
 float dhalf(unsigned short val) {
@@ -21,11 +22,35 @@ float dhalf(unsigned short val) {
     return sign ? -result : result;
 }
 
-float interpolate(float x0, float x1, float alpha) {
+float lerp(float x0, float x1, float alpha) {
     return x0 * (1 - alpha) + x1 * alpha;
 }
 
-float cubicInterpolate(float y0, float y1, float y2, float y3, double mu) {
+double sinc(double x) {
+    if (x == 0.0f) {
+        return 1.0f;
+    }
+    double pix = PI * x;
+    return sin(pix) / pix;
+}
+
+//TODO: fix performance since once exposed performance gets wacky
+float sinc_interpolate(float* samples, int sampleCount, double t, int windowSize) {
+    float result = 0.0f;
+
+    int start = (int)floor(t) - windowSize / 2;
+    int end = start + windowSize;
+
+    for (int i = start; i < end; ++i) {
+        float sincValue = sinc(t - (double)i);
+        int cind = Clamp(i, 0, sampleCount);
+        result += *(samples + cind) * sincValue;
+    }
+
+    return result;
+}
+
+float cubic_interpolate(float y0, float y1, float y2, float y3, double mu) {
     float a0, a1, a2, a3, mu2;
 
     mu2 = mu * mu;
@@ -94,5 +119,22 @@ float dminif(unsigned char val) {
 }
 
 bool header_valid(const unsigned char* bytes) {
-    return bytes[0] == 'A' && bytes[1] == 'A' && bytes[2] == 'F' && bytes[3] == 'C';
+    return *bytes == 'A' && *(bytes + 1) == 'A' && *(bytes + 2) == 'F' && *(bytes + 3) == 'C';
+}
+
+// this is what happens when you make A SINGLE STRUCT optional in your code.
+bool create_header(AAFC_HEADER* h, int freq, unsigned char channels, int samplelength, unsigned char bps, unsigned char sampletype) {
+    if (h == NULL) {
+        return false;
+    }
+
+    strcpy(h->headr, AAFC_STRING); // ignore what windows says about strcpy (ms is anti cross-platform back then)
+    h->version = AAFCVERSION;
+    h->freq = freq;
+    h->channels = channels;
+    h->samplelength = samplelength;
+    h->bps = bps;
+    h->sampletype = sampletype;
+
+    return true;
 }

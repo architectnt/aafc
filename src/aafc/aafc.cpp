@@ -35,13 +35,16 @@ extern "C" {
             return nullptr;
         }
 
-        AAFC_HEADER header {
-            .freq = freq,
-            .channels = channels,
-            .samplelength = samplelength,
-            .bps = bps,
-            .sampletype = sampletype,
-        };
+        AAFC_HEADER* header = (AAFC_HEADER*)malloc(sizeof(AAFC_HEADER));
+        if (!header) {
+            printf("AAFC FATAL ERROR: could not allocate a new header.\n");
+            return nullptr;
+        }
+        
+        if (!create_header(header, freq, channels, samplelength, bps, sampletype)) {
+            printf("AAFC FATAL ERROR: could not create header\n");
+            return nullptr;
+        }
 
         float* rsptr = samples;
 
@@ -78,6 +81,7 @@ extern "C" {
                     break;
                 }
                 default: {
+                    free(header);
                     free(rsptr);
                     printf("AAFC ERROR: Invalid sample type!\n");
                     return nullptr;
@@ -85,6 +89,7 @@ extern "C" {
             }
         }
         else {
+            free(header);
             free(rsptr);
             printf("AAFC ERROR: samplelength cannot be below 1.\n");
             return nullptr;
@@ -94,10 +99,15 @@ extern "C" {
 
         unsigned char* rst = (unsigned char*)malloc(totalDataSize);
 
-        memcpy(rst, &header, sizeof(AAFC_HEADER));
+        memcpy(rst, header, sizeof(AAFC_HEADER));
         if (smpl) {
             memcpy(rst + sizeof(AAFC_HEADER), smpl, audioDataSize);
             freeSamples(smpl, bps, sampletype);
+        }
+
+        free(header);
+        if (rsptr != samples) {
+            free(rsptr);
         }
 
         return rst;
@@ -254,6 +264,10 @@ extern "C" {
         }
 
         return rst;
+    }
+
+    EXPORT float* aafc_resample_data(float* input, int samplerateoverride, int freq, unsigned char channels, int& samplelength) {
+        return resampleAudio(input, nullptr, samplerateoverride, freq, channels, samplelength);
     }
 
     EXPORT void aafc_free(float* arr) {

@@ -10,7 +10,7 @@
 #include "common.h"
 #include <iostream>
 
-static void forceMono(float* input, AAFC_HEADER& header, unsigned char& channels, int& samplelength) {
+static void forceMono(float* input, AAFC_HEADER* header, unsigned char& channels, int& samplelength) {
     if (channels > 1) {
         for (int i = 0; i < samplelength; i++)
         {
@@ -25,14 +25,14 @@ static void forceMono(float* input, AAFC_HEADER& header, unsigned char& channels
             }
             *(input + i) = msmpl / channels;
         }
-        header.samplelength = samplelength / channels;
-        header.channels = 1;
+        header->samplelength = samplelength / channels;
+        header->channels = 1;
         samplelength /= channels;
         channels = 1;
     }
 }
 
-static float* resampleAudio(float* input, AAFC_HEADER& header, int samplerateoverride, int freq, unsigned char channels, int& samplelength) {
+static float* resampleAudio(float* input, AAFC_HEADER* header, int samplerateoverride, int freq, unsigned char channels, int& samplelength) {
     float ratio = (float)samplerateoverride / freq;
     int resampledlen = (int)(samplelength * ratio);
 
@@ -50,7 +50,7 @@ static float* resampleAudio(float* input, AAFC_HEADER& header, int samplerateove
                 int y2 = Min(idx0 + 1, samplelength - 1) * channels + ch;
                 int y3 = Min(idx0 + 2, samplelength - 1) * channels + ch;
                 double mu = oindx - idx0;
-                *(rsmpled + ind) = cubicInterpolate(*(input + y0), *(input + y1), *(input + y2), *(input + y3), mu);
+                *(rsmpled + ind) = cubic_interpolate(*(input + y0), *(input + y1), *(input + y2), *(input + y3), mu);
             }
             else {
                 break;
@@ -58,9 +58,11 @@ static float* resampleAudio(float* input, AAFC_HEADER& header, int samplerateove
         }
     }
 
-    header.freq = samplerateoverride;
     samplelength = resampledlen;
-    header.samplelength = resampledlen;
+    if (header != nullptr) {
+        header->freq = samplerateoverride;
+        header->samplelength = resampledlen;
+    }
 
     return rsmpled;
 }

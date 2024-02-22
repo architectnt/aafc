@@ -5,6 +5,11 @@ FetchContent_Declare(
   GIT_REPOSITORY "https://github.com/PortAudio/portaudio.git"
   GIT_TAG "v19.7.0"
 )
+
+set(PA_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+set(PA_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(PA_INSTALL_LIB OFF CACHE BOOL "" FORCE)
+
 FetchContent_MakeAvailable(portaudio)
 
 add_executable(plyr aafc_player.cpp)
