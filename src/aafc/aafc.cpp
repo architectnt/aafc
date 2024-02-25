@@ -96,21 +96,25 @@ extern "C" {
         }
 
         size_t totalDataSize = sizeof(AAFC_HEADER) + audioDataSize;
-
-        unsigned char* rst = (unsigned char*)malloc(totalDataSize);
-
-        memcpy(rst, header, sizeof(AAFC_HEADER));
         if (smpl) {
+            unsigned char* rst = (unsigned char*)malloc(totalDataSize);
+
+            memcpy(rst, header, sizeof(AAFC_HEADER));
             memcpy(rst + sizeof(AAFC_HEADER), smpl, audioDataSize);
             freeSamples(smpl, bps, sampletype);
-        }
 
-        free(header);
-        if (rsptr != samples) {
+            free(header);
+            if (rsptr != samples) {
+                free(rsptr);
+            }
+
+            return rst;
+        }
+        else {
             free(rsptr);
+            free(header);
+            return NULL;
         }
-
-        return rst;
     }
 
     EXPORT float* aafc_import(const unsigned char* bytes) {
@@ -163,6 +167,7 @@ extern "C" {
             }
         }
         else {
+            //TODO: deprecate this fallback format since no such
             int* iptr = reinterpret_cast<int*>(const_cast<unsigned char*>(bytes));
             sampleCount = *(iptr + 2);
             short* smpraw = reinterpret_cast<short*>(const_cast<unsigned char*>(bytes + 12));

@@ -108,7 +108,7 @@ static signed char* encode_adpcm(float* ptr, int samplelength, size_t& audsize) 
 }
 
 static void decode_adpcm(const unsigned char* input, float* output, int sampleCount) {
-    signed char* adpcm = reinterpret_cast<signed char*>(const_cast<unsigned char*>(input + sizeof(AAFC_HEADER)));
+    const signed char* adpcm = reinterpret_cast<const signed char*>(input + sizeof(AAFC_HEADER));
     const int* stptr = adpcm_step_size_table;
     const int* itbptr = adpcm_index_table;
 

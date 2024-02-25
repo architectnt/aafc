@@ -58,14 +58,13 @@ static unsigned char* encode_dpcm(float* ptr, int samplelength, size_t& audsize)
 }
 
 static void decode_dpcm(const unsigned char* input, float* output, int sampleCount) {
-    unsigned char* dpcm = reinterpret_cast<unsigned char*>(const_cast<unsigned char*>(input + sizeof(AAFC_HEADER)));
-    unsigned char* dpcmptr = dpcm;
+    const unsigned char* smpraw = input + sizeof(AAFC_HEADER);
     float prevsmpl = 0;
     float delta = 0.01;
     for (int i = 0; i < sampleCount; i++) {
         int byind = i / 8;
         int bitnd = i % 8;
-        int b = (*(dpcmptr + byind) >> bitnd) & 1;
+        int b = (*(smpraw + byind) >> bitnd) & 1;
 
         prevsmpl += (b == 0) ? -delta : delta;
 

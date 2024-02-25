@@ -4,8 +4,9 @@
 **The audio format designed for ultra-fast loading times**
 
 ## ![aafc_logo](https://architectenterprises.net/cdn/fusionresource/fpg_ico.png) FEATURES
-- 8, 16, 24, 32-bit PCM
+- 8, 12, 16, 24, and 32-bit PCM
 - 4-bit ADPCM
 - Single bit Delta PCM
 - 8-bit & 16-bit "Small Float" PCM
 - Encoding & Decoding directly
+- Resampling

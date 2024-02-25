@@ -6,6 +6,7 @@ static void freeSamples(void* input, unsigned char bps, unsigned char sampletype
 	if (sampletype == 1) {
 		switch (bps) {
 			case 8:
+			case 12:
 			case 24:
 				free((char*)input);
 				break;

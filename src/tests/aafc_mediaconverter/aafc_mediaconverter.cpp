@@ -288,6 +288,11 @@ int main(int argc, char* argv[]) {
 			}
 
 			unsigned char* out = ExportAAFC(smpl, info.samplerate, info.channels, nitms, outbps, sampletype, usemono, resampleoverride);
+			if (out == NULL) {
+				printf("aud2aafc: export failed >:(\n");
+				return -2;
+			}
+
 			FILE* ofile = fopen(fbp.str().c_str(), "wb");
 			if (ofile == NULL) {
 				perror("aud2aafc: failed to open output file >:((((");
@@ -368,6 +373,11 @@ int main(int argc, char* argv[]) {
 		}
 
 		unsigned char* out = ExportAAFC(smpl, info.samplerate, info.channels, nitms, outbps, sampletype, usemono, resampleoverride);
+		if (out == NULL) {
+			printf("aud2aafc: export failed >:(\n");
+			return -2;
+		}
+
 		FILE* ofile = fopen(fp.str().c_str(), "wb");
 		if (ofile == NULL) {
 			perror("aud2aafc: failed to open output file >:((((");
@@ -384,23 +394,26 @@ int main(int argc, char* argv[]) {
 		size_t bsize = sizeof(short);
 		switch (outbps) {
 		case 8:
-			bsize = sizeof(unsigned char);
+			bsize = fnsplen * sizeof(unsigned char);
+			break;
+		case 12:
+			bsize = ((fnsplen * 3) / 2);
 			break;
 		case 16:
-			bsize = sizeof(short);
+			bsize = fnsplen * sizeof(short);
 			break;
 		case 24:
-			bsize = 3ULL; // why use sizeof when you know how big 24-bit is
+			bsize = fnsplen * 3ULL; // why use sizeof when you know how big 24-bit is
 			break;
 		case 32:
-			bsize = sizeof(float);
+			bsize = fnsplen * sizeof(float);
 			break;
 		}
 
 		size_t bitm = 0;
 		switch (sampletype) {
 		case 1:
-			bitm = sizeof(AAFC_HEADER) + fnsplen * bsize;
+			bitm = sizeof(AAFC_HEADER) + bsize;
 			break;
 		case 2:
 			bitm = sizeof(AAFC_HEADER) + fnsplen / 2;
@@ -409,7 +422,7 @@ int main(int argc, char* argv[]) {
 			bitm = sizeof(AAFC_HEADER) + fnsplen / 8;
 			break;
 		case 4:
-			bitm = sizeof(AAFC_HEADER) + fnsplen * bsize;
+			bitm = sizeof(AAFC_HEADER) + bsize;
 			break;
 		}
 

@@ -8,6 +8,7 @@
 // Constant division (allows faster computation)
 constexpr float INT16_REC = 1.0f / 32767.0f;
 constexpr float INT24_REC = 1.0f / 8388607.0f;
+constexpr float INT12_REC = 1.0f / 2047.0f;
 constexpr float INT8_REC = 1.0f / 127.0f;
 constexpr float SF8_REC = 1.0f / 15.0f;
 constexpr float PI = 3.14159265359f;
