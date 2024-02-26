@@ -1,3 +1,8 @@
+/*
+    Copyright (C) 2024 Architect Enterprises
+    This file is apart of AAFC and is licenced under the MIT Licence.
+*/
+
 #ifndef HELPERS_H
 #define HELPERS_H 1
 

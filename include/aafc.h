@@ -1,3 +1,8 @@
+/*
+    Copyright (C) 2024 Architect Enterprises
+    This file is apart of AAFC and is licenced under the MIT Licence.
+*/
+
 #ifndef AAFC_H
 #define AAFC_H 1
 

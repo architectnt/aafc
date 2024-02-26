@@ -1,12 +1,11 @@
 /*
 
     Main AAFC Module
-
     Contains everything the format has to offer
 
 
-    2023-2024 Architect Enterprises
-
+    Copyright (C) 2024 Architect Enterprises
+    This file is apart of AAFC and is licenced under the MIT Licence.
 */
 
 #include <iostream>
@@ -167,7 +166,7 @@ extern "C" {
             }
         }
         else {
-            //TODO: deprecate this fallback format since no such
+            //TODO: deprecate this fallback format if there is no such aafc1 file in system lollllllll
             int* iptr = reinterpret_cast<int*>(const_cast<unsigned char*>(bytes));
             sampleCount = *(iptr + 2);
             short* smpraw = reinterpret_cast<short*>(const_cast<unsigned char*>(bytes + 12));

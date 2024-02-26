@@ -1,8 +1,10 @@
 /*
 
     common functions
-    2024 Architect Enterprises
 
+
+    Copyright (C) 2024 Architect Enterprises
+    This file is apart of AAFC and is licenced under the MIT Licence.
 */
 
 
@@ -128,7 +130,7 @@ bool create_header(AAFC_HEADER* h, int freq, unsigned char channels, int samplel
         return false;
     }
 
-    strcpy(h->headr, AAFC_STRING); // ignore what windows says about strcpy (ms is anti cross-platform back then)
+    strncpy(h->headr, AAFC_STRING, 5); // ignore what windows says about strncpy (ms is anti cross-platform back then)
     h->version = AAFCVERSION;
     h->freq = freq;
     h->channels = channels;

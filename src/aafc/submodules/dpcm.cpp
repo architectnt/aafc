@@ -1,8 +1,10 @@
 /*
 
     Single bit Delta PCM
-    2024 Architect Enterprises
 
+
+    Copyright (C) 2024 Architect Enterprises
+    This file is apart of AAFC and is licenced under the MIT Licence.
 */
 
 #include <iostream>
