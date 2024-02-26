@@ -393,8 +393,14 @@ int main(int argc, char* argv[]) {
 
 		size_t bsize = sizeof(short);
 		switch (outbps) {
+		case 4:
+			bsize = fnsplen / 2;
+			break;
 		case 8:
 			bsize = fnsplen * sizeof(unsigned char);
+			break;
+		case 10:
+			bsize = ((fnsplen * 5 + 3) / 4);
 			break;
 		case 12:
 			bsize = ((fnsplen * 3) / 2);
