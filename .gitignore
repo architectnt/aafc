@@ -1,3 +1,6 @@
+# standard git ignoring
+
+.vscode
 .vs
 /bin/*
 out

@@ -1,4 +1,4 @@
-﻿cmake_minimum_required (VERSION 3.11)
+﻿cmake_minimum_required (VERSION 3.11) # 3.11 because of the tests included
 project (aafc VERSION 2 LANGUAGES C CXX)
 add_subdirectory(src)
 add_subdirectory(resources)

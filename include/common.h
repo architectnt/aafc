@@ -13,13 +13,13 @@ float cubic_interpolate(float y0, float y1, float y2, float y3, double mu);
 // Convert to a minifloat implementation (also what the actual HARGH is going on)
 unsigned char minifloat(float val);
 
-// Convert to a 16-bit float implementation (WHY IS THERE NO STANDARD)
+// Convert to a 16-bit float implementation
 unsigned short halfpercision(float val);
 
-// this.......
+// conversion back to float (8-bit)
 float dminif(unsigned char val);
 
-// is getting out of hand
+// conversion back to float (half)
 float dhalf(unsigned short val);
 
 float sinc(float x);

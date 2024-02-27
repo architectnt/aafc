@@ -4,7 +4,7 @@
 	(dependency: libsndfile)
 
 	Converts any format supported file into AAFC itself
-
+	(also an excample in C/C++ how you could use AAFC)
 
 	2024 Architect Enterprises
 
@@ -308,24 +308,33 @@ int main(int argc, char* argv[]) {
 
 			size_t bsize = sizeof(short);
 			switch (outbps) {
+			case 4:
+				bsize = fnsplen / 2;
+				break;
 			case 8:
-				bsize = sizeof(unsigned char);
+				bsize = fnsplen * sizeof(unsigned char);
+				break;
+			case 10:
+				bsize = ((fnsplen * 5 + 3) / 4);
+				break;
+			case 12:
+				bsize = ((fnsplen * 3) / 2);
 				break;
 			case 16:
-				bsize = sizeof(short);
+				bsize = fnsplen * sizeof(short);
 				break;
 			case 24:
-				bsize = 3ULL; // why use sizeof when you know how big 24-bit is
+				bsize = fnsplen * 3ULL; // why use sizeof when you know how big 24-bit is
 				break;
 			case 32:
-				bsize = sizeof(float);
+				bsize = fnsplen * sizeof(float);
 				break;
 			}
 
 			size_t bitm = 0;
 			switch (sampletype) {
 			case 1:
-				bitm = sizeof(AAFC_HEADER) + fnsplen * bsize;
+				bitm = sizeof(AAFC_HEADER) + bsize;
 				break;
 			case 2:
 				bitm = sizeof(AAFC_HEADER) + fnsplen / 2;
@@ -334,7 +343,7 @@ int main(int argc, char* argv[]) {
 				bitm = sizeof(AAFC_HEADER) + fnsplen / 8;
 				break;
 			case 4:
-				bitm = sizeof(AAFC_HEADER) + fnsplen * bsize;
+				bitm = sizeof(AAFC_HEADER) + bsize;
 				break;
 			}
 

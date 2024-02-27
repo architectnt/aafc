@@ -11,6 +11,10 @@
 - Encoding & Decoding directly
 - Resampling
 
+## Installing
+self explanitory git cloning\
+```git clone https://github.com/architectnt/aafc.git```
+
 ## Compiling
 your average cmake project :D
 (make sure you have cmake installed)

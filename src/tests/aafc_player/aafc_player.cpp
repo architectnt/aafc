@@ -4,7 +4,7 @@
 	(dependency: PortAudio)
 
 	Plays back an AAFC file
-
+	(also an excample in C/C++ how you could use AAFC)
 
 	2024 Architect Enterprises
 
