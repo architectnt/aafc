@@ -12,7 +12,7 @@
 - Resampling
 
 ## Installing
-self explanitory git cloning
+self explanatory git cloning
 ```
 git clone https://github.com/architectnt/aafc.git
 ```
