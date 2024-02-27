@@ -13,7 +13,9 @@
 
 ## Installing
 self explanitory git cloning\
-```git clone https://github.com/architectnt/aafc.git```
+```
+git clone https://github.com/architectnt/aafc.git
+```
 
 ## Compiling
 your average cmake project :D
