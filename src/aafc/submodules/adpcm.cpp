@@ -31,7 +31,7 @@ constexpr int adpcm_step_size_table[89] = {
         15289, 16818, 18500, 20350, 22385, 24623, 27086, 29794, 32767
 };
 
-static signed char* encode_adpcm(float* ptr, int samplelength, size_t& audsize) {
+static inline signed char* encode_adpcm(float* ptr, int samplelength, size_t& audsize) {
     signed char* adpcm_base = (signed char*)malloc((samplelength / 2) * sizeof(signed char));
     signed char* adpcm = adpcm_base;
     const int* stptr = adpcm_step_size_table;
@@ -109,7 +109,7 @@ static signed char* encode_adpcm(float* ptr, int samplelength, size_t& audsize) 
     return adpcm_base;
 }
 
-static void decode_adpcm(const unsigned char* input, float* output, int sampleCount) {
+static inline void decode_adpcm(const unsigned char* input, float* output, int sampleCount) {
     const signed char* adpcm = reinterpret_cast<const signed char*>(input + sizeof(AAFC_HEADER));
     const int* stptr = adpcm_step_size_table;
     const int* itbptr = adpcm_index_table;

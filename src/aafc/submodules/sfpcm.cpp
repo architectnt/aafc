@@ -12,7 +12,7 @@
 #include "aafc.h"
 #include "common.h"
 
-static void* encode_sfpcm(float* ptr, int samplelength, size_t& audsize, unsigned char bps) {
+static inline void* encode_sfpcm(float* ptr, int samplelength, size_t& audsize, unsigned char bps) {
     switch (bps) {
         case 8: {
             unsigned char* f8 = (unsigned char*)malloc(samplelength * sizeof(unsigned char));
@@ -41,7 +41,7 @@ static void* encode_sfpcm(float* ptr, int samplelength, size_t& audsize, unsigne
     }
 }
 
-static void decode_sfpcm(const unsigned char* input, float* output, int sampleCount, unsigned char bps) {
+static inline void decode_sfpcm(const unsigned char* input, float* output, int sampleCount, unsigned char bps) {
     switch (bps) {
         case 8: {
             const char* smpraw = reinterpret_cast<const char*>(input + sizeof(AAFC_HEADER));

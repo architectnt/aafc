@@ -5,7 +5,7 @@
 
 #include <iostream>
 
-static void freeSamples(void* input, unsigned char bps, unsigned char sampletype) {
+static inline void freeSamples(void* input, unsigned char bps, unsigned char sampletype) {
 	if (!input) return;
 
 	if (sampletype == 1) {

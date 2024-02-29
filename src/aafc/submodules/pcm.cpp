@@ -11,7 +11,7 @@
 #include "helpers.h"
 #include "aafc.h"
 
-static void* encode_pcm(float* ptr, int samplelength, size_t& audsize, unsigned char bps) {
+static inline void* encode_pcm(float* ptr, int samplelength, size_t& audsize, unsigned char bps) {
     switch (bps) {
         case 4: {
             // LOL
@@ -130,7 +130,7 @@ static void* encode_pcm(float* ptr, int samplelength, size_t& audsize, unsigned 
     }
 }
 
-static void decode_pcm(const unsigned char* input, float* output, int sampleCount, unsigned char bps) {
+static inline void decode_pcm(const unsigned char* input, float* output, int sampleCount, unsigned char bps) {
     switch (bps) {
         case 4: {
             printf("LOL\n");

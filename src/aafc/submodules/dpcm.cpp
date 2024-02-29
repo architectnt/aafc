@@ -11,7 +11,7 @@
 #include "helpers.h"
 #include "aafc.h"
 
-static unsigned char* encode_dpcm(float* ptr, int samplelength, size_t& audsize) {
+static inline unsigned char* encode_dpcm(float* ptr, int samplelength, size_t& audsize) {
     int bytesize = (samplelength + 7) / 8;
     unsigned char* dpcm_base = (unsigned char*)malloc(bytesize);
     memset(dpcm_base, 0, bytesize);
@@ -59,7 +59,7 @@ static unsigned char* encode_dpcm(float* ptr, int samplelength, size_t& audsize)
     return dpcm_base;
 }
 
-static void decode_dpcm(const unsigned char* input, float* output, int sampleCount) {
+static inline void decode_dpcm(const unsigned char* input, float* output, int sampleCount) {
     const unsigned char* smpraw = input + sizeof(AAFC_HEADER);
     float prevsmpl = 0;
     float delta = 0.01;

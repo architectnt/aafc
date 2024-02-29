@@ -12,7 +12,7 @@
 #include "common.h"
 #include <iostream>
 
-static void forceMono(float* input, AAFC_HEADER* header, unsigned char& channels, int& samplelength) {
+static inline void forceMono(float* input, AAFC_HEADER* header, unsigned char& channels, int& samplelength) {
     if (channels > 1) {
         for (int i = 0; i < samplelength; i++)
         {
@@ -34,7 +34,7 @@ static void forceMono(float* input, AAFC_HEADER* header, unsigned char& channels
     }
 }
 
-static float* resampleAudio(float* input, AAFC_HEADER* header, int samplerateoverride, int freq, unsigned char channels, int& samplelength) {
+static inline float* resampleAudio(float* input, AAFC_HEADER* header, int samplerateoverride, int freq, unsigned char channels, int& samplelength) {
     if (samplelength == freq) {
         // return original data to prevent data redundancy
         return input;
@@ -74,7 +74,7 @@ static float* resampleAudio(float* input, AAFC_HEADER* header, int samplerateove
     return rsmpled;
 }
 
-static float* force_independent_channels(float* input, unsigned char channels, int samplelength) {
+static inline float* force_independent_channels(float* input, unsigned char channels, int samplelength) {
     float* output = (float*)malloc(samplelength * sizeof(float));
 
     int splen = samplelength / channels;
@@ -87,7 +87,7 @@ static float* force_independent_channels(float* input, unsigned char channels, i
     return output;
 }
 
-static float* force_interleave_channels(float* input, unsigned char channels, int samplelength) {
+static inline float* force_interleave_channels(float* input, unsigned char channels, int samplelength) {
     if (!input || channels <= 0 || samplelength <= 0) {
         return nullptr;
     }

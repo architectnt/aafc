@@ -6,7 +6,7 @@
 #ifndef COMMON_H
 #define COMMON_H 1
 
-float interpolate(float x0, float x1, float alpha);
+float lerp(float x0, float x1, float alpha);
 
 float cubic_interpolate(float y0, float y1, float y2, float y3, double mu);
 
