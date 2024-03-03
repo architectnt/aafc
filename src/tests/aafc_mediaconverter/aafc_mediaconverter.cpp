@@ -255,12 +255,12 @@ int main(int argc, char* argv[]) {
 			resampleoverride = round(std::stof(argv[++i], NULL));
 		}
 	}
-	mkdir("aafc_conversions", 755);
+	mkdir("aafc_conversions", 0755);
 
 	if (batchconvert) {
 		std::stringstream dirp; dirp << "aafc_conversions/" << dirnm;
 
-		mkdir(dirp.str().c_str(), 755);
+		mkdir(dirp.str().c_str(), 0755);
 
 		for (int i = 0; i < batchlength; i++) {
 			std::stringstream fbp; fbp << dirp.str().c_str() << "/" << filename_without_extension(batchfiles[i]) << ".aafc";
