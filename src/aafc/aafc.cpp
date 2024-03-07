@@ -270,11 +270,64 @@ extern "C" {
         return rst;
     }
 
+    // compatibility layer for systems that use integers instead (useful for exporting)
+    EXPORT void* aafc_int_to_float(void* arr, long size, unsigned char type) {
+        float* rst;
+        float* csmpl = (float*)malloc(size * sizeof(float));
+        switch (type) {
+            case 8: {
+                char* sptr = (char*)arr;
+                for (int i = 0; i < size; i++) {
+                    *(csmpl + i) = *(sptr + i) * INT8_REC;
+                }
+                rst = csmpl;
+                break;
+            }
+            case 16: {
+                short* sptr = (short*)arr;
+                for (int i = 0; i < size; i++) {
+                    *(csmpl + i) = *(sptr + i) * INT16_REC;
+                }
+                rst = csmpl;
+                break;
+            }
+            case 32: {
+                int* sptr = (int*)arr;
+                for (int i = 0; i < size; i++) {
+                    *(csmpl + i) = *(sptr + i) * INT32_REC;
+                }
+                rst = csmpl;
+                break;
+            }
+            default: {
+                free(csmpl);
+                printf("unknown integer type: %d", type);
+                return nullptr;
+            }
+        }
+
+        return rst;
+    }
+
     EXPORT float* aafc_resample_data(float* input, int samplerateoverride, int freq, unsigned char channels, int& samplelength) {
         return resampleAudio(input, nullptr, samplerateoverride, freq, channels, samplelength);
     }
 
     EXPORT void aafc_free(float* arr) {
-        free(arr);
+        if (arr != nullptr) {
+            free(arr);
+        }
+        else {
+            printf("AAFC: the sample data is null!");
+        }
+    }
+
+    EXPORT void aafc_free_bytes(unsigned char* arr) {
+        if (arr != nullptr) {
+            free(arr);
+        }
+        else {
+            printf("AAFC: the input bytes are null!");
+        }
     }
 }
