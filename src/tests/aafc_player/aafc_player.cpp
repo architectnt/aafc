@@ -216,7 +216,6 @@ int main(int argc, char* argv[]) {
 		}
 
 		totalDurationInSeconds = (adata->samplelength / adata->channels) / adata->freq;
-		free(aafcfile);
 		
 		printf("Loaded! Samplerate: %d, Channels: %d\n", adata->freq, adata->channels);
 	}
