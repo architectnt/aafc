@@ -215,6 +215,61 @@ char* add_fext(const char* filename, const char* extension) {
 }
 
 
+
+inline static void finalize(bool usemono, size_t nitms, int channels, int samplerate, int resampleoverride, unsigned char outbps, unsigned char sampletype, unsigned char* out, FILE* ofile) {
+
+	int smplen = (usemono ? (nitms / channels) : nitms);
+
+	float reratio = resampleoverride != 0 ? (float)resampleoverride / samplerate : 0;
+	int resampledlen = (int)(smplen * reratio);
+
+	size_t fnsplen = resampleoverride != 0 ? resampledlen : smplen;
+
+	size_t bsize = sizeof(short);
+	switch (outbps) {
+	case 4:
+		bsize = fnsplen / 2;
+		break;
+	case 8:
+		bsize = fnsplen * sizeof(unsigned char);
+		break;
+	case 10:
+		bsize = ((fnsplen * 5 + 3) / 4);
+		break;
+	case 12:
+		bsize = ((fnsplen * 3) / 2);
+		break;
+	case 16:
+		bsize = fnsplen * sizeof(short);
+		break;
+	case 24:
+		bsize = fnsplen * 3ULL; // why use sizeof when you know how big 24-bit is
+		break;
+	case 32:
+		bsize = fnsplen * sizeof(float);
+		break;
+	}
+
+	size_t bitm = 0;
+	switch (sampletype) {
+	case 1:
+		bitm = sizeof(AAFC_HEADER) + bsize;
+		break;
+	case 2:
+		bitm = sizeof(AAFC_HEADER) + fnsplen / 2;
+		break;
+	case 3:
+		bitm = sizeof(AAFC_HEADER) + fnsplen / 8;
+		break;
+	case 4:
+		bitm = sizeof(AAFC_HEADER) + bsize;
+		break;
+	}
+
+
+	fwrite(out, sizeof(unsigned char), bitm, ofile);
+}
+
 int main(int argc, char* argv[]) {
 	const char* fn = "input.wav";
 	unsigned char outbps = 16;
@@ -299,56 +354,7 @@ int main(int argc, char* argv[]) {
 				return -1;
 			}
 
-			int smplen = (usemono ? (nitms / info.channels) : nitms);
-
-			float reratio = resampleoverride != 0 ? (float)resampleoverride / info.samplerate : 0;
-			int resampledlen = (int)(smplen * reratio);
-
-			size_t fnsplen = resampleoverride != 0 ? resampledlen : smplen;
-
-			size_t bsize = sizeof(short);
-			switch (outbps) {
-			case 4:
-				bsize = fnsplen / 2;
-				break;
-			case 8:
-				bsize = fnsplen * sizeof(unsigned char);
-				break;
-			case 10:
-				bsize = ((fnsplen * 5 + 3) / 4);
-				break;
-			case 12:
-				bsize = ((fnsplen * 3) / 2);
-				break;
-			case 16:
-				bsize = fnsplen * sizeof(short);
-				break;
-			case 24:
-				bsize = fnsplen * 3ULL; // why use sizeof when you know how big 24-bit is
-				break;
-			case 32:
-				bsize = fnsplen * sizeof(float);
-				break;
-			}
-
-			size_t bitm = 0;
-			switch (sampletype) {
-			case 1:
-				bitm = sizeof(AAFC_HEADER) + bsize;
-				break;
-			case 2:
-				bitm = sizeof(AAFC_HEADER) + fnsplen / 2;
-				break;
-			case 3:
-				bitm = sizeof(AAFC_HEADER) + fnsplen / 8;
-				break;
-			case 4:
-				bitm = sizeof(AAFC_HEADER) + bsize;
-				break;
-			}
-
-
-			fwrite(out, sizeof(unsigned char), bitm, ofile);
+			finalize(usemono, nitms, info.channels, info.samplerate, resampleoverride, outbps, sampletype, out, ofile);
 
 			sf_close(ifl);
 			free(smpl);
@@ -393,56 +399,7 @@ int main(int argc, char* argv[]) {
 			return -1;
 		}
 
-		int smplen = (usemono ? (nitms / info.channels) : nitms);
-
-		float reratio = resampleoverride != 0 ? (float)resampleoverride / info.samplerate : 0;
-		int resampledlen = (int)(smplen * reratio);
-
-		size_t fnsplen = resampleoverride != 0 ? resampledlen : smplen;
-
-		size_t bsize = sizeof(short);
-		switch (outbps) {
-		case 4:
-			bsize = fnsplen / 2;
-			break;
-		case 8:
-			bsize = fnsplen * sizeof(unsigned char);
-			break;
-		case 10:
-			bsize = ((fnsplen * 5 + 3) / 4);
-			break;
-		case 12:
-			bsize = ((fnsplen * 3) / 2);
-			break;
-		case 16:
-			bsize = fnsplen * sizeof(short);
-			break;
-		case 24:
-			bsize = fnsplen * 3ULL; // why use sizeof when you know how big 24-bit is
-			break;
-		case 32:
-			bsize = fnsplen * sizeof(float);
-			break;
-		}
-
-		size_t bitm = 0;
-		switch (sampletype) {
-		case 1:
-			bitm = sizeof(AAFC_HEADER) + bsize;
-			break;
-		case 2:
-			bitm = sizeof(AAFC_HEADER) + fnsplen / 2;
-			break;
-		case 3:
-			bitm = sizeof(AAFC_HEADER) + fnsplen / 8;
-			break;
-		case 4:
-			bitm = sizeof(AAFC_HEADER) + bsize;
-			break;
-		}
-
-
-		fwrite(out, sizeof(unsigned char), bitm, ofile);
+		finalize(usemono, nitms, info.channels, info.samplerate, resampleoverride, outbps, sampletype, out, ofile);
 
 		sf_close(ifl);
 		free(smpl);
