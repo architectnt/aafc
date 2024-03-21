@@ -47,15 +47,15 @@ extern "C" {
 
         float* rsptr = samples;
 
-        if (nm) {
-            normalize(samples, samplelength);
-        }
-
         if (forcemono && channels != 1) {
             forceMono(samples, header, channels, samplelength);
         }
         if (samplerateoverride != 0 && samplerateoverride != freq) {
             rsptr = resampleAudio(rsptr, header, samplerateoverride, freq, channels, samplelength);
+        }
+
+        if (nm) {
+            normalize(samples, samplelength);
         }
 
         void* smpl = nullptr;
