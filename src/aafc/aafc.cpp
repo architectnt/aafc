@@ -29,7 +29,7 @@ extern "C" {
         }
     }
 
-    EXPORT unsigned char* aafc_export(float* samples, int freq, unsigned char channels, int samplelength, unsigned char bps = 16, unsigned char sampletype = 1, bool forcemono = false, int samplerateoverride = 0) {
+    EXPORT unsigned char* aafc_export(float* samples, int freq, unsigned char channels, int samplelength, unsigned char bps = 16, unsigned char sampletype = 1, bool forcemono = false, int samplerateoverride = 0, bool nm = false) {
         if (!samples) {
             return nullptr;
         }
@@ -46,6 +46,10 @@ extern "C" {
         }
 
         float* rsptr = samples;
+
+        if (nm) {
+            normalize(samples, samplelength);
+        }
 
         if (forcemono && channels != 1) {
             forceMono(samples, header, channels, samplelength);
@@ -311,6 +315,10 @@ extern "C" {
 
     EXPORT float* aafc_resample_data(float* input, int samplerateoverride, int freq, unsigned char channels, int& samplelength) {
         return resampleAudio(input, nullptr, samplerateoverride, freq, channels, samplelength);
+    }
+
+    EXPORT float* aafc_normalize(float* arr, int len) {
+        return normalize(arr, len);
     }
 
     EXPORT void aafc_free(float* arr) {

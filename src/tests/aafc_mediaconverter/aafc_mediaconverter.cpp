@@ -85,9 +85,9 @@ char** list_files(const char* dir, int* len) {
 }
 
 
-typedef unsigned char* (*AAFCExport)(float* samples, int freq, unsigned char channels, int samplelength, unsigned char bps, unsigned char sampletype, bool forcemono, int samplerateoverride);
+typedef unsigned char* (*AAFCExport)(float* samples, int freq, unsigned char channels, int samplelength, unsigned char bps, unsigned char sampletype, bool forcemono, int samplerateoverride, bool normalize);
 
-unsigned char* ExportAAFC(float* samples, int freq, int channels, int samplelength, unsigned char bps = 16, unsigned char sampletype = 1, bool forcemono = false, int samplerateoverride = 0) {
+unsigned char* ExportAAFC(float* samples, int freq, int channels, int samplelength, unsigned char bps = 16, unsigned char sampletype = 1, bool forcemono = false, int samplerateoverride = 0, bool normalize = false) {
 #ifdef _WIN32
 	HMODULE aafcdll = LoadLibrary(LIB_AAFC_RPATH);
 	if (aafcdll == NULL) {
@@ -100,7 +100,7 @@ unsigned char* ExportAAFC(float* samples, int freq, int channels, int sampleleng
 		perror("Could not initialize AAFC functions.");
 		return NULL;
 	}
-	return aexport(samples, freq, channels, samplelength, bps, sampletype, forcemono, samplerateoverride);
+	return aexport(samples, freq, channels, samplelength, bps, sampletype, forcemono, samplerateoverride, normalize);
 #else
 	void* hndl = dlopen(LIB_AAFC_RPATH, RTLD_LAZY);
 	if (!hndl) {
@@ -117,7 +117,7 @@ unsigned char* ExportAAFC(float* samples, int freq, int channels, int sampleleng
 		return NULL;
 	}
 
-	return aexport(samples, freq, channels, samplelength, bps, sampletype, forcemono, samplerateoverride);
+	return aexport(samples, freq, channels, samplelength, bps, sampletype, forcemono, samplerateoverride, normalize);
 #endif
 }
 
@@ -275,6 +275,7 @@ int main(int argc, char* argv[]) {
 	unsigned char outbps = 16;
 	bool usemono = false;
 	bool batchconvert = false;
+	bool normalize = false;
 	int batchlength;
 	char** batchfiles;
 	char* dirnm;
@@ -296,6 +297,9 @@ int main(int argc, char* argv[]) {
 		}
 		else if (input == "--dpcm") {
 			sampletype = 3;
+		}
+		else if (input == "-n") {
+			normalize = true;
 		}
 		else if (input == "--sfpcm") {
 			sampletype = 4;
@@ -342,7 +346,7 @@ int main(int argc, char* argv[]) {
 				printf("aud2aafc: unexpected sample count! >:(\n");
 			}
 
-			unsigned char* out = ExportAAFC(smpl, info.samplerate, info.channels, nitms, outbps, sampletype, usemono, resampleoverride);
+			unsigned char* out = ExportAAFC(smpl, info.samplerate, info.channels, nitms, outbps, sampletype, usemono, resampleoverride, normalize);
 			if (out == NULL) {
 				printf("aud2aafc: export failed >:(\n");
 				return -2;

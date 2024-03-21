@@ -87,6 +87,29 @@ static inline float* force_independent_channels(float* input, unsigned char chan
     return output;
 }
 
+static inline float* normalize(float* input, int len) {
+    if (input == NULL || len <= 0) {
+        return input; // keep original
+    }
+    float mx = 0.0f;
+    float* ptr;
+    for (ptr = input; ptr < input + len; ptr++) {
+        if (*ptr > mx) {
+            mx = *ptr;
+        }
+    }
+
+    if (mx < 1e-6) {
+        return input; // keep original again
+    }
+
+    for (ptr = input; ptr < input + len; ptr++) {
+        *ptr /= mx;
+    }
+
+    return input;
+}
+
 static inline float* force_interleave_channels(float* input, unsigned char channels, int samplelength) {
     if (!input || channels <= 0 || samplelength <= 0) {
         return nullptr;

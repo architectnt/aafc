@@ -256,11 +256,11 @@ int main(int argc, char* argv[]) {
 		Pa_Sleep(100);
 	}
 
-	printf("\n");
-
 	Pa_StopStream(str);
 	Pa_CloseStream(str);
 	Pa_Terminate();
+
+	printf("\n");
 
 	return 0;
 }
