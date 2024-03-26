@@ -10,7 +10,9 @@ static inline void freeSamples(void* input, unsigned char bps, unsigned char sam
 
 	if (sampletype == 1) {
 		switch (bps) {
+			case 4:
 			case 8:
+			case 10:
 			case 12:
 			case 24:
 				free((char*)input);

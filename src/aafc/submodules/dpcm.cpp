@@ -62,7 +62,7 @@ static inline unsigned char* encode_dpcm(float* ptr, int samplelength, size_t& a
 static inline void decode_dpcm(const unsigned char* input, float* output, int sampleCount) {
     const unsigned char* smpraw = input + sizeof(AAFC_HEADER);
     float prevsmpl = 0;
-    float delta = 0.01;
+    float delta = 0.0256;
     for (int i = 0; i < sampleCount; i++) {
         int byind = i / 8;
         int bitnd = i % 8;
@@ -70,9 +70,6 @@ static inline void decode_dpcm(const unsigned char* input, float* output, int sa
 
         prevsmpl += (b == 0) ? -delta : delta;
 
-        if (prevsmpl > 1.0) prevsmpl = 1.0;
-        else if (prevsmpl < -1.0) prevsmpl = -1.0;
-
-        *output++ = prevsmpl;
+        *output++ = Clamp(prevsmpl, -1.0, 1.0);
     }
 }
