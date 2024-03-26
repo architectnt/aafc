@@ -40,28 +40,27 @@ static inline float* resampleAudio(float* input, AAFC_HEADER* header, int sample
         return input;
     }
 
-    float ratio = (float)samplerateoverride / freq;
+    double ratio = (float)samplerateoverride / freq;
+
+    int splen = samplelength / channels;
     int resampledlen = (int)(samplelength * ratio);
+    int resampledlenc = (int)(splen * ratio);
 
     float* rsmpled = (float*)malloc(resampledlen * sizeof(float));
     memset(rsmpled, 0, resampledlen);
 
     for (int ch = 0; ch < channels; ++ch) {
-        for (int i = 0; i < resampledlen; ++i) {
+        for (int i = 0; i < resampledlenc; ++i) {
             double oindx = i / ratio;
             int idx0 = (int)oindx;
             int ind = i * channels + ch;
-            if (ind < resampledlen) {
-                int y0 = Max(idx0 - 1, 0) * channels + ch;
-                int y1 = idx0 * channels + ch;
-                int y2 = Min(idx0 + 1, samplelength - 1) * channels + ch;
-                int y3 = Min(idx0 + 2, samplelength - 1) * channels + ch;
-                double mu = oindx - idx0;
-                *(rsmpled + ind) = cubic_interpolate(*(input + y0), *(input + y1), *(input + y2), *(input + y3), mu);
-            }
-            else {
-                break;
-            }
+
+            int y0 = Max(idx0 - 1, 0) * channels + ch;
+            int y1 = idx0 * channels + ch;
+            int y2 = Min(idx0 + 1, splen - 1) * channels + ch;
+            int y3 = Min(idx0 + 2, splen - 1) * channels + ch;
+            double mu = oindx - idx0;
+            *(rsmpled + ind) = cubic_interpolate(*(input + y0), *(input + y1), *(input + y2), *(input + y3), mu);
         }
     }
 
