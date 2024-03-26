@@ -14,20 +14,17 @@
 
 static inline void forceMono(float* input, AAFC_HEADER* header, unsigned char& channels, int& samplelength) {
     if (channels > 1) {
-        for (int i = 0; i < samplelength; i++)
+        int splen = samplelength / channels;
+        for (int i = 0; i < splen; i++)
         {
-            float msmpl = 0;
+            float accu = 0;
             for (int chn = 0; chn < channels; chn++)
             {
-                int ind = i * channels + chn;
-                if (ind < samplelength)
-                {
-                    msmpl += *(input + ind);
-                }
+                accu += *(input + (i * channels + chn));
             }
-            *(input + i) = msmpl / channels;
+            *(input + i) = accu / channels;
         }
-        header->samplelength = samplelength / channels;
+        header->samplelength = splen;
         header->channels = 1;
         samplelength /= channels;
         channels = 1;
