@@ -170,20 +170,8 @@ extern "C" {
             }
         }
         else {
-            //TODO: deprecate this fallback format if there is no such aafc1 file in system lollllllll
-            int* iptr = reinterpret_cast<int*>(const_cast<unsigned char*>(bytes));
-            sampleCount = *(iptr + 2);
-            short* smpraw = reinterpret_cast<short*>(const_cast<unsigned char*>(bytes + 12));
-            float* samples = (float*)malloc(sampleCount);
-
-            float* rsptr = samples;
-            short* sptr = smpraw;
-
-            for (int i = 0; i < sampleCount; rsptr++, sptr++, i++) {
-                *rsptr = *sptr * INT16_REC;
-            }
-
-            return samples;
+            printf("AAFC: invalid aafc data\n");
+            return nullptr;
         }
     }
 
