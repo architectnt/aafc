@@ -31,13 +31,15 @@ static inline void forceMono(float* input, AAFC_HEADER* header, unsigned char& c
     }
 }
 
-static inline float* resampleAudio(float* input, AAFC_HEADER* header, int samplerateoverride, int freq, unsigned char channels, int& samplelength) {
-    if (samplelength == freq) {
-        // return original data to prevent data redundancy
+static inline float* resampleAudio(float* input, AAFC_HEADER* header, int samplerateoverride, int freq, unsigned char channels, int& samplelength, float pitch = 1) {
+    if (samplerateoverride == freq && pitch == 1) {
         return input;
     }
 
-    double ratio = (float)samplerateoverride / freq;
+    if (pitch != 1 && samplerateoverride == 0)
+        samplerateoverride = freq;
+
+    double ratio = ((double)samplerateoverride / freq) / pitch;
 
     int splen = samplelength / channels;
     int resampledlen = (int)(samplelength * ratio);

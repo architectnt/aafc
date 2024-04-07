@@ -85,9 +85,9 @@ char** list_files(const char* dir, int* len) {
 }
 
 
-typedef unsigned char* (*AAFCExport)(float* samples, int freq, unsigned char channels, int samplelength, unsigned char bps, unsigned char sampletype, bool forcemono, int samplerateoverride, bool normalize);
+typedef unsigned char* (*AAFCExport)(float* samples, int freq, unsigned char channels, int samplelength, unsigned char bps, unsigned char sampletype, bool forcemono, int samplerateoverride, bool normalize, float pitch);
 
-unsigned char* ExportAAFC(float* samples, int freq, int channels, int samplelength, unsigned char bps = 16, unsigned char sampletype = 1, bool forcemono = false, int samplerateoverride = 0, bool normalize = false) {
+unsigned char* ExportAAFC(float* samples, int freq, int channels, int samplelength, unsigned char bps = 16, unsigned char sampletype = 1, bool forcemono = false, int samplerateoverride = 0, bool normalize = false, float pitch = 1) {
 #ifdef _WIN32
 	HMODULE aafcdll = LoadLibrary(LIB_AAFC_RPATH);
 	if (aafcdll == NULL) {
@@ -100,7 +100,7 @@ unsigned char* ExportAAFC(float* samples, int freq, int channels, int sampleleng
 		perror("Could not initialize AAFC functions.");
 		return NULL;
 	}
-	return aexport(samples, freq, channels, samplelength, bps, sampletype, forcemono, samplerateoverride, normalize);
+	return aexport(samples, freq, channels, samplelength, bps, sampletype, forcemono, samplerateoverride, normalize, pitch);
 #else
 	void* hndl = dlopen(LIB_AAFC_RPATH, RTLD_LAZY);
 	if (!hndl) {
@@ -117,7 +117,7 @@ unsigned char* ExportAAFC(float* samples, int freq, int channels, int sampleleng
 		return NULL;
 	}
 
-	return aexport(samples, freq, channels, samplelength, bps, sampletype, forcemono, samplerateoverride, normalize);
+	return aexport(samples, freq, channels, samplelength, bps, sampletype, forcemono, samplerateoverride, normalize, pitch);
 #endif
 }
 
@@ -216,9 +216,9 @@ char* add_fext(const char* filename, const char* extension) {
 
 
 
-inline static void finalize(bool usemono, size_t nitms, int channels, int samplerate, int resampleoverride, unsigned char outbps, unsigned char sampletype, unsigned char* out, FILE* ofile) {
+inline static void finalize(bool usemono, size_t nitms, int channels, int samplerate, int resampleoverride, unsigned char outbps, unsigned char sampletype, unsigned char* out, FILE* ofile, float pitch) {
 
-	int smplen = (usemono ? (nitms / channels) : nitms);
+	int smplen = (usemono ? ((float)nitms / channels) : nitms) / pitch;
 
 	float reratio = resampleoverride != 0 ? (float)resampleoverride / samplerate : 0;
 	int resampledlen = (int)(smplen * reratio);
@@ -281,6 +281,8 @@ int main(int argc, char* argv[]) {
 	char* dirnm;
 	unsigned char sampletype = 1;
 	int resampleoverride = 0;
+	float pitch = 1;
+
 	for (int i = 1; i < argc; i++) {
 		std::string input = std::string(argv[i]);
 		if (input == "-i" && i + 1 < argc) {
@@ -300,6 +302,9 @@ int main(int argc, char* argv[]) {
 		}
 		else if (input == "-n") {
 			normalize = true;
+		}
+		else if (input == "-p") {
+			pitch = std::stof(argv[++i], NULL);
 		}
 		else if (input == "--sfpcm") {
 			sampletype = 4;
@@ -346,7 +351,7 @@ int main(int argc, char* argv[]) {
 				printf("aud2aafc: unexpected sample count! >:(\n");
 			}
 
-			unsigned char* out = ExportAAFC(smpl, info.samplerate, info.channels, nitms, outbps, sampletype, usemono, resampleoverride, normalize);
+			unsigned char* out = ExportAAFC(smpl, info.samplerate, info.channels, nitms, outbps, sampletype, usemono, resampleoverride, normalize, pitch);
 			if (out == NULL) {
 				printf("aud2aafc: export failed >:(\n");
 				return -2;
@@ -358,7 +363,7 @@ int main(int argc, char* argv[]) {
 				return -1;
 			}
 
-			finalize(usemono, nitms, info.channels, info.samplerate, resampleoverride, outbps, sampletype, out, ofile);
+			finalize(usemono, nitms, info.channels, info.samplerate, resampleoverride, outbps, sampletype, out, ofile, pitch);
 
 			sf_close(ifl);
 			free(smpl);
@@ -391,7 +396,7 @@ int main(int argc, char* argv[]) {
 			printf("aud2aafc: unexpected sample count! >:(\n");
 		}
 
-		unsigned char* out = ExportAAFC(smpl, info.samplerate, info.channels, nitms, outbps, sampletype, usemono, resampleoverride);
+		unsigned char* out = ExportAAFC(smpl, info.samplerate, info.channels, nitms, outbps, sampletype, usemono, resampleoverride, normalize, pitch);
 		if (out == NULL) {
 			printf("aud2aafc: export failed >:(\n");
 			return -2;
@@ -403,7 +408,7 @@ int main(int argc, char* argv[]) {
 			return -1;
 		}
 
-		finalize(usemono, nitms, info.channels, info.samplerate, resampleoverride, outbps, sampletype, out, ofile);
+		finalize(usemono, nitms, info.channels, info.samplerate, resampleoverride, outbps, sampletype, out, ofile, pitch);
 
 		sf_close(ifl);
 		free(smpl);
