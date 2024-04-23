@@ -265,7 +265,6 @@ extern "C" {
 
     // compatibility layer for systems that use integers instead (useful for exporting)
     EXPORT void* aafc_int_to_float(void* arr, long size, unsigned char type) {
-        float* rst;
         float* csmpl = (float*)malloc(size * sizeof(float));
         switch (type) {
             case 8: {
@@ -273,7 +272,6 @@ extern "C" {
                 for (int i = 0; i < size; i++) {
                     *(csmpl + i) = *(sptr + i) * INT8_REC;
                 }
-                rst = csmpl;
                 break;
             }
             case 16: {
@@ -281,7 +279,6 @@ extern "C" {
                 for (int i = 0; i < size; i++) {
                     *(csmpl + i) = *(sptr + i) * INT16_REC;
                 }
-                rst = csmpl;
                 break;
             }
             case 32: {
@@ -289,7 +286,6 @@ extern "C" {
                 for (int i = 0; i < size; i++) {
                     *(csmpl + i) = *(sptr + i) * INT32_REC;
                 }
-                rst = csmpl;
                 break;
             }
             default: {
@@ -299,7 +295,7 @@ extern "C" {
             }
         }
 
-        return rst;
+        return csmpl;
     }
 
     EXPORT float* aafc_resample_data(float* input, int samplerateoverride, int freq, unsigned char channels, int& samplelength, float pitch = 1) {

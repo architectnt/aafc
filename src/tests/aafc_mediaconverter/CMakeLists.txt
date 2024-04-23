@@ -4,6 +4,7 @@ FetchContent_Declare(
   libsndfile
   GIT_REPOSITORY "https://github.com/libsndfile/libsndfile.git"
   GIT_TAG "1.2.2"
+  EXCLUDE_FROM_ALL
 )
 
 FetchContent_MakeAvailable(libsndfile)

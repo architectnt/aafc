@@ -12,7 +12,7 @@
 #ifdef _WIN32
 #define EXPORT inline __declspec(dllexport)
 #else
-#define EXPORT
+#define EXPORT inline
 #endif
 
 #define AAFC_STRING "AAFC"

@@ -1,7 +1,8 @@
 # ![aafc_logo](https://architectenterprises.net/cdn/aafc_snwavtr.png) AAFC - Lightweight audio format
 ![aafc_logo](https://architectenterprises.net/cdn/aafc_banner_proj.png)
 
-**The audio format designed for ultra-fast loading times**
+**The audio format designed for ultra-fast loading times**\
+..*and a way to bring back audio limitations* ***purposely*** 
 
 ## ![aafc_logo](https://architectenterprises.net/cdn/fusionresource/fpg_ico.png) FEATURES
 - 4, 8, 12, 16, 24, and 32-bit PCM
@@ -10,6 +11,7 @@
 - 8-bit & 16-bit "Small Float" PCM
 - Encoding & Decoding directly
 - Resampling
+- Normalizer
 
 ## Installing
 self explanatory git cloning
@@ -18,17 +20,18 @@ git clone https://github.com/architectnt/aafc.git
 ```
 
 ## Compiling
-your average cmake project :D
-(make sure you have cmake installed)
+your average cmake project **:D**\
+*(make sure you have cmake installed)*
 
 ### WINDOWS - MSVC
-This works best with Visual Studio instead of CLI. `¯\_(ツ)_/¯` cli doesn't work for architect anyways\
+This works best with Visual Studio instead of building through CLI as of now.\
 ``Open a local folder > somewhere where AAFC is located > Select Folder``\
 ``Build > Install``
 
 ### Unix-like
 ```
-mkdir build;cd build
+mkdir build
+cd build
 cmake ..
 make -j
 make install

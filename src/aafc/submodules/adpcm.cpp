@@ -13,13 +13,13 @@
 #include <iostream>
 
 // The index table of ADPCM
-constexpr int adpcm_index_table[16] = {
+constexpr signed char adpcm_index_table[16] = {
     -1, -1, -1, -1, 2, 4, 6, 8,
         -1, -1, -1, -1, 2, 4, 6, 8
 };
 
 // The step table of ADPCM
-constexpr int adpcm_step_size_table[89] = {
+constexpr short adpcm_step_size_table[89] = {
     7, 8, 9, 10, 11, 12, 13, 14, 16, 17,
         19, 21, 23, 25, 28, 31, 34, 37, 41, 45,
         50, 55, 60, 66, 73, 80, 88, 97, 107, 118,
@@ -34,18 +34,18 @@ constexpr int adpcm_step_size_table[89] = {
 static inline signed char* encode_adpcm(float* ptr, int samplelength, size_t& audsize) {
     signed char* adpcm_base = (signed char*)malloc((samplelength / 2) * sizeof(signed char));
     signed char* adpcm = adpcm_base;
-    const int* stptr = adpcm_step_size_table;
-    const int* itbptr = adpcm_index_table;
+    const short* stptr = adpcm_step_size_table;
+    const signed char* itbptr = adpcm_index_table;
 
-    int index = 0;
-    int step;
-    int delta;
+    signed char index = 0;
+    short step;
+    signed char delta;
     int diff;
     int valpred = 0;
     int vpdiff;
-    int bufferstep;
+    unsigned char bufferstep;
     int outputbuffer;
-    int sign;
+    signed char sign;
 
     step = *stptr;
 
@@ -95,14 +95,14 @@ static inline signed char* encode_adpcm(float* ptr, int samplelength, size_t& au
         if (index > 88) index = 88;
         step = *(stptr + index);
 
-
         if (bufferstep) {
             outputbuffer = (delta << 4) & 0xf0;
         }
         else {
             *adpcm++ = (delta & 0x0f) | outputbuffer;
         }
-        bufferstep = !bufferstep;
+
+        bufferstep = ~bufferstep & 0x01;
     }
 
     audsize = (samplelength * sizeof(signed char) / 2);
@@ -111,17 +111,17 @@ static inline signed char* encode_adpcm(float* ptr, int samplelength, size_t& au
 
 static inline void decode_adpcm(const unsigned char* input, float* output, int sampleCount) {
     const signed char* adpcm = reinterpret_cast<const signed char*>(input + sizeof(AAFC_HEADER));
-    const int* stptr = adpcm_step_size_table;
-    const int* itbptr = adpcm_index_table;
+    const short* stptr = adpcm_step_size_table;
+    const signed char* itbptr = adpcm_index_table;
 
-    int index = 0;
-    int step;
-    int delta;
+    signed char index = 0;
+    short step;
+    signed char delta;
     int valpred = 0;
     int vpdiff;
-    int bufferstep;
+    unsigned char bufferstep;
     int inputbuffer = 0;
-    int sign;
+    signed char sign;
 
     step = *stptr;
     bufferstep = 0;
@@ -134,7 +134,7 @@ static inline void decode_adpcm(const unsigned char* input, float* output, int s
             inputbuffer = *adpcm++;
             delta = (inputbuffer >> 4) & 0xf;
         }
-        bufferstep = !bufferstep;
+        bufferstep = ~bufferstep & 0x01;
 
         index += *(itbptr + delta);
         if (index < 0) index = 0;
