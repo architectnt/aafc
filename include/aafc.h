@@ -16,7 +16,9 @@
 #endif
 
 #define AAFC_STRING "AAFC"
-#define AAFCVERSION 2;
+
+// FORMATTED AS 'big SMALL TINY'
+#define AAFCVERSION 21;
 
 struct AAFC_HEADER {
     char headr[5];

@@ -205,7 +205,7 @@ void drawProgressBar(int elapsedSeconds, int totalSeconds) {
 int main(int argc, char* argv[]) {
 	if(argc > 1)
 	{
-		printf("loading AAFC file..\n");
+		printf("loading AAFC file.. ");
 
 		unsigned char* aafcfile = ReadFile(argv[1]);
 		adata = GrabHeader(aafcfile);
@@ -217,7 +217,27 @@ int main(int argc, char* argv[]) {
 
 		totalDurationInSeconds = (adata->samplelength / adata->channels) / adata->freq;
 		
-		printf("Loaded! Samplerate: %d, Channels: %d\n", adata->freq, adata->channels);
+		const char* stypeformat = "unknown";
+
+		switch (adata->sampletype) {
+			case 1:
+				stypeformat = "PCM";
+				break;
+			case 2:
+				stypeformat = "ADPCM";
+				break;
+			case 3:
+				stypeformat = "DPCM";
+				break;
+			case 4:
+				stypeformat = "SFPCM";
+				break;
+			default:
+				stypeformat = "unformated";
+				break;
+		}
+
+		printf("Loaded!\n\n-METADATA-\n[Sample Frequency: %d | Channels: %d | Sample Type: %s | AAFC VERSION EXPORTED: AAFC v%d] \n\n", adata->freq, adata->channels, stypeformat, adata->version);
 	}
 	else {
 		perror("aafc player requires a specifed path argument.");

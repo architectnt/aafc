@@ -25,7 +25,7 @@ extern "C" {
             return reinterpret_cast<AAFC_HEADER*>(const_cast<unsigned char*>(bytes));
         }
         else {
-            return reinterpret_cast<int*>(const_cast<unsigned char*>(bytes));
+            return NULL;
         }
     }
 
@@ -212,7 +212,7 @@ extern "C" {
             }
         }
         else {
-            printf("AAFC2 does not support chunk reading for older AAFC versions.");
+            printf("AAFC2 does not support chunk reading for prior AAFC versions.");
             for (int i = 0; i < end; i++)
             {
                 samples[i] = 0;

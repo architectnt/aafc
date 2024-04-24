@@ -121,7 +121,7 @@ float dminif(unsigned char val) {
 }
 
 bool header_valid(const unsigned char* bytes) {
-    return *bytes == 'A' && *(bytes + 1) == 'A' && *(bytes + 2) == 'F' && *(bytes + 3) == 'C';
+    return *bytes == 'A' && *(bytes + 1) == 'A' && *(bytes + 2) == 'F' && *(bytes + 3) == 'C' && *((int*)bytes + 2) <= AAFCVERSION;
 }
 
 // this is what happens when you make A SINGLE STRUCT optional in your code.
