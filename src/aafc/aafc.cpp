@@ -212,7 +212,7 @@ extern "C" {
             }
         }
         else {
-            printf("AAFC2 does not support chunk reading for prior AAFC versions.");
+            printf("AAFC does not support chunk reading for AAFC versions before AAFC v2.");
             for (int i = 0; i < end; i++)
             {
                 samples[i] = 0;
