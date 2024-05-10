@@ -45,16 +45,16 @@ static inline void* encode_pcm(float* ptr, int samplelength, size_t& audsize, un
             return stbs8;
         }
         case 10:{
-            size_t bsize = (samplelength * 5 + 3) / 4;
+            size_t bsize = ((samplelength + 3) / 4) * 5;
             unsigned char* stbs10 = (unsigned char*)malloc(bsize);
             unsigned char* sptr = stbs10;
 
             // i don't know what to say about this
-            for (int i = 0; i < samplelength; ptr += 4, i += 4) {
-                int sample1 = static_cast<int>(round(Clamp(*ptr * 511.0f, -512.0f, 511.0f)));
-                int sample2 = (i + 1 < samplelength) ? static_cast<int>(round(Clamp(*(ptr + 1) * 511.0f, -512.0f, 511.0f))) : 0;
-                int sample3 = (i + 2 < samplelength) ? static_cast<int>(round(Clamp(*(ptr + 2) * 511.0f, -512.0f, 511.0f))) : 0;
-                int sample4 = (i + 3 < samplelength) ? static_cast<int>(round(Clamp(*(ptr + 3) * 511.0f, -512.0f, 511.0f))) : 0;
+            for (int i = 0; i < samplelength; i += 4) {
+                int sample1 = static_cast<int>(round(Clamp(*(ptr + i) * 511.0f, -512.0f, 511.0f)));
+                int sample2 = (i + 1 < samplelength) ? static_cast<int>(round(Clamp(*(ptr + i + 1) * 511.0f, -512.0f, 511.0f))) : 0;
+                int sample3 = (i + 2 < samplelength) ? static_cast<int>(round(Clamp(*(ptr + i + 2) * 511.0f, -512.0f, 511.0f))) : 0;
+                int sample4 = (i + 3 < samplelength) ? static_cast<int>(round(Clamp(*(ptr + i + 3) * 511.0f, -512.0f, 511.0f))) : 0;
 
                 *sptr++ = (sample1 & 0xFF);
                 *sptr++ = ((sample1 >> 8) & 0x03) | ((sample2 & 0x3F) << 2);
@@ -62,27 +62,23 @@ static inline void* encode_pcm(float* ptr, int samplelength, size_t& audsize, un
                 *sptr++ = ((sample3 >> 4) & 0x3F) | ((sample4 & 0x03) << 6);
                 *sptr++ = (sample4 >> 2);
             }
+
             audsize = bsize;
             return stbs10;
         }
         case 12: {
-            size_t bsize = (samplelength * 3) / 2;
+            size_t bsize = ((samplelength + 1) / 2) * 3;
             char* stbs12 = (char*)malloc(bsize * sizeof(char));
             char* sptr = stbs12;
 
-            for (int i = 0; i < samplelength; ptr += 2, i += 2) {
-                int sample1 = static_cast<int>(Clamp(*ptr * 2047.0f, -2048.0f, 2047.0f));
-                if (sample1 < 0) {
-                    sample1 = 0xFFF + sample1 + 1;
-                }
+            for (int i = 0; i < samplelength; i += 2) {
+                int sample1 = static_cast<int>(Clamp(*(ptr + i) * 2047.0f, -2048.0f, 2047.0f));
+                if (sample1 < 0) sample1 = 0xFFF + sample1 + 1;
 
-                int sample2 = 0;
-                if (i + 1 < samplelength) {
-                    sample2 = static_cast<int>(Clamp(*(ptr + 1) * 2047.0f, -2048.0f, 2047.0f));
-                    if (sample2 < 0) {
-                        sample2 = 0xFFF + sample2 + 1;
-                    }
-                }
+
+                int sample2 = (i < samplelength) ? static_cast<int>(Clamp(*(ptr + i + 1) * 2047.0f, -2048.0f, 2047.0f)) : 0;
+                if (sample2 < 0) sample1 = 0xFFF + sample1 + 1;
+
                 *sptr++ = (sample1 & 0xFF);
                 *sptr++ = ((sample1 >> 8) & 0x0F) | ((sample2 & 0x0F) << 4);
                 *sptr++ = (sample2 >> 4);

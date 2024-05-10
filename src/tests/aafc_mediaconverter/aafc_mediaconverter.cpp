@@ -234,16 +234,16 @@ inline static void finalize(bool usemono, size_t nitms, int channels, int sample
 		bsize = fnsplen * sizeof(unsigned char);
 		break;
 	case 10:
-		bsize = ((fnsplen * 5 + 3) / 4);
+		bsize = ((fnsplen + 3) / 4) * 5;
 		break;
 	case 12:
-		bsize = ((fnsplen * 3) / 2);
+		bsize = ((fnsplen + 1) / 2) * 3;
 		break;
 	case 16:
 		bsize = fnsplen * sizeof(short);
 		break;
 	case 24:
-		bsize = fnsplen * 3ULL; // why use sizeof when you know how big 24-bit is
+		bsize = fnsplen * 3; // why use sizeof when you know how big 24-bit is
 		break;
 	case 32:
 		bsize = fnsplen * sizeof(float);
