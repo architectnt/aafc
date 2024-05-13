@@ -1,5 +1,5 @@
 # ![aafc_logo](https://architectenterprises.net/cdn/aafc_snwavtr.png) AAFC - Lightweight audio format
-![aafc_logo](https://architectenterprises.net/cdn/aafc_banner_proj.png)
+![aafc_logo](https://architectenterprises.net/cdn/aafc_lgo.svg)
 
 **The audio format designed for ultra-fast loading times**\
 ..*and a way to bring back audio limitations* ***purposely*** 
