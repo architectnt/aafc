@@ -114,7 +114,7 @@ AAFCOUTPUT ExportAAFC(float* samples, int freq, int channels, int samplelength, 
 	if ((error = dlerror()) != NULL) {
 		fprintf(stderr, "%s\n", error);
 		dlclose(hndl);
-		return NULL;
+		return { nullptr, 0 };
 	}
 
 	return aexport(samples, freq, channels, samplelength, bps, sampletype, forcemono, samplerateoverride, normalize, pitch);
