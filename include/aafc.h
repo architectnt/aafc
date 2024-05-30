@@ -30,7 +30,11 @@ struct AAFC_HEADER {
     unsigned char sampletype;
 };
 
-
+struct AAFCOUTPUT
+{
+    unsigned char* data;
+    size_t size;
+};
 
 // Compares if the input is a valid AAFC format
 bool header_valid(const unsigned char* bytes);

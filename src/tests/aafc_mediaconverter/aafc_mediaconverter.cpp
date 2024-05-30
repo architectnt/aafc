@@ -85,27 +85,27 @@ char** list_files(const char* dir, int* len) {
 }
 
 
-typedef unsigned char* (*AAFCExport)(float* samples, int freq, unsigned char channels, int samplelength, unsigned char bps, unsigned char sampletype, bool forcemono, int samplerateoverride, bool normalize, float pitch);
+typedef AAFCOUTPUT (*AAFCExport)(float* samples, int freq, unsigned char channels, int samplelength, unsigned char bps, unsigned char sampletype, bool forcemono, int samplerateoverride, bool normalize, float pitch);
 
-unsigned char* ExportAAFC(float* samples, int freq, int channels, int samplelength, unsigned char bps = 16, unsigned char sampletype = 1, bool forcemono = false, int samplerateoverride = 0, bool normalize = false, float pitch = 1) {
+AAFCOUTPUT ExportAAFC(float* samples, int freq, int channels, int samplelength, unsigned char bps = 16, unsigned char sampletype = 1, bool forcemono = false, int samplerateoverride = 0, bool normalize = false, float pitch = 1) {
 #ifdef _WIN32
 	HMODULE aafcdll = LoadLibrary(LIB_AAFC_RPATH);
 	if (aafcdll == NULL) {
 		perror("Core AAFC DLL not found!");
-		return NULL;
+		return {nullptr, 0};
 	}
 
 	AAFCExport aexport = (AAFCExport)GetProcAddress(aafcdll, "aafc_export");
 	if (aexport == NULL) {
 		perror("Could not initialize AAFC functions.");
-		return NULL;
+		return { nullptr, 0 };
 	}
 	return aexport(samples, freq, channels, samplelength, bps, sampletype, forcemono, samplerateoverride, normalize, pitch);
 #else
 	void* hndl = dlopen(LIB_AAFC_RPATH, RTLD_LAZY);
 	if (!hndl) {
 		fprintf(stderr, "%s\n", dlerror());
-		return NULL;
+		return { nullptr, 0 };
 	}
 	dlerror();
 
@@ -216,58 +216,9 @@ char* add_fext(const char* filename, const char* extension) {
 
 
 
-inline static void finalize(bool usemono, size_t nitms, int channels, int samplerate, int resampleoverride, unsigned char outbps, unsigned char sampletype, unsigned char* out, FILE* ofile, float pitch) {
-
-	int smplen = (usemono ? ((float)nitms / channels) : nitms) / pitch;
-
-	float reratio = resampleoverride != 0 ? (float)resampleoverride / samplerate : 0;
-	int resampledlen = (int)(smplen * reratio);
-
-	size_t fnsplen = resampleoverride != 0 ? resampledlen : smplen;
-
-	size_t bsize = sizeof(short);
-	switch (outbps) {
-	case 4:
-		bsize = fnsplen / 2;
-		break;
-	case 8:
-		bsize = fnsplen * sizeof(unsigned char);
-		break;
-	case 10:
-		bsize = ((fnsplen + 3) / 4) * 5;
-		break;
-	case 12:
-		bsize = ((fnsplen + 1) / 2) * 3;
-		break;
-	case 16:
-		bsize = fnsplen * sizeof(short);
-		break;
-	case 24:
-		bsize = fnsplen * 3; // why use sizeof when you know how big 24-bit is
-		break;
-	case 32:
-		bsize = fnsplen * sizeof(float);
-		break;
-	}
-
-	size_t bitm = 0;
-	switch (sampletype) {
-	case 1:
-		bitm = sizeof(AAFC_HEADER) + bsize;
-		break;
-	case 2:
-		bitm = sizeof(AAFC_HEADER) + fnsplen / 2;
-		break;
-	case 3:
-		bitm = sizeof(AAFC_HEADER) + fnsplen / 8;
-		break;
-	case 4:
-		bitm = sizeof(AAFC_HEADER) + bsize;
-		break;
-	}
-
-
-	fwrite(out, sizeof(unsigned char), bitm, ofile);
+inline static void finalize(bool usemono, size_t nitms, int channels, int samplerate, int resampleoverride, unsigned char outbps, unsigned char sampletype, AAFCOUTPUT out, FILE* ofile, float pitch) {
+	// deletus everything when you dont need to calculate output externally :D
+	fwrite(out.data, sizeof(unsigned char), out.size, ofile);
 }
 
 int main(int argc, char* argv[]) {
@@ -351,8 +302,8 @@ int main(int argc, char* argv[]) {
 				printf("aud2aafc: unexpected sample count! >:(\n");
 			}
 
-			unsigned char* out = ExportAAFC(smpl, info.samplerate, info.channels, nitms, outbps, sampletype, usemono, resampleoverride, normalize, pitch);
-			if (out == NULL) {
+			AAFCOUTPUT out = ExportAAFC(smpl, info.samplerate, info.channels, nitms, outbps, sampletype, usemono, resampleoverride, normalize, pitch);
+			if (out.data == NULL) {
 				printf("aud2aafc: export failed >:(\n");
 				return -2;
 			}
@@ -396,8 +347,8 @@ int main(int argc, char* argv[]) {
 			printf("aud2aafc: unexpected sample count! >:(\n");
 		}
 
-		unsigned char* out = ExportAAFC(smpl, info.samplerate, info.channels, nitms, outbps, sampletype, usemono, resampleoverride, normalize, pitch);
-		if (out == NULL) {
+		AAFCOUTPUT out = ExportAAFC(smpl, info.samplerate, info.channels, nitms, outbps, sampletype, usemono, resampleoverride, normalize, pitch);
+		if (out.data == NULL) {
 			printf("aud2aafc: export failed >:(\n");
 			return -2;
 		}

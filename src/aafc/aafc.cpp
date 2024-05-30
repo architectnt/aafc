@@ -29,20 +29,22 @@ extern "C" {
         }
     }
 
-    EXPORT unsigned char* aafc_export(float* samples, int freq, unsigned char channels, int samplelength, unsigned char bps = 16, unsigned char sampletype = 1, bool forcemono = false, int samplerateoverride = 0, bool nm = false, float pitch = 1) {
+    EXPORT AAFCOUTPUT aafc_export(float* samples, int freq, unsigned char channels, int samplelength, unsigned char bps = 16, unsigned char sampletype = 1, bool forcemono = false, int samplerateoverride = 0, bool nm = false, float pitch = 1) {
+        AAFCOUTPUT output;
+
         if (!samples) {
-            return nullptr;
+            return { nullptr, 0 };
         }
 
         AAFC_HEADER* header = (AAFC_HEADER*)malloc(sizeof(AAFC_HEADER));
         if (!header) {
             printf("AAFC FATAL ERROR: could not allocate a new header.\n");
-            return nullptr;
+            return { nullptr, 0 };
         }
         
         if (!create_header(header, freq, channels, samplelength, bps, sampletype)) {
             printf("AAFC FATAL ERROR: could not create header\n");
-            return nullptr;
+            return { nullptr, 0 };
         }
 
         float* rsptr = samples;
@@ -88,7 +90,7 @@ extern "C" {
                     free(header);
                     free(rsptr);
                     printf("AAFC ERROR: Invalid sample type!\n");
-                    return nullptr;
+                    return { nullptr, 0 };
                 }
             }
         }
@@ -96,10 +98,11 @@ extern "C" {
             free(header);
             free(rsptr);
             printf("AAFC ERROR: samplelength cannot be below 1.\n");
-            return nullptr;
+            return { nullptr, 0 };
         }
 
         size_t totalDataSize = sizeof(AAFC_HEADER) + audioDataSize;
+
         if (smpl) {
             unsigned char* rst = (unsigned char*)malloc(totalDataSize);
 
@@ -112,12 +115,14 @@ extern "C" {
                 free(rsptr);
             }
 
-            return rst;
+            output.data = rst;
+            output.size = totalDataSize;
+            return output;
         }
         else {
             free(rsptr);
             free(header);
-            return NULL;
+            return { nullptr, 0 };
         }
     }
 
