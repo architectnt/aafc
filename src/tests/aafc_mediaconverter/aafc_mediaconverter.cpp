@@ -215,12 +215,6 @@ char* add_fext(const char* filename, const char* extension) {
 }
 
 
-
-inline static void finalize(bool usemono, size_t nitms, int channels, int samplerate, int resampleoverride, unsigned char outbps, unsigned char sampletype, AAFCOUTPUT out, FILE* ofile, float pitch) {
-	// deletus everything when you dont need to calculate output externally :D
-	fwrite(out.data, sizeof(unsigned char), out.size, ofile);
-}
-
 int main(int argc, char* argv[]) {
 	const char* fn = "input.wav";
 	unsigned char outbps = 16;
@@ -314,7 +308,7 @@ int main(int argc, char* argv[]) {
 				return -1;
 			}
 
-			finalize(usemono, nitms, info.channels, info.samplerate, resampleoverride, outbps, sampletype, out, ofile, pitch);
+			fwrite(out.data, sizeof(unsigned char), out.size, ofile);
 
 			sf_close(ifl);
 			free(smpl);
@@ -359,7 +353,7 @@ int main(int argc, char* argv[]) {
 			return -1;
 		}
 
-		finalize(usemono, nitms, info.channels, info.samplerate, resampleoverride, outbps, sampletype, out, ofile, pitch);
+		fwrite(out.data, sizeof(unsigned char), out.size, ofile);
 
 		sf_close(ifl);
 		free(smpl);

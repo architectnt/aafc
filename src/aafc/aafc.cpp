@@ -30,7 +30,6 @@ extern "C" {
     }
 
     EXPORT AAFCOUTPUT aafc_export(float* samples, int freq, unsigned char channels, int samplelength, unsigned char bps = 16, unsigned char sampletype = 1, bool forcemono = false, int samplerateoverride = 0, bool nm = false, float pitch = 1) {
-        AAFCOUTPUT output;
 
         if (!samples) {
             return { nullptr, 0 };
@@ -114,9 +113,7 @@ extern "C" {
             if (rsptr != samples) {
                 free(rsptr);
             }
-
-            output.data = rst;
-            output.size = totalDataSize;
+            AAFCOUTPUT output {rst, totalDataSize};
             return output;
         }
         else {
@@ -127,10 +124,9 @@ extern "C" {
     }
 
     EXPORT float* aafc_import(const unsigned char* bytes) {
-        int sampleCount = 0;
         if (header_valid(bytes)) {
             AAFC_HEADER* header = reinterpret_cast<AAFC_HEADER*>(const_cast<unsigned char*>(bytes));
-            sampleCount = header->samplelength;
+            int sampleCount = header->samplelength;
             int bps = header->bps;
             int sampletype = header->sampletype;
 
