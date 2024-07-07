@@ -12,7 +12,6 @@
 - 8-bit & 16-bit "Small Float" PCM
 - Encoding & Decoding directly
 - Resampling
-- Filetables
 - Normalizer
 
 ## Installing
