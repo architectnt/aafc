@@ -12,17 +12,9 @@
 
 
 #include <portaudio.h>
-#include <stdlib.h>
 #include <iostream>
-#include <fstream>
-#include "aafc.h"
-#include "tests.h"
-
-#ifdef _WIN32
-#include <windows.h>
-#else
-#include <dlfcn.h>
-#endif
+#include <aafc.h>
+#include <tests.h>
 
 int sysfreq;
 
@@ -31,110 +23,6 @@ float* asmpls;
 double ipos = 0;
 bool finished = false;
 int totalDurationInSeconds;
-
-typedef float* (*AAFCImport)(const unsigned char*);
-typedef AAFC_HEADER* (*AAFCGetHeader)(const unsigned char*);
-
-unsigned char* ReadFile(const char* path) {
-	FILE* file = fopen(path, "rb");
-	if (file == NULL) {
-		perror("cant open aafc file :(");
-		return NULL;
-	}
-
-	fseek(file, 0, SEEK_END);
-	long fsize = ftell(file);
-	fseek(file, 0, SEEK_SET);
-
-	unsigned char* data = (unsigned char*)malloc(fsize);
-	if (data == NULL) {
-		perror("MEMORY ALLOC INTERNAL ERROR");
-		fclose(file);
-		return NULL;
-	}
-
-	size_t byrd = fread(data, 1, fsize, file);
-	if (byrd != fsize) {
-		perror("error trying to load the file");
-		fclose(file);
-		return NULL;
-	}
-
-	fclose(file);
-	return data;
-}
-
-float* LoadAAFC(const unsigned char* data) {
-#ifdef _WIN32
-	HMODULE aafcdll = LoadLibrary(LIB_AAFC_RPATH);
-	if (aafcdll == NULL) {
-		perror("Core AAFC DLL not found!");
-		return NULL;
-	}
-
-	AAFCImport aimport = (AAFCImport)GetProcAddress(aafcdll, "aafc_import");
-	if (aimport == NULL) {
-		perror("Could not initialize AAFC functions.");
-		return NULL;
-	}
-	return aimport(data);
-#else
-	void* hndl = dlopen(LIB_AAFC_RPATH, RTLD_LAZY);
-	if (!hndl) {
-		fprintf(stderr, "%s\n", dlerror());
-		return NULL;
-	}
-	dlerror();
-
-	AAFCImport aimport = (AAFCImport)dlsym(hndl, "aafc_import");
-	char* error;
-	if ((error = dlerror()) != NULL) {
-		fprintf(stderr, "%s\n", error);
-		dlclose(hndl);
-		return NULL;
-	}
-
-	return aimport(data);
-#endif
-}
-
-AAFC_HEADER* GrabHeader(const unsigned char* data) {
-#ifdef _WIN32
-	HMODULE aafcdll = LoadLibrary(LIB_AAFC_RPATH);
-	if (aafcdll == NULL) {
-		perror("Core AAFC DLL not found!");
-		AAFC_HEADER* nullhdr{};
-		return nullhdr;
-	}
-
-	AAFCGetHeader aheader = (AAFCGetHeader)GetProcAddress(aafcdll, "aafc_getheader");
-	if (aheader == NULL) {
-		perror("Could not initialize AAFC functions.");
-		AAFC_HEADER* nullhdr{};
-		return nullhdr;
-	}
-	return aheader(data);
-#else
-	void* hndl = dlopen(LIB_AAFC_RPATH, RTLD_LAZY);
-	if (!hndl) {
-		fprintf(stderr, "%s\n", dlerror());
-		AAFC_HEADER* nullhdr{};
-		return nullhdr;
-	}
-	dlerror();
-
-	AAFCGetHeader aheader = (AAFCGetHeader)dlsym(hndl, "aafc_getheader");
-	char* error;
-	if ((error = dlerror()) != NULL) {
-		fprintf(stderr, "%s\n", error);
-		dlclose(hndl);
-		AAFC_HEADER* nullhdr{};
-		return nullhdr;
-	}
-
-	return aheader(data);
-#endif
-}
 
 static int AudioHandler(const void* inputBuffer, void* outputBuffer, unsigned long framesPerBuffer, const PaStreamCallbackTimeInfo* timeInfo, PaStreamCallbackFlags statusFlags, void* userData) {
 	float* outspl = (float*)outputBuffer;
@@ -207,17 +95,19 @@ int main(int argc, char* argv[]) {
 	{
 		printf("loading AAFC file.. ");
 
-		unsigned char* aafcfile = ReadFile(argv[1]);
-		adata = GrabHeader(aafcfile);
-		asmpls = LoadAAFC(aafcfile);
-		if (asmpls == NULL) {
+		AAFCOUTPUT aafcfile = ReadFile(argv[1]);
+		AAFCDECOUTPUT outp = LoadAAFC(aafcfile.data);
+		if (outp.data == NULL) {
 			fprintf(stderr, "Failed to load AAFC\n");
 			return -1;
 		}
 
+		asmpls = outp.data;
+		adata = &outp.header;
+
 		totalDurationInSeconds = (adata->samplelength / adata->channels) / adata->freq;
 		
-		const char* stypeformat = "unknown";
+		const char* stypeformat;
 
 		switch (adata->sampletype) {
 			case 1:
@@ -231,6 +121,9 @@ int main(int argc, char* argv[]) {
 				break;
 			case 4:
 				stypeformat = "SFPCM";
+				break;
+			case 5:
+				stypeformat = "uLaw";
 				break;
 			default:
 				stypeformat = "unformated";

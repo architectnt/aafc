@@ -5,12 +5,14 @@
 ..*and a way to bring back audio limitations* ***purposely*** 
 
 ## ![aafc_logo](https://architectenterprises.net/cdn/fusionresource/fpg_ico.png) FEATURES
-- 4, 8, 12, 16, 24, and 32-bit PCM
+- 1, 4, 8, 12, 16, 24, and 32-bit PCM
+- 8-bit uLaw PCM
 - 4-bit ADPCM
 - Single bit Delta PCM
 - 8-bit & 16-bit "Small Float" PCM
 - Encoding & Decoding directly
 - Resampling
+- Filetables
 - Normalizer
 
 ## Installing

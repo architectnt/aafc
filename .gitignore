@@ -2,6 +2,7 @@
 
 .vscode
 .vs
-/bin/*
+bin
 out
+build
 CMakePresets.json

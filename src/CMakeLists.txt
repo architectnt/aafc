@@ -30,7 +30,7 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 add_subdirectory(aafc)
 add_subdirectory(tests)
-set(commands aafc plyr aud2aafc)
+set(commands aafc_shared plyr aud2aafc aftcreator)
 
 if(WIN32)
     set(PLATFORM_FOLDER "win")
@@ -49,4 +49,10 @@ install(TARGETS ${commands}
     RUNTIME DESTINATION ${CMAKE_SOURCE_DIR}/bin/${PLATFORM_FOLDER}
     LIBRARY DESTINATION ${CMAKE_SOURCE_DIR}/bin/${PLATFORM_FOLDER}
     ARCHIVE DESTINATION ""
+)
+
+install(TARGETS aafc_static
+    ARCHIVE DESTINATION ${CMAKE_SOURCE_DIR}/bin/${PLATFORM_FOLDER}
+    LIBRARY DESTINATION ${CMAKE_SOURCE_DIR}/bin/${PLATFORM_FOLDER}
+    RUNTIME DESTINATION ${CMAKE_SOURCE_DIR}/bin/${PLATFORM_FOLDER}
 )

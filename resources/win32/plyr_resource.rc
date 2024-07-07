@@ -19,11 +19,11 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Architect Enterprises"
             VALUE "FileDescription", "AAFC Player"
-            VALUE "FileVersion", "2.1.2.0"
-            VALUE "InternalName", "Player"
+            VALUE "FileVersion", "2.1.4.0"
+            VALUE "InternalName", "AAFCPlayer"
             VALUE "OriginalFilename", "plyr.exe"
             VALUE "ProductName", "AAFC"
-            VALUE "ProductVersion", "2.1.2.0"
+            VALUE "ProductVersion", "2.1.4.0"
         END
     END
     BLOCK "VarFileInfo"
