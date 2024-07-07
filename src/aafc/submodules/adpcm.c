@@ -1,0 +1,144 @@
+/*
+
+    IMA-ADPCM 4-bit encoding & decoding optimized implementation
+
+
+    Copyright (C) 2024 Architect Enterprises
+    This file is a part of AAFC and is licenced under the MIT Licence.
+*/
+
+#include <aafc.h>
+#include "adpcm.h"
+
+inline signed char* encode_adpcm(float* ptr, int samplelength, size_t* audsize) {
+    signed char* adpcm_base = (signed char*)malloc((samplelength / 2) * sizeof(signed char));
+    signed char* adpcm = adpcm_base;
+    const short* stptr = adpcm_step_size_table;
+    const signed char* itbptr = adpcm_index_table;
+
+    signed char index = 0;
+    short step;
+    signed char delta;
+    int diff;
+    int valpred = 0;
+    int vpdiff;
+    unsigned char bufferstep;
+    int outputbuffer;
+    signed char sign;
+
+    step = *stptr;
+
+    bufferstep = 1;
+
+    for (int i = 0; i < samplelength; ptr++, i++) {
+        short sample = (short)Clamp(*ptr * 32767.0f, -32768.0f, 32767.0f);
+
+        diff = sample - valpred;
+        sign = (diff < 0) ? 8 : 0;
+        if (sign) diff = (-diff);
+
+        delta = 0;
+        vpdiff = (step >> 3);
+
+        if (diff >= step) {
+            delta = 4;
+            diff -= step;
+            vpdiff += step;
+        }
+        step >>= 1;
+        if (diff >= step) {
+            delta |= 2;
+            diff -= step;
+            vpdiff += step;
+        }
+        step >>= 1;
+        if (diff >= step) {
+            delta |= 1;
+            vpdiff += step;
+        }
+
+        if (sign)
+            valpred -= vpdiff;
+        else
+            valpred += vpdiff;
+
+        if (valpred > 32767)
+            valpred = 32767;
+        else if (valpred < -32768)
+            valpred = -32768;
+
+        delta |= sign;
+
+        index += *(itbptr + delta);
+        if (index < 0) index = 0;
+        if (index > 88) index = 88;
+        step = *(stptr + index);
+
+        if (bufferstep) {
+            outputbuffer = (delta << 4) & 0xf0;
+        }
+        else {
+            *adpcm++ = (delta & 0x0f) | outputbuffer;
+        }
+
+        bufferstep = ~bufferstep & 0x01;
+    }
+
+    *audsize = (samplelength * sizeof(signed char) / 2);
+    return adpcm_base;
+}
+
+inline void decode_adpcm(const unsigned char* input, float* output, int sampleCount) {
+    const signed char* adpcm = (const signed char*)(input + sizeof(AAFC_HEADER));
+    const short* stptr = adpcm_step_size_table;
+    const signed char* itbptr = adpcm_index_table;
+
+    signed char index = 0;
+    short step;
+    signed char delta;
+    int valpred = 0;
+    int vpdiff;
+    unsigned char bufferstep;
+    int inputbuffer = 0;
+    signed char sign;
+
+    step = *stptr;
+    bufferstep = 0;
+
+    for (int i = 0; i < sampleCount; i++) {
+        if (bufferstep) {
+            delta = inputbuffer & 0xf;
+        }
+        else {
+            inputbuffer = *adpcm++;
+            delta = (inputbuffer >> 4) & 0xf;
+        }
+        bufferstep = ~bufferstep & 0x01;
+
+        index += *(itbptr + delta);
+        if (index < 0) index = 0;
+        if (index > 88) index = 88;
+
+        sign = delta & 8;
+        delta = delta & 7;
+
+        vpdiff = step >> 3;
+        if (delta & 4) vpdiff += step;
+        if (delta & 2) vpdiff += step >> 1;
+        if (delta & 1) vpdiff += step >> 2;
+
+        if (sign)
+            valpred -= vpdiff;
+        else
+            valpred += vpdiff;
+
+        if (valpred > 32767)
+            valpred = 32767;
+        else if (valpred < -32768)
+            valpred = -32768;
+
+        step = *(stptr + index);
+
+        *output++ = valpred * INT16_REC;
+    }
+}
