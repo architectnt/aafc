@@ -63,12 +63,8 @@ inline void decode_dpcm(const unsigned char* input, float* output, int sampleCou
     float prevsmpl = 0;
     float delta = 0.0256;
     for (int i = 0; i < sampleCount; i++) {
-        int byind = i / 8;
-        int bitnd = i % 8;
-        int b = (*(smpraw + byind) >> bitnd) & 1;
-
-        prevsmpl += (b == 0) ? -delta : delta;
-
+        int b = (*(smpraw + (i / 8)) >> (i % 8)) & 1;
+        prevsmpl += !b ? -delta : delta;
         *output++ = Clamp(prevsmpl, -1.0, 1.0);
     }
 }

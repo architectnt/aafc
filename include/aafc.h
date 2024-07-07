@@ -15,6 +15,8 @@
 #include <aafc/helpers.h>
 #include <aafc/common.h>
 
+#define HAVE_AAFC
+
 #ifdef _WIN32
     #ifdef BUILDING_SHARED_LIBRARY
         #define EXPORT inline __declspec(dllexport)

@@ -148,7 +148,7 @@ inline void decode_pcm(const unsigned char* input, float* output, int sampleCoun
             float mixvol = 0.4;
             for (int i = 0; i < sampleCount; i++) {
                 int b = (*(smpraw + (i / 8)) >> (i % 8)) & 1;
-                *output++ = (b) ? -mixvol : mixvol;
+                *output++ = !b ? -mixvol : mixvol;
             }
             break;
         }
