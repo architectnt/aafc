@@ -1,3 +1,11 @@
+/*
+    
+    uLaw
+
+    Copyright (C) 2024 Architect Enterprises
+    This file is a part of AAFC and is licenced under the MIT Licence.
+*/
+
 #include <aafc.h>
 #include "ulaw.h"
 
