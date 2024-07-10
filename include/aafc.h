@@ -15,7 +15,7 @@
 #include <aafc/helpers.h>
 #include <aafc/common.h>
 
-#define HAVE_AAFC
+#define HAVE_AAFC_CORE
 
 #ifdef _WIN32
     #ifdef BUILDING_SHARED_LIBRARY
@@ -35,10 +35,10 @@
 
 typedef struct {
     char headr[5];
-    int version;
-    int freq;
+    unsigned int version;
+    unsigned int freq;
     unsigned char channels;
-    int samplelength;
+    unsigned int samplelength;
     unsigned char bps;
     unsigned char sampletype;
 } AAFC_HEADER;

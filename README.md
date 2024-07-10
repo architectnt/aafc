@@ -40,6 +40,9 @@ make install
 
 ## AAFC TOOLS
 
+*You'll need to enable the ``ENABLE_AAFC_TOOLS`` option.*
+
+
 ### plyr
 Small player for debugging audio files\
 ``./plyr <path-to-aafcfile>``
