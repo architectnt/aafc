@@ -10,7 +10,7 @@
 #include <aafc.h>
 #include "modifiers.h"
 
-static inline void forceMono(float* input, AAFC_HEADER* header, unsigned char* channels, int* samplelength) {
+inline void forceMono(float* input, AAFC_HEADER* header, unsigned char* channels, int* samplelength) {
     if (*channels > 1) {
         int splen = *samplelength / *channels;
         for (int i = 0; i < splen; i++)
@@ -29,7 +29,7 @@ static inline void forceMono(float* input, AAFC_HEADER* header, unsigned char* c
     }
 }
 
-static inline float* resampleAudio(float* input, AAFC_HEADER* header, int samplerateoverride, int freq, unsigned char channels, int* samplelength, float pitch) {
+inline float* resampleAudio(float* input, AAFC_HEADER* header, int samplerateoverride, int freq, unsigned char channels, int* samplelength, float pitch) {
     if (pitch == 0) {
         pitch = 1;
     }
@@ -74,7 +74,7 @@ static inline float* resampleAudio(float* input, AAFC_HEADER* header, int sample
     return rsmpled;
 }
 
-static inline float* force_independent_channels(float* input, unsigned char channels, int samplelength) {
+inline float* force_independent_channels(float* input, unsigned char channels, int samplelength) {
     float* output = (float*)malloc(samplelength * sizeof(float));
 
     int splen = samplelength / channels;
@@ -87,7 +87,7 @@ static inline float* force_independent_channels(float* input, unsigned char chan
     return output;
 }
 
-static inline float* normalize(float* input, int len) {
+inline float* normalize(float* input, int len) {
     if (input == NULL || len <= 0) {
         return input; // keep original
     }
