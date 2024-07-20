@@ -24,7 +24,11 @@
         #define EXPORT
     #endif
 #else
+    #if defined __GNUC__ || __clang__
+    #define EXPORT __attribute__((visibility("default")))
+    #else
     #define EXPORT
+    #endif
 #endif
 
 #define AAFC_STRING "AAFC"
@@ -92,7 +96,7 @@ bool header_valid(const unsigned char* bytes);
 // Compares if the input is a valid AAFC FILE TABLE format
 bool aftheader_valid(const unsigned char* bytes);
 
-bool create_header(AAFC_HEADER* h, int freq, unsigned char channels, int samplelength, unsigned char bps, unsigned char sampletype);
+bool create_header(AAFC_HEADER* h, unsigned int freq, unsigned char channels, unsigned int samplelength, unsigned char bps, unsigned char sampletype);
 
 bool create_aftheader(AAFCFILETABLE* t);
 

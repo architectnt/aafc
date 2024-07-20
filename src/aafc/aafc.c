@@ -12,24 +12,17 @@
 #include "lib.h"
 
 EXPORT AAFC_HEADER* aafc_getheader(const unsigned char* bytes) {
-    if (header_valid(bytes)) {
-        return (AAFC_HEADER*)bytes;
-    }
-    else {
-        return NULL;
-    }
+    return header_valid(bytes) ? (AAFC_HEADER*)bytes : NULL;
 }
 
-EXPORT AAFCOUTPUT aafc_export(float* samples, int freq, unsigned char channels, int samplelength, unsigned char bps, unsigned char sampletype, bool forcemono, int samplerateoverride, bool nm, float pitch) {
+EXPORT AAFCOUTPUT aafc_export(float* samples, unsigned int freq, unsigned char channels, int samplelength, unsigned char bps, unsigned char sampletype, bool forcemono, unsigned int samplerateoverride, bool nm, float pitch) {
     if (!samples || bps == 0 || sampletype == 0) {
         printf("AAFC FATAL ERROR: samples, bps or sample type not set\n");
         AAFCOUTPUT output = { NULL, 0 };
         return output;
     }
 
-    if (pitch == 0) {
-        pitch = 1;
-    }
+    if (pitch == 0) pitch = 1;
 
     AAFC_HEADER* header = (AAFC_HEADER*)malloc(sizeof(AAFC_HEADER));
     if (!header) {
@@ -317,8 +310,8 @@ EXPORT void* aafc_int_to_float(void* arr, long size, unsigned char type) {
     return csmpl;
 }
 
-EXPORT float* aafc_resample_data(float* input, int samplerateoverride, int freq, unsigned char channels, int samplelength, float pitch) {
-    return resampleAudio(input, NULL, samplerateoverride, freq, channels, &samplelength, pitch);
+EXPORT float* aafc_resample_data(float* input, unsigned int samplerateoverride, unsigned int freq, unsigned char channels, unsigned int* samplelength, float pitch) {
+    return resampleAudio(input, NULL, samplerateoverride, freq, channels, samplelength, pitch);
 }
 
 EXPORT float* aafc_normalize(float* arr, int len) {

@@ -22,7 +22,7 @@ AAFC_HEADER* adata;
 float* asmpls;
 double ipos = 0;
 bool finished = false;
-int totalDurationInSeconds;
+unsigned int totalDurationInSeconds;
 
 static int AudioHandler(const void* inputBuffer, void* outputBuffer, unsigned long framesPerBuffer, const PaStreamCallbackTimeInfo* timeInfo, PaStreamCallbackFlags statusFlags, void* userData) {
 	float* outspl = (float*)outputBuffer;

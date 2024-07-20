@@ -126,7 +126,7 @@ bool aftheader_valid(const unsigned char* bytes) {
 }
 
 // this is what happens when you make A SINGLE STRUCT optional in your code.
-bool create_header(AAFC_HEADER* h, int freq, unsigned char channels, int samplelength, unsigned char bps, unsigned char sampletype) {
+bool create_header(AAFC_HEADER* h, unsigned int freq, unsigned char channels, unsigned int samplelength, unsigned char bps, unsigned char sampletype) {
     if (h == NULL) {
         return false;
     }

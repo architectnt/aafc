@@ -30,7 +30,7 @@ int main(int argc, char* argv[]) {
 	char** batchfiles;
 	char* dirnm;
 	unsigned char sampletype = 1;
-	int resampleoverride = 0;
+	unsigned int resampleoverride = 0;
 	float pitch = 1;
 
 	for (int i = 1; i < argc; i++) {
