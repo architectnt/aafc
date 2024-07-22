@@ -10,7 +10,7 @@
 #include <aafc.h>
 #include "dpcm.h"
 
-inline unsigned char* encode_dpcm(float* ptr, int samplelength, size_t* audsize) {
+inline unsigned char* encode_dpcm(float* ptr, unsigned int samplelength, size_t* audsize) {
     int bytesize = (samplelength + 7) / 8;
     unsigned char* dpcm_base = (unsigned char*)malloc(bytesize);
     memset(dpcm_base, 0, bytesize);
@@ -26,7 +26,7 @@ inline unsigned char* encode_dpcm(float* ptr, int samplelength, size_t* audsize)
     float threshold = 0.0256;
     float dynamicThreshold;
 
-    for (int i = 0; i < samplelength; i++) {
+    for (unsigned int i = 0; i < samplelength; i++) {
         float sample = *(ptr + i);
 
         sumamp += sample;
@@ -58,11 +58,11 @@ inline unsigned char* encode_dpcm(float* ptr, int samplelength, size_t* audsize)
     return dpcm_base;
 }
 
-inline void decode_dpcm(const unsigned char* input, float* output, int sampleCount) {
+inline void decode_dpcm(const unsigned char* input, float* output, unsigned int sampleCount) {
     const unsigned char* smpraw = input + sizeof(AAFC_HEADER);
     float prevsmpl = 0;
     float delta = 0.0256;
-    for (int i = 0; i < sampleCount; i++) {
+    for (unsigned int i = 0; i < sampleCount; i++) {
         unsigned char b = (*(smpraw + (i / 8)) >> (i % 8)) & 1;
         prevsmpl += !b ? -delta : delta;
         *output++ = Clamp(prevsmpl, -1.0, 1.0);

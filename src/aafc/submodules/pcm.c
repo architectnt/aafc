@@ -10,7 +10,7 @@
 #include <aafc.h>
 #include "pcm.h"
 
-inline void* encode_pcm(float* ptr, int samplelength, size_t* audsize, unsigned char bps) {
+inline void* encode_pcm(float* ptr, unsigned int samplelength, size_t* audsize, unsigned char bps) {
     switch (bps) {
         case 1: { // unlol-ing all of this will break everything
             printf(":>\n");
@@ -139,14 +139,14 @@ inline void* encode_pcm(float* ptr, int samplelength, size_t* audsize, unsigned 
     }
 }
 
-inline void decode_pcm(const unsigned char* input, float* output, int sampleCount, unsigned char bps) {
+inline void decode_pcm(const unsigned char* input, float* output, unsigned int sampleCount, unsigned char bps) {
     const unsigned char* smpraw = input + sizeof(AAFC_HEADER);
 
     switch (bps) {
         case 1: {
             printf("L O L\n");
             float mixvol = 0.4;
-            for (int i = 0; i < sampleCount; i++) {
+            for (unsigned int i = 0; i < sampleCount; i++) {
                 unsigned char b = (*(smpraw + (i / 8)) >> (i % 8)) & 1;
                 *output++ = !b ? -mixvol : mixvol;
             }
@@ -154,7 +154,7 @@ inline void decode_pcm(const unsigned char* input, float* output, int sampleCoun
         }
         case 4: {
             printf("LOL\n");
-            for (int i = 0; i < sampleCount; i += 2) {
+            for (unsigned int i = 0; i < sampleCount; i += 2) {
                 unsigned char smpl = *smpraw++;
                 int smp1 = smpl & 0x0F;
                 if (smp1 > 7) smp1 -= 16;
@@ -167,13 +167,13 @@ inline void decode_pcm(const unsigned char* input, float* output, int sampleCoun
         }
         case 8: {
             const char* sptr = (const char*)smpraw;
-            for (int i = 0; i < sampleCount; output++, sptr++, i++) {
+            for (unsigned int i = 0; i < sampleCount; output++, sptr++, i++) {
                 *output = *sptr * INT8_REC;
             }
             break;
         }
         case 10: {
-            for (int i = 0; i < sampleCount; output += 4, i += 4) {
+            for (unsigned int i = 0; i < sampleCount; output += 4, i += 4) {
                 // no comment. D:
                 int sample1 = (*smpraw) | ((*(smpraw + 1) & 0x03) << 8);
                 int sample2 = ((*(smpraw + 1) & 0xFC) >> 2) | ((*(smpraw + 2) & 0x0F) << 6);
@@ -195,7 +195,7 @@ inline void decode_pcm(const unsigned char* input, float* output, int sampleCoun
             break;
         }
         case 12: {
-            for (int i = 0; i < sampleCount; output += 2, i += 2) {
+            for (unsigned int i = 0; i < sampleCount; output += 2, i += 2) {
                 int sample1 = (*smpraw | ((*(smpraw + 1) & 0x0F) << 8)) & 0xFFF;
 
                 if (sample1 & 0x800) sample1 |= 0xFFFFF000;
@@ -220,7 +220,7 @@ inline void decode_pcm(const unsigned char* input, float* output, int sampleCoun
             break;
         }
         case 24: {
-            for (int i = 0; i < sampleCount; output++, i++) {
+            for (unsigned int i = 0; i < sampleCount; output++, i++) {
                 int s24 = (int)(*(smpraw + 3 * i)) & 0xFF | ((int)(*(smpraw + 3 * i + 1)) & 0xFF) << 8 | ((int)(*(smpraw + 3 * i + 2)) & 0xFF) << 16;
                 if (s24 & 0x800000) {
                     s24 |= 0xFF000000;
@@ -231,7 +231,7 @@ inline void decode_pcm(const unsigned char* input, float* output, int sampleCoun
         }
         case 32: {
             const float* inputf = (const float*)smpraw;
-            for (int i = 0; i < sampleCount; output++, i++) {
+            for (unsigned int i = 0; i < sampleCount; output++, i++) {
                 *output = *(inputf + i);
             }
             break;

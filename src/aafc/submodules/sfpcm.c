@@ -10,12 +10,12 @@
 #include <aafc.h>
 #include "sfpcm.h"
 
-inline void* encode_sfpcm(float* ptr, int samplelength, size_t* audsize, unsigned char bps) {
+inline void* encode_sfpcm(float* ptr, unsigned int samplelength, size_t* audsize, unsigned char bps) {
     switch (bps) {
         case 8: {
             unsigned char* f8 = (unsigned char*)malloc(samplelength * sizeof(unsigned char));
             unsigned char* sptr = f8;
-            for (int i = 0; i < samplelength; ptr++, sptr++, i++) {
+            for (unsigned int i = 0; i < samplelength; ptr++, sptr++, i++) {
                 *sptr = minifloat(Clamp(*ptr * 127.0f, -128.0f, 127.0f));
             }
 
@@ -25,7 +25,7 @@ inline void* encode_sfpcm(float* ptr, int samplelength, size_t* audsize, unsigne
         case 16: {
             unsigned short* f16 = (unsigned short*)malloc(samplelength * sizeof(unsigned short));
             unsigned short* sptr = f16;
-            for (int i = 0; i < samplelength; ptr++, sptr++, i++) {
+            for (unsigned int i = 0; i < samplelength; ptr++, sptr++, i++) {
                 *sptr = halfpercision(*ptr);
             }
 
@@ -39,20 +39,20 @@ inline void* encode_sfpcm(float* ptr, int samplelength, size_t* audsize, unsigne
     }
 }
 
-inline void decode_sfpcm(const unsigned char* input, float* output, int sampleCount, unsigned char bps) {
+inline void decode_sfpcm(const unsigned char* input, float* output, unsigned int sampleCount, unsigned char bps) {
     const unsigned char* smpraw = input + sizeof(AAFC_HEADER);
 
     switch (bps) {
         case 8: {
             const char* sptr = (const char*)smpraw;
-            for (int i = 0; i < sampleCount; output++, sptr++, i++) {
+            for (unsigned int i = 0; i < sampleCount; output++, sptr++, i++) {
                 *output = dminif(*sptr) * INT8_REC;
             }
             break;
         }
         case 16: {
             const short* sptr = (const short*)smpraw;
-            for (int i = 0; i < sampleCount; output++, sptr++, i++) {
+            for (unsigned int i = 0; i < sampleCount; output++, sptr++, i++) {
                 *output = dhalf(*sptr);
             }
             break;

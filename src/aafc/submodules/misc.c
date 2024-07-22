@@ -6,7 +6,7 @@
 #include <aafc.h>
 #include "../lib.h"
 
-inline void* allocSampleType(OUTPUTTYPE type, int sampleCount) {
+inline void* allocSampleType(OUTPUTTYPE type, unsigned int sampleCount) {
 	switch (type) {
 	case OUTPUT_T_FLOAT:
 		return malloc(sampleCount * sizeof(float));

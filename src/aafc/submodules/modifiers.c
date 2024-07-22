@@ -12,11 +12,11 @@
 
 inline void forceMono(float* input, AAFC_HEADER* header, unsigned char* channels, unsigned int* samplelength) {
     if (*channels > 1) {
-        int splen = *samplelength / *channels;
-        for (int i = 0; i < splen; i++)
+        unsigned int splen = *samplelength / *channels;
+        for (unsigned int i = 0; i < splen; i++)
         {
             float accu = 0;
-            for (int chn = 0; chn < *channels; chn++)
+            for (unsigned char chn = 0; chn < *channels; chn++)
             {
                 accu += *(input + (i * *channels + chn));
             }
@@ -43,15 +43,15 @@ inline float* resampleAudio(float* input, AAFC_HEADER* header, unsigned int samp
 
     double ratio = ((double)samplerateoverride / freq) / pitch;
 
-    int splen = *samplelength / channels;
-    int resampledlen = (int)(*samplelength * ratio);
-    int resampledlenc = (int)(splen * ratio);
+    unsigned int splen = *samplelength / channels;
+    unsigned int resampledlen = (int)(*samplelength * ratio);
+    unsigned int resampledlenc = (int)(splen * ratio);
 
     float* rsmpled = (float*)malloc(resampledlen * sizeof(float));
     memset(rsmpled, 0, resampledlen);
 
-    for (int ch = 0; ch < channels; ++ch) {
-        for (int i = 0; i < resampledlenc; ++i) {
+    for (unsigned char ch = 0; ch < channels; ++ch) {
+        for (unsigned int i = 0; i < resampledlenc; ++i) {
             double oindx = i / ratio;
             int idx0 = (int)oindx;
             int ind = i * channels + ch;
@@ -77,9 +77,9 @@ inline float* resampleAudio(float* input, AAFC_HEADER* header, unsigned int samp
 inline float* force_independent_channels(float* input, unsigned char channels, unsigned int samplelength) {
     float* output = (float*)malloc(samplelength * sizeof(float));
 
-    int splen = samplelength / channels;
-    for (int ch = 0; ch < channels; ch++) {
-        for (int i = 0; i < splen; i++) {
+    unsigned int splen = samplelength / channels;
+    for (unsigned char ch = 0; ch < channels; ch++) {
+        for (unsigned int i = 0; i < splen; i++) {
             *(output + (i + splen * ch)) = *(input + (i * channels + ch));
         }
     }
@@ -120,9 +120,9 @@ inline float* force_interleave_channels(float* input, unsigned char channels, un
         return NULL;
     }
 
-    int splen = samplelength / channels;
-    for (int i = 0; i < splen; i++) {
-        for (int ch = 0; ch < channels; ch++) {
+    unsigned int splen = samplelength / channels;
+    for (unsigned int i = 0; i < splen; i++) {
+        for (unsigned char ch = 0; ch < channels; ch++) {
             *(output + (i * channels + ch)) = *(input + (i + splen * ch));
         }
     }

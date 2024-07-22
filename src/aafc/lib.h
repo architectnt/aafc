@@ -15,4 +15,4 @@
 #include "submodules/ulaw.h"
 
 extern inline void freeSamples(void* input, unsigned char bps, unsigned char sampletype);
-extern inline void* allocSampleType(OUTPUTTYPE type, int sampleCount);
+extern inline void* allocSampleType(OUTPUTTYPE type, unsigned int sampleCount);
