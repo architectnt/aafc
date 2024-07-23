@@ -15,7 +15,7 @@ EXPORT AAFC_HEADER* aafc_getheader(const unsigned char* bytes) {
     return header_valid(bytes) ? (AAFC_HEADER*)bytes : NULL;
 }
 
-EXPORT AAFCOUTPUT aafc_export(float* samples, unsigned int freq, unsigned char channels, int samplelength, unsigned char bps, unsigned char sampletype, bool forcemono, unsigned int samplerateoverride, bool nm, float pitch) {
+EXPORT AAFCOUTPUT aafc_export(float* samples, unsigned int freq, unsigned char channels, unsigned int samplelength, unsigned char bps, unsigned char sampletype, bool forcemono, unsigned int samplerateoverride, bool nm, float pitch) {
     if (!samples || bps == 0 || sampletype == 0) {
         printf("AAFC FATAL ERROR: samples, bps or sample type not set\n");
         AAFCOUTPUT output = { NULL, 0 };

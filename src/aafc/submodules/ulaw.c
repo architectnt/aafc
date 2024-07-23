@@ -9,9 +9,6 @@
 #include <aafc.h>
 #include "ulaw.h"
 
-#define BIAS 0x84
-#define CLIP 32635
-
 inline unsigned char* encode_ulaw(float* ptr, unsigned int samplelength, size_t* audsize) {
     unsigned char* ulaw_base = (unsigned char*)malloc(samplelength * sizeof(unsigned char));
 
@@ -22,9 +19,9 @@ inline unsigned char* encode_ulaw(float* ptr, unsigned int samplelength, size_t*
         short sample = (short)Clamp(*ptr * 32767.0f, -32768.0f, 32767.0f);
         short sign = (sample >> 8) & 0x80;
         if (sign != 0) sample = -sample;
-        if ((short)sample > CLIP) sample = CLIP;
+        if ((short)sample > 32635) sample = 32635;
 
-        sample = sample + BIAS;
+        sample = sample + 0x84;
         short exponent = *(explut + ((sample >> 7) & 0xFF));
         short mantissa = (sample >> (exponent + 3)) & 0x0F;
         unsigned char bt = ~(sign | (exponent << 4) | mantissa);
