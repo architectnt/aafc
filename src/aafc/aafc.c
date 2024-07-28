@@ -24,168 +24,141 @@ EXPORT AAFCOUTPUT aafc_export(float* samples, unsigned int freq, unsigned char c
 
     if (pitch == 0) pitch = 1;
 
-    AAFC_HEADER* header = (AAFC_HEADER*)malloc(sizeof(AAFC_HEADER));
-    if (!header) {
-        printf("AAFC FATAL ERROR: could not allocate a new header.\n");
+    if (samplelength < 1) {
+        printf("AAFC ERROR: samplelength cannot be below 1.\n");
         AAFCOUTPUT output = { NULL, 0 };
         return output;
     }
 
-    if (!create_header(header, freq, channels, samplelength, bps, sampletype)) {
-        printf("AAFC FATAL ERROR: could not create header\n");
+    AAFC_HEADER* header = NULL;
+    if ((header = create_header(freq, channels, samplelength, bps, sampletype)) == NULL) {
+        printf("AAFC FATAL ERROR: could not allocate a new header.\n");
         AAFCOUTPUT output = { NULL, 0 };
         return output;
     }
 
     float* rsptr = samples;
 
-    if (forcemono && channels != 1) {
+    if (forcemono && channels != 1)
         forceMono(rsptr, header, &channels, &samplelength);
-    }
 
-    if (samplerateoverride != 0 && samplerateoverride != freq || pitch != 1) {
+    if (samplerateoverride != 0 && samplerateoverride != freq || pitch != 1)
         rsptr = resampleAudio(rsptr, header, samplerateoverride, freq, channels, &samplelength, pitch);
-    }
 
-    if (nm) {
-        normalize(rsptr, samplelength);
-    }
+    if (nm) normalize(rsptr, samplelength);
 
     void* smpl = NULL;
-    size_t audioDataSize = 0;
+    size_t audsize = 0;
 
-    if (samplelength > 1) {
-        switch (sampletype) {
-            case 1: {
-                smpl = encode_pcm(rsptr, samplelength, &audioDataSize, bps);
-                break;
-            }
-            case 2: {
-                if (channels > 1) {
-                    rsptr = force_independent_channels(rsptr, channels, samplelength);
-                }
-                smpl = encode_adpcm(rsptr, samplelength, &audioDataSize);
-                break;
-            }
-            case 3: {
-                smpl = encode_dpcm(rsptr, samplelength, &audioDataSize);
-                break;
-            }
-            case 4: {
-                smpl = encode_sfpcm(rsptr, samplelength, &audioDataSize, bps);
-                break;
-            }
-            case 5: {
-                smpl = encode_ulaw(rsptr, samplelength, &audioDataSize);
-                break;
-            }
-            default: {
-                free(header);
-                free(rsptr);
-                printf("AAFC ERROR: Invalid sample type!\n");
-                AAFCOUTPUT output = { NULL, 0 };
-                return output;
-            }
+    switch (sampletype) {
+        case 1: {
+            smpl = encode_pcm(rsptr, samplelength, &audsize, bps);
+            break;
+        }
+        case 2: {
+            if (channels > 1) rsptr = force_independent_channels(rsptr, channels, samplelength);
+            smpl = encode_adpcm(rsptr, samplelength, &audsize);
+            break;
+        }
+        case 3: {
+            smpl = encode_dpcm(rsptr, samplelength, &audsize);
+            break;
+        }
+        case 4: {
+            smpl = encode_sfpcm(rsptr, samplelength, &audsize, bps);
+            break;
+        }
+        case 5: {
+            smpl = encode_ulaw(rsptr, samplelength, &audsize);
+            break;
+        }
+        default: {
+            free(header); free(rsptr);
+            printf("AAFC ERROR: Invalid sample type!\n");
+            AAFCOUTPUT output = { NULL, 0 };
+            return output;
         }
     }
-    else {
-        free(header);
-        free(rsptr);
-        printf("AAFC ERROR: samplelength cannot be below 1.\n");
+
+
+    if (!smpl) {
+        free(rsptr); free(header);
         AAFCOUTPUT output = { NULL, 0 };
         return output;
     }
 
-    size_t totalDataSize = sizeof(AAFC_HEADER) + audioDataSize;
+    size_t tdsize = sizeof(AAFC_HEADER) + audsize;
+    unsigned char* rst = (unsigned char*)malloc(tdsize);
 
-    if (smpl) {
-        unsigned char* rst = (unsigned char*)malloc(totalDataSize);
+    memcpy(rst, header, sizeof(AAFC_HEADER));
+    free(header);
+    memcpy(rst + sizeof(AAFC_HEADER), smpl, audsize);
+    free(smpl);
+    if (rsptr != samples) free(rsptr);
 
-        memcpy(rst, header, sizeof(AAFC_HEADER));
-        memcpy(rst + sizeof(AAFC_HEADER), smpl, audioDataSize);
-        freeSamples(smpl, bps, sampletype);
-
-        free(header);
-        if (rsptr != samples) {
-            free(rsptr);
-        }
-        AAFCOUTPUT output = { rst, totalDataSize };
-        return output;
-    }
-    else {
-        free(rsptr);
-        free(header);
-        AAFCOUTPUT output = { NULL, 0 };
-        return output;
-    }
+    AAFCOUTPUT output = { rst, tdsize };
+    return output;
 }
 
 EXPORT AAFCDECOUTPUT aafc_import(const unsigned char* bytes) {
-    if (header_valid(bytes)) {
-        AAFC_HEADER* header = (AAFC_HEADER*)bytes;
-        int sampleCount = header->samplelength;
-        int bps = header->bps;
-        int sampletype = header->sampletype;
-
-        AAFCDECOUTPUT output = { *header };
-
-        output.data = (float*)malloc(sampleCount * sizeof(float));
-        if (output.data == NULL) {
-            printf("AAFC: FAILED ALLOCATION OF DATA\n");
-            AAFCDECOUTPUT noutp = { };
-            return noutp;
-        }
-        float* rsptr = output.data;
-
-        switch (sampletype) {
-            case 1: {
-                decode_pcm(bytes, rsptr, sampleCount, bps);
-                break;
-            }
-            case 2: {
-                decode_adpcm(bytes, rsptr, sampleCount);
-                if (header->channels > 1) {
-                    float* itrsamples = force_interleave_channels(output.data, header->channels, sampleCount);
-                    if (itrsamples) {
-                        free(output.data);
-                        output.data = itrsamples;
-                    }
-                }
-                break;
-            }
-            case 3: {
-                decode_dpcm(bytes, rsptr, sampleCount);
-                break;
-            }
-            case 4: {
-                decode_sfpcm(bytes, rsptr, sampleCount, bps);
-                break;
-            }
-            case 5: {
-                decode_ulaw(bytes, rsptr, sampleCount);
-                break;
-            }
-            default: {
-                free(output.data);
-                printf("AAFC ERROR: Invalid sample type!\n");
-                AAFCDECOUTPUT noutp = { };
-                return noutp;
-            }
-        }
-
-        if (output.data) {
-            return output;
-        }
-        else {
-            AAFCDECOUTPUT noutp = { };
-            return noutp;
-        }
-    }
-    else {
+    if (!header_valid(bytes)) {
         printf("AAFC: invalid aafc data\n");
         AAFCDECOUTPUT noutp = { };
         return noutp;
     }
+
+    AAFC_HEADER* header = (AAFC_HEADER*)bytes;
+    AAFCDECOUTPUT output = { *header, NULL };
+
+    if ((output.data = (float*)malloc(header->samplelength * sizeof(float))) == NULL) /* that's something */ {
+        printf("AAFC: FAILED ALLOCATION OF DATA\n");
+        AAFCDECOUTPUT noutp = { };
+        return noutp;
+    }
+    float* rsptr = output.data;
+
+    switch (header->sampletype) {
+        case 1: {
+            decode_pcm(bytes, rsptr, header->samplelength, header->bps);
+            break;
+        }
+        case 2: {
+            decode_adpcm(bytes, rsptr, header->samplelength);
+            if (header->channels > 1) {
+                float* itrsamples = force_interleave_channels(output.data, header->channels, header->samplelength);
+                if (itrsamples) {
+                    free(output.data);
+                    output.data = itrsamples;
+                }
+            }
+            break;
+        }
+        case 3: {
+            decode_dpcm(bytes, rsptr, header->samplelength);
+            break;
+        }
+        case 4: {
+            decode_sfpcm(bytes, rsptr, header->samplelength, header->bps);
+            break;
+        }
+        case 5: {
+            decode_ulaw(bytes, rsptr, header->samplelength);
+            break;
+        }
+        default: {
+            free(output.data);
+            printf("AAFC IMPORT ERROR: Invalid sample type!\n");
+            AAFCDECOUTPUT noutp = { };
+            return noutp;
+        }
+    }
+
+    if (output.data == NULL) {
+        AAFCDECOUTPUT noutp = { };
+        return noutp;
+    }
+
+    return output;
 }
 
 EXPORT float* aafc_chunk_read(const unsigned char* bytes, int start, int end)

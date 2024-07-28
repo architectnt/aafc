@@ -126,10 +126,9 @@ bool aftheader_valid(const unsigned char* bytes) {
 }
 
 // this is what happens when you make A SINGLE STRUCT optional in your code.
-bool create_header(AAFC_HEADER* h, unsigned int freq, unsigned char channels, unsigned int samplelength, unsigned char bps, unsigned char sampletype) {
-    if (h == NULL) {
-        return false;
-    }
+AAFC_HEADER* create_header(unsigned int freq, unsigned char channels, unsigned int samplelength, unsigned char bps, unsigned char sampletype) {
+    AAFC_HEADER* h = (AAFC_HEADER*)malloc(sizeof(AAFC_HEADER));
+    if (h == NULL) return NULL;
 
     strncpy(h->headr, AAFC_STRING, 5); // ignore what windows says about strncpy (ms is anti cross-platform back then)
     h->version = AAFCVERSION;
@@ -139,7 +138,7 @@ bool create_header(AAFC_HEADER* h, unsigned int freq, unsigned char channels, un
     h->bps = bps;
     h->sampletype = sampletype;
 
-    return true;
+    return h;
 }
 
 bool create_aftheader(AAFCFILETABLE* t) {
