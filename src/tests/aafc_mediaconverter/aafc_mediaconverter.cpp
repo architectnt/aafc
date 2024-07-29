@@ -20,6 +20,52 @@
 #include "tests.h"
 
 
+int convertmedia(const char* fn, const char* outpath, bool usemono, bool normalize, unsigned char bps, unsigned char sampletype, unsigned int spoverride, float pitch) {
+	SF_INFO info;
+	memset(&info, 0, sizeof(SF_INFO));
+
+	SNDFILE* ifl = sf_open(fn, SFM_READ, &info);
+	if (!ifl) {
+		printf("aud2aafc: failed to open file :(\n");
+		return -1;
+	}
+
+	size_t nitms = info.frames * info.channels;
+	float* smpl = (float*)malloc(nitms * sizeof(float));
+	if (smpl == NULL) {
+		sf_close(ifl);
+		printf("aud2aafc: failed to allocate memory D:\n");
+		return -2;
+	}
+
+	if (sf_readf_float(ifl, smpl, info.frames) != info.frames) {
+		printf("aud2aafc: unexpected sample count! >:(\n");
+	}
+
+	AAFCOUTPUT out = ExportAAFC(smpl, info.samplerate, info.channels, nitms, bps, sampletype, usemono, spoverride, normalize, pitch);
+	if (out.data == NULL) {
+		sf_close(ifl);
+		free(smpl);
+		printf("aud2aafc: export failed >:(\n");
+		return -3;
+	}
+
+	FILE* ofile = fopen(outpath, "wb");
+	if (ofile == NULL) {
+		sf_close(ifl);
+		free(smpl);
+		perror("aud2aafc: failed to open output file >:((((");
+		return -4;
+	}
+
+	fwrite(out.data, sizeof(unsigned char), out.size, ofile);
+
+	sf_close(ifl);
+	free(smpl);
+
+	return 0;
+}
+
 int main(int argc, char* argv[]) {
 	const char* fn = "input.wav";
 	unsigned char outbps = 16;
@@ -82,89 +128,23 @@ int main(int argc, char* argv[]) {
 		for (int i = 0; i < batchlength; i++) {
 			std::stringstream fbp; fbp << dirp.str().c_str() << "/" << filename_without_extension(batchfiles[i]) << ".aafc";
 
-			SF_INFO info;
-			memset(&info, 0, sizeof(SF_INFO));
-
-			SNDFILE* ifl = sf_open(batchfiles[i], SFM_READ, &info);
-			if (!ifl) {
-				// we ignore files that arent compatible with sndfile
+			int rst = convertmedia(batchfiles[i], fbp.str().c_str(), usemono, normalize, outbps, sampletype, resampleoverride, pitch);
+			if (rst == -1) {
 				continue;
+			} else if (rst < -1) {
+				printf("aud2aafc: Failed to convert batch of media.\n");
+				return -128;
 			}
-
-			size_t nitms = info.frames * info.channels;
-			float* smpl = (float*)malloc(nitms * sizeof(float));
-			if (smpl == NULL) {
-				sf_close(ifl);
-				printf("aud2aafc: failed to allocate memory D:\n");
-				return -1;
-			}
-
-			sf_count_t smpsi = sf_readf_float(ifl, smpl, info.frames);
-			if (smpsi != info.frames) {
-				printf("aud2aafc: unexpected sample count! >:(\n");
-			}
-
-			AAFCOUTPUT out = ExportAAFC(smpl, info.samplerate, info.channels, nitms, outbps, sampletype, usemono, resampleoverride, normalize, pitch);
-			if (out.data == NULL) {
-				printf("aud2aafc: export failed >:(\n");
-				return -2;
-			}
-
-			FILE* ofile = fopen(fbp.str().c_str(), "wb");
-			if (ofile == NULL) {
-				perror("aud2aafc: failed to open output file >:((((");
-				return -1;
-			}
-
-			fwrite(out.data, sizeof(unsigned char), out.size, ofile);
-
-			sf_close(ifl);
-			free(smpl);
 			free(batchfiles[i]);
 		}
 		free(batchfiles);
 	}
 	else {
 		std::stringstream fp; fp << "aafc_conversions/" << filename_without_extension(fn) << ".aafc";
-
-		SF_INFO info;
-		memset(&info, 0, sizeof(SF_INFO));
-
-		SNDFILE* ifl = sf_open(fn, SFM_READ, &info);
-		if (!ifl) {
-			printf("aud2aafc: failed to open file :(\n");
-			return -1;
+		if (convertmedia(fn, fp.str().c_str(), usemono, normalize, outbps, sampletype, resampleoverride, pitch) != 0) {
+			printf("aud2aafc: Failed to convert  media.\n");
+			return -128;
 		}
-
-		size_t nitms = info.frames * info.channels;
-		float* smpl = (float*)malloc(nitms * sizeof(float));
-		if (smpl == NULL) {
-			sf_close(ifl);
-			printf("aud2aafc: failed to allocate memory D:\n");
-			return -1;
-		}
-
-		sf_count_t smpsi = sf_readf_float(ifl, smpl, info.frames);
-		if (smpsi != info.frames) {
-			printf("aud2aafc: unexpected sample count! >:(\n");
-		}
-
-		AAFCOUTPUT out = ExportAAFC(smpl, info.samplerate, info.channels, nitms, outbps, sampletype, usemono, resampleoverride, normalize, pitch);
-		if (out.data == NULL) {
-			printf("aud2aafc: export failed >:(\n");
-			return -2;
-		}
-
-		FILE* ofile = fopen(fp.str().c_str(), "wb");
-		if (ofile == NULL) {
-			perror("aud2aafc: failed to open output file >:((((");
-			return -1;
-		}
-
-		fwrite(out.data, sizeof(unsigned char), out.size, ofile);
-
-		sf_close(ifl);
-		free(smpl);
 	}
 
 	printf("aud2aafc: Completed conversion!\n");
