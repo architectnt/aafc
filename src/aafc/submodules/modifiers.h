@@ -7,6 +7,6 @@
 
 extern inline void forceMono(float* input, AAFC_HEADER* header, unsigned char* channels, unsigned int* samplelength);
 extern inline float* resampleAudio(float* input, AAFC_HEADER* header, unsigned int samplerateoverride, unsigned int freq, unsigned char channels, unsigned int* samplelength, float pitch);
-extern inline float* force_independent_channels(float* input, unsigned char channels, unsigned int samplelength);
-extern inline float* normalize(float* input, unsigned int len);
-extern inline float* force_interleave_channels(float* input, unsigned char channels, unsigned int samplelength);
+extern inline float* force_independent_channels(float* input, const unsigned char channels, const unsigned int samplelength);
+extern inline float* normalize(float* input, const unsigned int len);
+extern inline float* force_interleave_channels(float* input, const unsigned char channels, const unsigned int samplelength);

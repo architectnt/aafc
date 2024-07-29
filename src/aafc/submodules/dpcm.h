@@ -6,4 +6,4 @@
 #include <aafc.h>
 
 extern inline unsigned char* encode_dpcm(float* ptr, unsigned int samplelength, size_t* audsize);
-extern inline void decode_dpcm(const unsigned char* input, float* output, unsigned int sampleCount);
+extern inline void decode_dpcm(const unsigned char* input, float* output, const unsigned int sampleCount);

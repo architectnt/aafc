@@ -29,4 +29,4 @@ static const short exp_lutd[8] = {
 };
 
 extern inline unsigned char* encode_ulaw(float* ptr, unsigned int samplelength, size_t* audsize);
-extern inline void decode_ulaw(const unsigned char* input, float* output, unsigned int sampleCount);
+extern inline void decode_ulaw(const unsigned char* input, float* output, const unsigned int sampleCount);

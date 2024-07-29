@@ -33,7 +33,7 @@ inline unsigned char* encode_ulaw(float* ptr, unsigned int samplelength, size_t*
     return ulaw_base;
 }
 
-inline void decode_ulaw(const unsigned char* input, float* output, unsigned int sampleCount) {
+inline void decode_ulaw(const unsigned char* input, float* output, const unsigned int sampleCount) {
     const unsigned char* smpraw = input + sizeof(AAFC_HEADER);
     const short* explut = exp_lutd;
 

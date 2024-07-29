@@ -88,7 +88,7 @@ inline signed char* encode_adpcm(float* ptr, unsigned int samplelength, size_t* 
     return adpcm_base;
 }
 
-inline void decode_adpcm(const unsigned char* input, float* output, unsigned int sampleCount) {
+inline void decode_adpcm(const unsigned char* input, float* output, const unsigned int sampleCount) {
     const signed char* adpcm = (const signed char*)(input + sizeof(AAFC_HEADER));
     const short* stptr = adpcm_step_size_table;
     const signed char* itbptr = adpcm_index_table;

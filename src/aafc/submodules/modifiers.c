@@ -74,7 +74,7 @@ inline float* resampleAudio(float* input, AAFC_HEADER* header, unsigned int samp
     return rsmpled;
 }
 
-inline float* force_independent_channels(float* input, unsigned char channels, unsigned int samplelength) {
+inline float* force_independent_channels(float* input, const unsigned char channels, const unsigned int samplelength) {
     float* output = (float*)malloc(samplelength * sizeof(float));
 
     unsigned int splen = samplelength / channels;
@@ -87,7 +87,7 @@ inline float* force_independent_channels(float* input, unsigned char channels, u
     return output;
 }
 
-inline float* normalize(float* input, unsigned int len) {
+inline float* normalize(float* input, const unsigned int len) {
     if (input == NULL || len <= 0) {
         return input; // keep original
     }
@@ -110,7 +110,7 @@ inline float* normalize(float* input, unsigned int len) {
     return input;
 }
 
-inline float* force_interleave_channels(float* input, unsigned char channels, unsigned int samplelength) {
+inline float* force_interleave_channels(float* input, const unsigned char channels, const unsigned int samplelength) {
     if (!input || channels <= 0 || samplelength <= 0) {
         return NULL;
     }

@@ -16,7 +16,7 @@
 #include <aafc.h>
 #include <tests.h>
 
-int sysfreq;
+unsigned int sysfreq;
 
 AAFC_HEADER* adata;
 float* asmpls;
@@ -27,15 +27,10 @@ unsigned int totalDurationInSeconds;
 static int AudioHandler(const void* inputBuffer, void* outputBuffer, unsigned long framesPerBuffer, const PaStreamCallbackTimeInfo* timeInfo, PaStreamCallbackFlags statusFlags, void* userData) {
 	float* outspl = (float*)outputBuffer;
 
-	const int schannels = 2;
+	unsigned int smplen = adata->samplelength / adata->channels;
 
-	int channels = adata->channels;
-	int smplen = adata->samplelength / channels;
-	int samplefreq = adata->freq;
-
-	int i = 0;
-	do {
-		int inputIndex = (int)ipos;
+	for (unsigned int i = 0; i < framesPerBuffer; i++) {
+		unsigned int inputIndex = (unsigned int)ipos;
 		if (inputIndex >= smplen - 1) {
 			*(outspl + i * 2) = 0.0f;
 			*(outspl + i * 2 + 1) = 0.0f;
@@ -46,23 +41,21 @@ static int AudioHandler(const void* inputBuffer, void* outputBuffer, unsigned lo
 			float spleft = 0.0f, spright = 0.0f;
 
 			if (inputIndex < smplen - 1) {
-				if (channels == 1) {
+				if (adata->channels == 1) {
 					spleft = spright = (1 - alpha) * asmpls[inputIndex] + alpha * asmpls[inputIndex + 1];
 				}
-				else if (channels == 2) {
+				else if (adata->channels == 2) {
 					spleft = (1 - alpha) * asmpls[2 * inputIndex] + alpha * asmpls[2 * (inputIndex + 1)];
 					spright = (1 - alpha) * asmpls[2 * inputIndex + 1] + alpha * asmpls[2 * (inputIndex + 1) + 1];
 				}
 			}
 
-			int bfri = i * 2;
+			unsigned int bfri = i * 2;
 			*(outspl + bfri) = spleft;
 			*(outspl + bfri + 1) = spright;
-			ipos += (double)samplefreq / sysfreq;
+			ipos += (double)adata->freq / sysfreq;
 		}
-
-		i++;
-	} while (i < framesPerBuffer);
+	}
 
 	return finished ? paComplete : paContinue;
 }
@@ -91,8 +84,7 @@ void drawProgressBar(int elapsedSeconds, int totalSeconds) {
 }
 
 int main(int argc, char* argv[]) {
-	if(argc > 1)
-	{
+	if(argc > 1) {
 		printf("loading AAFC file.. ");
 
 		AAFCOUTPUT aafcfile = ReadFile(argv[1]);
@@ -130,49 +122,33 @@ int main(int argc, char* argv[]) {
 				break;
 		}
 
-		printf("Loaded!\n\n-METADATA-\n[Sample Frequency: %d | Channels: %d | Sample Type: %s | AAFC VERSION EXPORTED: AAFC v%d] \n\n", adata->freq, adata->channels, stypeformat, adata->version);
+		printf("Loaded!\n\n-METADATA-\n[Sample Frequency: %d | Channels: %d | Sample Type: %s | AAFC VERSION EXPORTED: AAFC v%d] \n", adata->freq, adata->channels, stypeformat, adata->version);
 	}
 	else {
 		perror("aafc player requires a specifed path argument.");
 		return -2;
 	}
 
-	printf("loading audio subsystem..\n");
-
 	Pa_Initialize();
 	PaStream* str;
-	PaError err = Pa_OpenDefaultStream(&str,
-		0,          // no input channels
-		2,          // stereo output
-		paFloat32,  // 32 bit floating point output
-		48000,      // requested sample rate
-		256,        // frames per buffer
-		AudioHandler,
-		NULL);      // no callback userData
-	if (err != paNoError) {
+	if (Pa_OpenDefaultStream(&str, 0, 2, paFloat32, 48000, 256, AudioHandler, NULL) != paNoError) {
 		perror("aafc player failed to load PortAudio subsystem");
+		return -1;
 	}
 
 	Pa_StartStream(str);
 
 	const PaStreamInfo* stri = Pa_GetStreamInfo(str);
-	if (stri) {
-		sysfreq = (int)stri->sampleRate;
-		printf("AUDIO SUBSYSTEM: using desired sample rate %d\n", sysfreq);
-	}
+	sysfreq = (unsigned int)stri->sampleRate;
 
 	while (!finished) {
-		int elapsed = ipos / adata->freq;
-
-		drawProgressBar(elapsed, totalDurationInSeconds);
-
+		drawProgressBar(ipos / adata->freq, totalDurationInSeconds);
 		Pa_Sleep(100);
 	}
 
 	Pa_StopStream(str);
 	Pa_CloseStream(str);
 	Pa_Terminate();
-
 	printf("\n");
 
 	return 0;
