@@ -37,7 +37,7 @@ inline void decode_ulaw(const unsigned char* input, float* output, const unsigne
     const unsigned char* smpraw = input + sizeof(AAFC_HEADER);
     const short* explut = exp_lutd;
 
-    for (unsigned int i = 0; i < sampleCount; smpraw++, output++, i++) {
+    for (const unsigned char* n = smpraw + sampleCount; smpraw < n; smpraw++, output++) {
         unsigned char smpl = ~(*smpraw);
         short sign = (smpl & 0x80);
         short exponent = (smpl >> 4) & 0x07;

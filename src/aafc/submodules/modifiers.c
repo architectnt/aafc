@@ -88,20 +88,18 @@ inline float* force_independent_channels(float* input, const unsigned char chann
 }
 
 inline float* normalize(float* input, const unsigned int len) {
-    if (input == NULL || len <= 0) {
-        return input; // keep original
-    }
+    if (input == NULL || len <= 0)
+        return input;
+
     float mx = 0.0f;
     float* ptr;
     for (ptr = input; ptr < input + len; ptr++) {
-        if (*ptr > mx) {
+        if (*ptr > mx)
             mx = *ptr;
-        }
     }
 
-    if (mx < 1e-6) {
-        return input; // keep original again
-    }
+    if (mx < 1e-6) 
+        return input;
 
     for (ptr = input; ptr < input + len; ptr++) {
         *ptr /= mx;

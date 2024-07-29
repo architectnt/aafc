@@ -87,7 +87,6 @@ private:
         }
     }
 
-    // Delete copy constructor and assignment operator to ensure singleton property
     SharedLibraryHelper(const SharedLibraryHelper&) = delete;
     SharedLibraryHelper& operator=(const SharedLibraryHelper&) = delete;
 };

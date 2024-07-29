@@ -105,7 +105,7 @@ inline void decode_adpcm(const unsigned char* input, float* output, const unsign
     step = *stptr;
     bufferstep = 0;
 
-    for (unsigned int i = 0; i < sampleCount; i++) {
+    for (const float* n = output + sampleCount; output < n; output++) {
         if (bufferstep) {
             delta = inputbuffer & 0xf;
         }
@@ -139,6 +139,6 @@ inline void decode_adpcm(const unsigned char* input, float* output, const unsign
 
         step = *(stptr + index);
 
-        *output++ = valpred * INT16_REC;
+        *output = valpred * INT16_REC;
     }
 }

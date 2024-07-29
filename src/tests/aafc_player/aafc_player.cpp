@@ -22,7 +22,7 @@ AAFC_HEADER* adata;
 float* asmpls;
 double ipos = 0;
 bool finished = false;
-unsigned int totalDurationInSeconds;
+double totalDurationInSeconds;
 
 static int AudioHandler(const void* inputBuffer, void* outputBuffer, unsigned long framesPerBuffer, const PaStreamCallbackTimeInfo* timeInfo, PaStreamCallbackFlags statusFlags, void* userData) {
 	float* outspl = (float*)outputBuffer;
@@ -60,31 +60,32 @@ static int AudioHandler(const void* inputBuffer, void* outputBuffer, unsigned lo
 	return finished ? paComplete : paContinue;
 }
 
-void drawProgressBar(int elapsedSeconds, int totalSeconds) {
-	const int barWidth = 30;
+void drawProgressBar(double esec, double tsec) {
+	const unsigned int barWidth = 32;
 
-	float progress = (float)elapsedSeconds / totalSeconds;
+	double progress = esec / tsec;
 	int pos = barWidth * progress;
 
 	std::cout << "\r";
 	std::cout << "[";
-	for (int i = 0; i < barWidth; ++i) {
-		if (i < pos) std::cout << "#";
-		else std::cout << " ";
+	for (unsigned int i = 0; i < barWidth; ++i) {
+		std::cout << ((i <= pos) ? "=" : " ");
 	}
 	std::cout << "] ";
 
-	int minutes = elapsedSeconds / 60;
-	int seconds = elapsedSeconds % 60;
-	int totalMinutes = totalSeconds / 60;
-	int totalSecondsRemain = totalSeconds % 60;
+	int min = esec / 60;
+	int sec = (int)esec % 60;
+	int tmin = tsec / 60;
+	int tsecs = (int)tsec % 60;
 
-	printf("%02d:%02d/%02d:%02d", minutes, seconds, totalMinutes, totalSecondsRemain);
+	printf("%02d:%02d/%02d:%02d", min, sec, tmin, tsecs);
 	std::cout.flush();
 }
 
 int main(int argc, char* argv[]) {
 	if(argc > 1) {
+		printf("\e[?25l");
+
 		printf("loading AAFC file.. ");
 
 		AAFCOUTPUT aafcfile = ReadFile(argv[1]);
@@ -97,7 +98,7 @@ int main(int argc, char* argv[]) {
 		asmpls = outp.data;
 		adata = &outp.header;
 
-		totalDurationInSeconds = (adata->samplelength / adata->channels) / adata->freq;
+		totalDurationInSeconds = ((double)adata->samplelength / adata->channels) / adata->freq;
 		
 		const char* stypeformat;
 
@@ -149,7 +150,8 @@ int main(int argc, char* argv[]) {
 	Pa_StopStream(str);
 	Pa_CloseStream(str);
 	Pa_Terminate();
-	printf("\n");
+	printf("\e[?25h");
+	std::cout.flush();
 
 	return 0;
 }

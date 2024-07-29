@@ -214,7 +214,7 @@ inline void decode_pcm(const unsigned char* input, float* output, const unsigned
         }
         case 16: {
             const short* sptr = (const short*)smpraw;
-            for (int i = 0; i < sampleCount; output++, sptr++, i++) {
+            for (unsigned int i = 0; i < sampleCount; output++, sptr++, i++) {
                 *output = *sptr * INT16_REC;
             }
             break;
