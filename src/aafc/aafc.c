@@ -42,7 +42,7 @@ EXPORT AAFCOUTPUT aafc_export(float* samples, unsigned int freq, unsigned char c
     if (forcemono && channels != 1)
         forceMono(rsptr, header, &channels, &samplelength);
 
-    if (samplerateoverride != 0 && samplerateoverride != freq || pitch != 1)
+    if ((samplerateoverride != 0 && samplerateoverride != freq) || pitch != 1)
         rsptr = resampleAudio(rsptr, header, samplerateoverride, freq, channels, &samplelength, pitch);
 
     if (nm) normalize(rsptr, samplelength);
@@ -107,7 +107,7 @@ EXPORT AAFCDECOUTPUT aafc_import(const unsigned char* bytes) {
         return noutp;
     }
 
-    AAFC_HEADER* header = (AAFC_HEADER*)bytes;
+    const AAFC_HEADER* header = (AAFC_HEADER*)bytes; // evil
     AAFCDECOUTPUT output = { *header, NULL };
 
     if ((output.data = (float*)malloc(header->samplelength * sizeof(float))) == NULL) /* that's something */ {

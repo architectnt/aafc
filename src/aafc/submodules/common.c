@@ -130,7 +130,7 @@ AAFC_HEADER* create_header(unsigned int freq, unsigned char channels, unsigned i
     AAFC_HEADER* h = (AAFC_HEADER*)malloc(sizeof(AAFC_HEADER));
     if (h == NULL) return NULL;
 
-    strncpy(h->headr, AAFC_STRING, 5); // ignore what windows says about strncpy (ms is anti cross-platform back then)
+    memcpy(h->headr, AAFC_STRING, sizeof(AAFC_STRING));
     h->version = AAFCVERSION;
     h->freq = freq;
     h->channels = channels;
@@ -142,11 +142,10 @@ AAFC_HEADER* create_header(unsigned int freq, unsigned char channels, unsigned i
 }
 
 bool create_aftheader(AAFCFILETABLE* t) {
-    if (t == NULL) {
+    if (t == NULL)
         return false;
-    }
 
-    strncpy(t->headr, AFT_STRING, 4);
+    memcpy(t->headr, AFT_STRING, sizeof(AFT_STRING));
     t->version = AAFCVERSION;
 
     return true;
