@@ -1,7 +1,7 @@
-# ![aafc_logo](https://architectenterprises.net/cdn/aafc_snwavtr.png) AAFC - Lightweight audio format
+# ![aafc_logo](https://architectenterprises.net/cdn/aafc_snwavtr.png) AAFC - Lightweight audio interface
 ![aafc_logo](https://architectenterprises.net/cdn/aafc_lgo.svg)
 
-**The audio format designed for ultra-fast loading times**\
+**The audio interface designed for ultra-fast loading times**\
 ..*and a way to bring back audio limitations* ***purposely*** 
 
 ## ![aafc_logo](https://architectenterprises.net/cdn/fusionresource/fpg_ico.png) FEATURES

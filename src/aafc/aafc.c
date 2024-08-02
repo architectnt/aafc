@@ -216,7 +216,7 @@ EXPORT void* aafc_float_to_int(float* arr, long size, unsigned char type) {
             char* csmpl = (char*)malloc(size * sizeof(char));
             char* sptr = csmpl;
             for (int i = 0; i < size; aptr++, sptr++, i++) {
-                *sptr = (char)round(Clamp(*aptr * 127.0f, -128.0f, 127.0f));
+                *sptr = (char)round(clampf(*aptr * 127.0f, -128.0f, 127.0f));
             }
             rst = csmpl;
             break;
@@ -225,7 +225,7 @@ EXPORT void* aafc_float_to_int(float* arr, long size, unsigned char type) {
             short* csmpl = (short*)malloc(size * sizeof(short));
             short* sptr = csmpl;
             for (int i = 0; i < size; aptr++, sptr++, i++) {
-                *sptr = (short)Clamp(*aptr * 32767.0f, -32768.0f, 32767.0f);
+                *sptr = (short)clampf(*aptr * 32767.0f, -32768.0f, 32767.0f);
             }
             rst = csmpl;
             break;
@@ -234,7 +234,7 @@ EXPORT void* aafc_float_to_int(float* arr, long size, unsigned char type) {
             int* csmpl = (int*)malloc(size * sizeof(int));
             int* sptr = csmpl;
             for (int i = 0; i < size; aptr++, sptr++, i++) {
-                *sptr = (short)Clamp(*aptr * 2147483647.0f, -2147483648.0f, 2147483647.0f);
+                *sptr = (short)clampf(*aptr * 2147483647.0f, -2147483648.0f, 2147483647.0f);
             }
             rst = csmpl;
             break;

@@ -60,7 +60,7 @@ inline float* resampleAudio(float* input, AAFC_HEADER* header, unsigned int samp
             y2 = (idx0 + 1 < splen ? idx0 + 1 : splen - 1) * channels + ch;
             y3 = (idx0 + 2 < splen ? idx0 + 2 : splen - 1) * channels + ch;
             mu = oindx - idx0;
-            *(rsmpled + ind) = cubic_interpolate(*(input + y0), *(input + y1), *(input + y2), *(input + y3), mu);
+            *(rsmpled + ind) = smooth_interpol(*(input + y0), *(input + y1), *(input + y2), *(input + y3), mu);
         }
     }
 

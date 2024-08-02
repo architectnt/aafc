@@ -52,8 +52,7 @@ typedef struct {
     size_t size;
 } AAFCOUTPUT;
 
-typedef enum // brought tragedy
-{
+typedef enum { // brought tragedy
     OUTPUT_T_FLOAT,
     OUTPUT_T_UNSIGNED_BYTE,
     OUTPUT_T_BYTE,
@@ -67,14 +66,14 @@ typedef struct decoutput {
 } AAFCDECOUTPUT;
 
 typedef struct {
-    size_t len;
+    unsigned long long int len;
     unsigned char* data;
 } DATATABLE;
 
-typedef struct
-{
+typedef struct {
     AAFC_HEADER header;
-    unsigned long long startloc;
+    unsigned long long int startloc;
+    char identifier[];
 } AAFCDEFINITIONTABLE;
 
 typedef struct {
@@ -85,7 +84,7 @@ typedef struct {
 
 typedef struct {
     char headr[4];
-    int version;
+    unsigned int version;
     FILETABLE* filetables;
     unsigned char size;
 } AAFCFILETABLE;

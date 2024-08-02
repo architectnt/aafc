@@ -6,9 +6,29 @@
 #ifndef HELPERS_H
 #define HELPERS_H 1
 
-#define Min(a, b) (((a) < (b)) ? (a) : (b))
-#define Max(a, b) (((a) > (b)) ? (a) : (b))
-#define Clamp(value, lower, upper) (Max(Min(value, upper), lower))
+static inline int minn(int a, int b) {
+    return (a < b) ? a : b;
+}
+
+static inline int maxx(int a, int b) {
+    return (a > b) ? a : b;
+}
+
+static inline int clampp(int val, int a, int b) {
+    return maxx(minn(val, b), a);
+}
+
+static inline int minf(float a, float b) {
+    return (a < b) ? a : b;
+}
+
+static inline int maxf(float a, float b) {
+    return (a > b) ? a : b;
+}
+
+static inline int clampf(float val, float a, float b) {
+    return maxf(minf(val, b), a);
+}
 
 // Constant division (allows faster computation)
 

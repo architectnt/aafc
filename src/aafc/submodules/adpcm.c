@@ -31,7 +31,7 @@ inline signed char* encode_adpcm(float* ptr, unsigned int samplelength, size_t* 
     bufferstep = 1;
 
     for (unsigned int i = 0; i < samplelength; ptr++, i++) {
-        short sample = (short)Clamp(*ptr * 32767.0f, -32768.0f, 32767.0f);
+        short sample = (short)clampf(*ptr * 32767.0f, -32768.0f, 32767.0f);
 
         diff = sample - valpred;
         sign = (diff < 0) ? 8 : 0;

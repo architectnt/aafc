@@ -8,7 +8,7 @@
 
 float lerp(float x0, float x1, float alpha);
 
-float cubic_interpolate(float y0, float y1, float y2, float y3, double mu);
+float smooth_interpol(float y0, float y1, float y2, float y3, double mu);
 
 // Convert to a minifloat implementation (also what the actual HARGH is going on)
 unsigned char minifloat(float val);

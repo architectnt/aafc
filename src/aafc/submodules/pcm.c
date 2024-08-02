@@ -34,12 +34,12 @@ inline void* encode_pcm(float* ptr, unsigned int samplelength, size_t* audsize, 
             unsigned char* sptr = stbs4;
 
             for (int i = 0; i < samplelength; ptr += 2, i += 2) {
-                int smp1 = (int)round(Clamp(*ptr * 7.0f, -8.0f, 7.0f));
+                int smp1 = (int)round(clampf(*ptr * 7.0f, -8.0f, 7.0f));
                 smp1 = smp1 < 0 ? smp1 + 16 : smp1;
 
                 int smp2 = 0;
                 if (i + 1 < samplelength) {
-                    smp2 = (int)round(Clamp(*(ptr + 1) * 7.0f, -8.0f, 7.0f));
+                    smp2 = (int)round(clampf(*(ptr + 1) * 7.0f, -8.0f, 7.0f));
                     smp2 = smp2 < 0 ? smp2 + 16 : smp2;
                 }
 
@@ -52,7 +52,7 @@ inline void* encode_pcm(float* ptr, unsigned int samplelength, size_t* audsize, 
             char* stbs8 = (char*)malloc(samplelength * sizeof(char));
             char* sptr = stbs8;
             for (int i = 0; i < samplelength; ptr++, sptr++, i++) {
-                *sptr = (char)round(Clamp(*ptr * 127.0f, -128.0f, 127.0f));
+                *sptr = (char)round(clampf(*ptr * 127.0f, -128.0f, 127.0f));
             }
             *audsize = samplelength * sizeof(unsigned char);
             return stbs8;
@@ -64,10 +64,10 @@ inline void* encode_pcm(float* ptr, unsigned int samplelength, size_t* audsize, 
 
             // i don't know what to say about this
             for (int i = 0; i < samplelength; i += 4) {
-                int sample1 = (int)round(Clamp(*(ptr + i) * 511.0f, -512.0f, 511.0f));
-                int sample2 = (i + 1 < samplelength) ? (int)round(Clamp(*(ptr + i + 1) * 511.0f, -512.0f, 511.0f)) : 0;
-                int sample3 = (i + 2 < samplelength) ? (int)round(Clamp(*(ptr + i + 2) * 511.0f, -512.0f, 511.0f)) : 0;
-                int sample4 = (i + 3 < samplelength) ? (int)round(Clamp(*(ptr + i + 3) * 511.0f, -512.0f, 511.0f)) : 0;
+                int sample1 = (int)round(clampf(*(ptr + i) * 511.0f, -512.0f, 511.0f));
+                int sample2 = (i + 1 < samplelength) ? (int)round(clampf(*(ptr + i + 1) * 511.0f, -512.0f, 511.0f)) : 0;
+                int sample3 = (i + 2 < samplelength) ? (int)round(clampf(*(ptr + i + 2) * 511.0f, -512.0f, 511.0f)) : 0;
+                int sample4 = (i + 3 < samplelength) ? (int)round(clampf(*(ptr + i + 3) * 511.0f, -512.0f, 511.0f)) : 0;
 
                 *sptr++ = (sample1 & 0xFF);
                 *sptr++ = ((sample1 >> 8) & 0x03) | ((sample2 & 0x3F) << 2);
@@ -85,11 +85,11 @@ inline void* encode_pcm(float* ptr, unsigned int samplelength, size_t* audsize, 
             char* sptr = stbs12;
 
             for (int i = 0; i < samplelength; i += 2) {
-                int sample1 = (int)Clamp(*(ptr + i) * 2047.0f, -2048.0f, 2047.0f);
+                int sample1 = (int)clampf(*(ptr + i) * 2047.0f, -2048.0f, 2047.0f);
                 if (sample1 < 0) sample1 = 0xFFF + sample1 + 1;
 
 
-                int sample2 = (i < samplelength) ? (int)Clamp(*(ptr + i + 1) * 2047.0f, -2048.0f, 2047.0f) : 0;
+                int sample2 = (i < samplelength) ? (int)clampf(*(ptr + i + 1) * 2047.0f, -2048.0f, 2047.0f) : 0;
                 if (sample2 < 0) sample1 = 0xFFF + sample1 + 1;
 
                 *sptr++ = (sample1 & 0xFF);
@@ -104,7 +104,7 @@ inline void* encode_pcm(float* ptr, unsigned int samplelength, size_t* audsize, 
             short* stbs16 = (short*)malloc(samplelength * sizeof(short));
             short* sptr = stbs16;
             for (int i = 0; i < samplelength; ptr++, sptr++, i++) {
-                *sptr = (short)Clamp(*ptr * 32767.0f, -32768.0f, 32767.0f);
+                *sptr = (short)clampf(*ptr * 32767.0f, -32768.0f, 32767.0f);
             }
             *audsize = samplelength * sizeof(short);
             return stbs16;
@@ -113,7 +113,7 @@ inline void* encode_pcm(float* ptr, unsigned int samplelength, size_t* audsize, 
             char* stbs24 = (char*)malloc(samplelength * 3 * sizeof(char));
             char* sptr = stbs24;
             for (int i = 0; i < samplelength; ptr++, i++) {
-                int spl24 = (int)Clamp(*ptr * 8388607.0f, -8388608.0f, 8388607.0f);
+                int spl24 = (int)clampf(*ptr * 8388607.0f, -8388608.0f, 8388607.0f);
     
                 if (spl24 < 0) {
                    spl24 = 0xFFFFFF + spl24 + 1;
@@ -219,7 +219,7 @@ inline void decode_pcm(const unsigned char* input, float* output, const unsigned
         }
         case 24: {
             for (unsigned int i = 0; i < sampleCount; output++, i++) {
-                int s24 = (int)(*(smpraw + 3 * i)) & 0xFF | ((int)(*(smpraw + 3 * i + 1)) & 0xFF) << 8 | ((int)(*(smpraw + 3 * i + 2)) & 0xFF) << 16;
+                int s24 = (int)((*(smpraw + 3 * i)) & 0xFF) | ((int)(*(smpraw + 3 * i + 1)) & 0xFF) << 8 | ((int)(*(smpraw + 3 * i + 2)) & 0xFF) << 16;
                 if (s24 & 0x800000) {
                     s24 |= 0xFF000000;
                 }

@@ -16,7 +16,7 @@ inline void* encode_sfpcm(float* ptr, unsigned int samplelength, size_t* audsize
             unsigned char* f8 = (unsigned char*)malloc(samplelength * sizeof(unsigned char));
             unsigned char* sptr = f8;
             for (unsigned int i = 0; i < samplelength; ptr++, sptr++, i++) {
-                *sptr = minifloat(Clamp(*ptr * 127.0f, -128.0f, 127.0f));
+                *sptr = minifloat(clampf(*ptr * 127.0f, -128.0f, 127.0f));
             }
 
             *audsize = samplelength * sizeof(unsigned char);

@@ -42,23 +42,22 @@ float sinc_interpolate(float* samples, int sampleCount, double t, int windowSize
 
     for (int i = start; i < end; ++i) {
         float sincValue = sinc(t - (double)i);
-        int cind = Clamp(i, 0, sampleCount);
+        int cind = clampf(i, 0, sampleCount);
         result += *(samples + cind) * sincValue;
     }
 
     return result;
 }
 
-float cubic_interpolate(float y0, float y1, float y2, float y3, double mu) {
-    float a0, a1, a2, a3, mu2;
+float smooth_interpol(float y0, float y1, float y2, float y3, double t) {
+    float a0, a1, a2, a3;
 
-    mu2 = mu * mu;
     a0 = -0.5f * y0 + 1.5f * y1 - 1.5f * y2 + 0.5f * y3;
     a1 = y0 - 2.5f * y1 + 2.0f * y2 - 0.5f * y3;
     a2 = -0.5f * y0 + 0.5f * y2;
     a3 = y1;
 
-    return (a0 * mu * mu2 + a1 * mu2 + a2 * mu + a3);
+    return ((a0 * t + a1) * t + a2) * t + a3;
 }
 
 unsigned char minifloat(float val) {
