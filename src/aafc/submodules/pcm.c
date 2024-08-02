@@ -166,8 +166,7 @@ inline void decode_pcm(const unsigned char* input, float* output, const unsigned
             break;
         }
         case 8: {
-            const char* sptr = (const char*)smpraw;
-            for (unsigned int i = 0; i < sampleCount; output++, sptr++, i++) {
+            for (const char* sptr = (const char*)smpraw, *n = sptr + sampleCount; sptr < n; output++, sptr++) {
                 *output = *sptr * INT8_REC;
             }
             break;
@@ -213,8 +212,7 @@ inline void decode_pcm(const unsigned char* input, float* output, const unsigned
             break;
         }
         case 16: {
-            const short* sptr = (const short*)smpraw;
-            for (unsigned int i = 0; i < sampleCount; output++, sptr++, i++) {
+            for (const short* sptr = (const short*)smpraw, *n = sptr + sampleCount; sptr < n; output++, sptr++) {
                 *output = *sptr * INT16_REC;
             }
             break;
@@ -230,9 +228,8 @@ inline void decode_pcm(const unsigned char* input, float* output, const unsigned
             break;
         }
         case 32: {
-            const float* inputf = (const float*)smpraw;
-            for (unsigned int i = 0; i < sampleCount; output++, i++) {
-                *output = *(inputf + i);
+            for (const float* sptr = (const float*)smpraw, *n = sptr + sampleCount; sptr < n; output++, sptr++) {
+                *output = *sptr;
             }
             break;
         }
