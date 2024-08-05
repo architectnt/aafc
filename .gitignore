@@ -1,5 +1,5 @@
 # standard git ignoring
-
+.DS_Store
 .vscode
 .vs
 bin

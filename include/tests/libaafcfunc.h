@@ -105,7 +105,7 @@ AAFC_HEADER* GrabHeader(const unsigned char* data) {
     AAFCGetHeader aheader = lib.getFunction<AAFCGetHeader>("aafc_getheader");
     if (aheader == NULL) {
         perror("Could not initialize AAFC functions.");
-        return {};
+        return NULL;
     }
     return aheader(data);
 }
