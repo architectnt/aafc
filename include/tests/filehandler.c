@@ -33,14 +33,14 @@ char** list_files(const char* dir, int* len) {
 		printf("cant get the first file >:((((((((((((((((: %d\n", GetLastError());
 		return NULL;
 	}
-	do {
+	while (FindNextFile(fhndl, &fdt) != 0){
 		if (!(fdt.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
 			snprintf(abs_file_path, sizeof(abs_file_path), "%s\\%s", dir, fdt.cFileName);
 			files = (char**)realloc(files, (*len + 1) * sizeof(char*));
 			files[*len] = strdup(abs_file_path);
 			(*len)++;
 		}
-	} while (FindNextFile(fhndl, &fdt) != 0);
+	}
 	FindClose(fhndl);
 
 #else

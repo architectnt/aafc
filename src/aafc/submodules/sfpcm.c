@@ -13,24 +13,25 @@
 inline void* encode_sfpcm(float* ptr, unsigned int samplelength, size_t* audsize, unsigned char bps) {
     switch (bps) {
         case 8: {
-            unsigned char* f8 = (unsigned char*)malloc(samplelength * sizeof(unsigned char));
-            unsigned char* sptr = f8;
+            unsigned char* stbs = (unsigned char*)malloc(samplelength);
+            unsigned char* sptr = stbs;
             for (unsigned int i = 0; i < samplelength; ptr++, sptr++, i++) {
                 *sptr = minifloat(clampf(*ptr * 127.0f, -128.0f, 127.0f));
             }
 
-            *audsize = samplelength * sizeof(unsigned char);
-            return f8;
+            *audsize = samplelength;
+            return stbs;
         }
         case 16: {
-            unsigned short* f16 = (unsigned short*)malloc(samplelength * sizeof(unsigned short));
-            unsigned short* sptr = f16;
+            size_t bsize = samplelength * sizeof(short);
+            unsigned short* stbs = (unsigned short*)malloc(bsize);
+            unsigned short* sptr = stbs;
             for (unsigned int i = 0; i < samplelength; ptr++, sptr++, i++) {
                 *sptr = halfpercision(*ptr);
             }
 
-            *audsize = samplelength * sizeof(unsigned short);
-            return f16;
+            *audsize = bsize;
+            return stbs;
         }
         default: {
             printf("AAFC PCM: invalid bits per sample. (8, 16, and 32 valid)\n");

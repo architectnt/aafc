@@ -34,11 +34,11 @@ This works best with Visual Studio instead of building through CLI as of now.\
 mkdir build
 cd build
 cmake ..
-make -j
-make install
+make
 ```
 
 ## AAFC TOOLS
+*you may have to enable the `BUILD_TOOLS` option*
 
 ### plyr
 Small player for debugging audio files\
@@ -49,14 +49,16 @@ Small player for debugging audio files\
 Convert standard audio formats to AAFC
 
 *CLI COMMANDS*\
-``-i <path>`` - Input of the file\
-``--batchi <path>`` - Input folder to batch convert files\
+``-i <path>`` - Input file\
 ``-ar <newsamplerate>`` - Resample audio to specifed sample rate\
+``-p <pitch>`` - Change relative pitch of the audio (1 is normal)\
+``-m`` - Force mono\
+``--batchi <path>`` - Input folder to batch convert files\
 ``--adpcm`` - Encode in ADPCM\
 ``--dpcm`` - Encode in NES-Style Delta PCM\
 ``--sfpcm`` - Encode in Small Float PCM\
-``--bps `` - Use specific bits per sample\
-``-m`` - Force mono
+``--ulaw`` - Encode in uLaw\
+``--bps`` - Use specific bits per sample
 
 *EXAMPLE*\
 ``./aud2aafc -i input.wav -m --adpcm -ar 16000``
@@ -65,6 +67,6 @@ Convert standard audio formats to AAFC
 ## FOOTNOTES
 Copyright (C) 2024 Architect Enterprises
 
-Architect Audio Clip Format (AAFC) is licenced under the [MIT](LICENSE) licence.
+Architect Audio Clip Format (AAFC) is licenced under the [MIT licence](LICENSE).
 
 AAFC is NOT meant to replace WAV or any PCM related format.

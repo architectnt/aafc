@@ -1,5 +1,0 @@
-if(WIN32)
-  target_sources(plyr PRIVATE ${PROJECT_SOURCE_DIR}/resources/win32/plyr_resource.rc)
-  target_sources(aud2aafc PRIVATE ${PROJECT_SOURCE_DIR}/resources/win32/aud2aafc_resource.rc)
-  target_sources(aafc_shared PRIVATE ${PROJECT_SOURCE_DIR}/resources/win32/aafc_resource.rc)
-endif()

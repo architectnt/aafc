@@ -5,6 +5,9 @@
 
 #include <aafc.h>
 
+#define BIAS 0x84
+#define CLIP 32635
+
 static const short exp_lut[256] = {
   0, 0, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3,
   4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,

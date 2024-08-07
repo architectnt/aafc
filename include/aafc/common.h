@@ -6,9 +6,7 @@
 #ifndef COMMON_H
 #define COMMON_H 1
 
-float lerp(float x0, float x1, float alpha);
-
-float smooth_interpol(float y0, float y1, float y2, float y3, double mu);
+float smooth_interpol(float y0, float y1, float y2, float y3, double t);
 
 // Convert to a minifloat implementation (also what the actual HARGH is going on)
 unsigned char minifloat(float val);
@@ -21,9 +19,5 @@ float dminif(unsigned char val);
 
 // conversion back to float (half)
 float dhalf(unsigned short val);
-
-float sinc(float x);
-
-float sinc_interpolate(float* samples, int sampleCount, double t, int windowSize);
 
 #endif

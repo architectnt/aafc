@@ -11,9 +11,9 @@
 #include "dpcm.h"
 
 inline unsigned char* encode_dpcm(float* ptr, unsigned int samplelength, size_t* audsize) {
-    int bytesize = (samplelength + 7) / 8;
-    unsigned char* dpcm_base = (unsigned char*)malloc(bytesize);
-    memset(dpcm_base, 0, bytesize);
+    size_t bsize = (samplelength + 7) / 8;
+    unsigned char* dpcm_base = (unsigned char*)malloc(bsize);
+    memset(dpcm_base, 0, bsize);
 
     float prevsample = 0;
     float dlt;
@@ -54,7 +54,7 @@ inline unsigned char* encode_dpcm(float* ptr, unsigned int samplelength, size_t*
         prevsample += ((b == 0) ? -threshold : threshold);
     }
 
-    *audsize = bytesize;
+    *audsize = bsize;
     return dpcm_base;
 }
 

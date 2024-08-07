@@ -47,6 +47,18 @@ typedef struct {
     unsigned char sampletype;
 } AAFC_HEADER;
 
+typedef struct { // reserved for the next
+    char headr[4];
+    unsigned int version;
+    unsigned int freq;
+    unsigned char channels;
+    unsigned int samplelength;
+    unsigned char bps;
+    unsigned char sampletype;
+    unsigned int loopst;
+    unsigned int loopend;
+} AAFCNX_HEADER;
+
 typedef struct {
     unsigned char* data;
     size_t size;
@@ -74,11 +86,11 @@ typedef struct {
     AAFC_HEADER header;
     unsigned long long int startloc;
     char identifier[];
-} AAFCDEFINITIONTABLE;
+} AAFCTABLEDEFINITION;
 
 typedef struct {
     unsigned short size;
-    AAFCDEFINITIONTABLE* table;
+    AAFCTABLEDEFINITION* table;
     DATATABLE* data;
 } FILETABLE;
 

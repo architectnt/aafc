@@ -10,7 +10,7 @@
 #include "ulaw.h"
 
 inline unsigned char* encode_ulaw(float* ptr, unsigned int samplelength, size_t* audsize) {
-    unsigned char* ulaw_base = (unsigned char*)malloc(samplelength * sizeof(unsigned char));
+    unsigned char* ulaw_base = (unsigned char*)malloc(samplelength);
     unsigned char* ulaw = ulaw_base;
 
     const short* explut = exp_lut;
@@ -19,9 +19,9 @@ inline unsigned char* encode_ulaw(float* ptr, unsigned int samplelength, size_t*
         short sample = (short)clampf(*ptr * 32767.0f, -32768.0f, 32767.0f);
         short sign = (sample >> 8) & 0x80;
         if (sign != 0) sample = -sample;
-        if (sample > 32635) sample = 32635;
+        if (sample > CLIP) sample = CLIP;
 
-        sample += 0x84;
+        sample += BIAS;
         short exponent = *(explut + ((sample >> 7) & 0xFF));
         short mantissa = (sample >> (exponent + 3)) & 0x0F;
         *ulaw = ~(sign | (exponent << 4) | mantissa);

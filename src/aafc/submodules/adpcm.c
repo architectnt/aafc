@@ -11,7 +11,9 @@
 #include "adpcm.h"
 
 inline signed char* encode_adpcm(float* ptr, unsigned int samplelength, size_t* audsize) {
-    signed char* adpcm_base = (signed char*)malloc((samplelength / 2) * sizeof(signed char));
+    size_t bsize = samplelength / 2;
+
+    signed char* adpcm_base = (signed char*)malloc(bsize);
     signed char* adpcm = adpcm_base;
     const short* stptr = adpcm_step_size_table;
     const signed char* itbptr = adpcm_index_table;
@@ -84,7 +86,7 @@ inline signed char* encode_adpcm(float* ptr, unsigned int samplelength, size_t* 
         bufferstep = ~bufferstep & 0x01;
     }
 
-    *audsize = (samplelength * sizeof(signed char) / 2);
+    *audsize = bsize;
     return adpcm_base;
 }
 
@@ -94,16 +96,13 @@ inline void decode_adpcm(const unsigned char* input, float* output, const unsign
     const signed char* itbptr = adpcm_index_table;
 
     signed char index = 0;
-    short step;
+    short step = *stptr;
     signed char delta;
     int valpred = 0;
     int vpdiff;
-    unsigned char bufferstep;
+    unsigned char bufferstep = 0;
     int inputbuffer = 0;
     signed char sign;
-
-    step = *stptr;
-    bufferstep = 0;
 
     for (const float* n = output + sampleCount; output < n; output++) {
         if (bufferstep) {

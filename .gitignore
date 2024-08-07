@@ -6,3 +6,4 @@ bin
 out
 build
 CMakePresets.json
+CMakeSettings.json
