@@ -14,7 +14,7 @@ inline void* encode_pcm(float* ptr, unsigned int samplelength, size_t* audsize, 
     switch (bps) {
         case 1: { // unlol-ing all of this will break everything
             printf(":>\n");
-            size_t bsize = (samplelength + 7) / 8;
+            size_t bsize = ((size_t)samplelength + 7) / 8;
 
             unsigned char* stbs = (unsigned char*)malloc(bsize);
             memset(stbs, 0, bsize);
@@ -29,7 +29,7 @@ inline void* encode_pcm(float* ptr, unsigned int samplelength, size_t* audsize, 
         }
         case 4: { // LOL
             printf(";)\n");
-            size_t bsize = (samplelength + 1) / 2;
+            size_t bsize = ((size_t)samplelength + 1) / 2;
             unsigned char* stbs = (unsigned char*)malloc(bsize);
             unsigned char* sptr = stbs;
 
@@ -58,7 +58,7 @@ inline void* encode_pcm(float* ptr, unsigned int samplelength, size_t* audsize, 
             return stbs;
         }
         case 10:{
-            size_t bsize = ((samplelength + 3) / 4) * 5;
+            size_t bsize = ((size_t)(samplelength + 3) / 4) * 5;
             unsigned char* stbs = (unsigned char*)malloc(bsize);
             unsigned char* sptr = stbs;
 
@@ -80,7 +80,7 @@ inline void* encode_pcm(float* ptr, unsigned int samplelength, size_t* audsize, 
             return stbs;
         }
         case 12: {
-            size_t bsize = ((samplelength + 1) / 2) * 3;
+            size_t bsize = ((size_t)(samplelength + 1) / 2) * 3;
             char* stbs = (char*)malloc(bsize);
             char* sptr = stbs;
 
@@ -112,7 +112,7 @@ inline void* encode_pcm(float* ptr, unsigned int samplelength, size_t* audsize, 
             return stbs;
         }
         case 24: {
-            size_t bsize = samplelength * 3;
+            size_t bsize = (size_t)samplelength * 3;
 
             char* stbs = (char*)malloc(bsize);
             char* sptr = stbs;

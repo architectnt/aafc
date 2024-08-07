@@ -11,7 +11,7 @@
 #include "dpcm.h"
 
 inline unsigned char* encode_dpcm(float* ptr, unsigned int samplelength, size_t* audsize) {
-    size_t bsize = (samplelength + 7) / 8;
+    size_t bsize = ((size_t)samplelength + 7) / 8;
     unsigned char* dpcm_base = (unsigned char*)malloc(bsize);
     memset(dpcm_base, 0, bsize);
 
