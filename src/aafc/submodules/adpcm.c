@@ -10,7 +10,7 @@
 #include <aafc.h>
 #include "adpcm.h"
 
-inline signed char* encode_adpcm(float* ptr, unsigned int samplelength, size_t* audsize) {
+signed char* encode_adpcm(float* ptr, unsigned int samplelength, size_t* audsize) {
     size_t bsize = samplelength / 2;
 
     signed char* adpcm_base = (signed char*)malloc(bsize);
@@ -90,7 +90,7 @@ inline signed char* encode_adpcm(float* ptr, unsigned int samplelength, size_t* 
     return adpcm_base;
 }
 
-inline void decode_adpcm(const unsigned char* input, float* output, const unsigned int sampleCount) {
+void decode_adpcm(const unsigned char* input, float* output, const unsigned int sampleCount) {
     const signed char* adpcm = (const signed char*)(input + sizeof(AAFC_HEADER));
     const short* stptr = adpcm_step_size_table;
     const signed char* itbptr = adpcm_index_table;

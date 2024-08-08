@@ -10,7 +10,7 @@
 #include <aafc.h>
 #include "modifiers.h"
 
-inline void forceMono(float* input, AAFC_HEADER* header, unsigned char* channels, unsigned int* samplelength) {
+void forceMono(float* input, AAFC_HEADER* header, unsigned char* channels, unsigned int* samplelength) {
     if (*channels > 1) {
         const unsigned int splen = *samplelength / *channels;
         unsigned char chn;
@@ -30,7 +30,7 @@ inline void forceMono(float* input, AAFC_HEADER* header, unsigned char* channels
     }
 }
 
-inline float* resampleAudio(float* input, AAFC_HEADER* header, unsigned int samplerateoverride, unsigned int freq, unsigned char channels, unsigned int* samplelength, float pitch) {
+float* resampleAudio(float* input, AAFC_HEADER* header, unsigned int samplerateoverride, unsigned int freq, unsigned char channels, unsigned int* samplelength, float pitch) {
     if (pitch == 0)
         pitch = 1;
 
@@ -73,7 +73,7 @@ inline float* resampleAudio(float* input, AAFC_HEADER* header, unsigned int samp
     return rsmpled;
 }
 
-inline float* force_independent_channels(float* input, const unsigned char channels, const unsigned int samplelength) {
+float* force_independent_channels(float* input, const unsigned char channels, const unsigned int samplelength) {
     float* output = (float*)malloc(samplelength * sizeof(float));
 
     const unsigned int splen = samplelength / channels;
@@ -87,7 +87,7 @@ inline float* force_independent_channels(float* input, const unsigned char chann
     return output;
 }
 
-inline float* normalize(float* input, const unsigned int len) {
+float* normalize(float* input, const unsigned int len) {
     if (input == NULL || len <= 0)
         return input;
 
@@ -108,7 +108,7 @@ inline float* normalize(float* input, const unsigned int len) {
     return input;
 }
 
-inline float* force_interleave_channels(float* input, const unsigned char channels, const unsigned int samplelength) {
+float* force_interleave_channels(float* input, const unsigned char channels, const unsigned int samplelength) {
     if (!input || channels <= 0 || samplelength <= 0)
         return NULL;
 

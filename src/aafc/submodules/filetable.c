@@ -6,14 +6,14 @@
 #include <aafc.h>
 #include "filetable.h"
 
-inline AAFCOUTPUT create_filetable_stream(AAFCFILETABLE* ftable) {
+AAFCOUTPUT create_filetable_stream(AAFCFILETABLE* ftable) {
     // TODO: REWORK FILE TABLES
 
     AAFCOUTPUT output = { };
     return output;
 }
 
-inline AAFCFILETABLE* decode_filetable_stream(unsigned char* data) {
+AAFCFILETABLE* decode_filetable_stream(unsigned char* data) {
     if (aftheader_valid(data)) {
         AAFCFILETABLE* ftable = (AAFCFILETABLE*)malloc(sizeof(AAFCFILETABLE));
 

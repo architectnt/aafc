@@ -10,7 +10,7 @@
 #include <aafc.h>
 #include "dpcm.h"
 
-inline unsigned char* encode_dpcm(float* ptr, unsigned int samplelength, size_t* audsize) {
+unsigned char* encode_dpcm(float* ptr, unsigned int samplelength, size_t* audsize) {
     size_t bsize = ((size_t)samplelength + 7) / 8;
     unsigned char* dpcm_base = (unsigned char*)malloc(bsize);
     memset(dpcm_base, 0, bsize);
@@ -58,7 +58,7 @@ inline unsigned char* encode_dpcm(float* ptr, unsigned int samplelength, size_t*
     return dpcm_base;
 }
 
-inline void decode_dpcm(const unsigned char* input, float* output, const unsigned int sampleCount) {
+void decode_dpcm(const unsigned char* input, float* output, const unsigned int sampleCount) {
     const unsigned char* smpraw = input + sizeof(AAFC_HEADER);
     float prevsmpl = 0;
     float delta = 0.0256;

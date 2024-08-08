@@ -10,7 +10,7 @@
 #include <aafc.h>
 #include "pcm.h"
 
-inline void* encode_pcm(float* ptr, unsigned int samplelength, size_t* audsize, unsigned char bps) {
+void* encode_pcm(float* ptr, unsigned int samplelength, size_t* audsize, unsigned char bps) {
     switch (bps) {
         case 1: { // unlol-ing all of this will break everything
             printf(":>\n");
@@ -19,8 +19,7 @@ inline void* encode_pcm(float* ptr, unsigned int samplelength, size_t* audsize, 
             unsigned char* stbs = (unsigned char*)malloc(bsize);
             memset(stbs, 0, bsize);
 
-            for (int i = 0; i < samplelength; ptr++, i++)
-            {
+            for (int i = 0; i < samplelength; ptr++, i++) {
                 unsigned char bit = (*ptr >= 0) ? 1 : 0;
                 *(stbs + (i / 8)) |= bit << (i % 8);
             }
@@ -145,7 +144,7 @@ inline void* encode_pcm(float* ptr, unsigned int samplelength, size_t* audsize, 
     }
 }
 
-inline void decode_pcm(const unsigned char* input, float* output, const unsigned int sampleCount, const unsigned char bps) {
+void decode_pcm(const unsigned char* input, float* output, const unsigned int sampleCount, const unsigned char bps) {
     const unsigned char* smpraw = input + sizeof(AAFC_HEADER);
 
     switch (bps) {

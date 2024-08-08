@@ -24,5 +24,5 @@ static const short adpcm_step_size_table[89] = {
     15289, 16818, 18500, 20350, 22385, 24623, 27086, 29794, 32767
 };
 
-extern inline signed char* encode_adpcm(float* ptr, unsigned int samplelength, size_t* audsize);
-extern inline void decode_adpcm(const unsigned char* input, float* output, const unsigned int sampleCount);
+signed char* encode_adpcm(float* ptr, unsigned int samplelength, size_t* audsize);
+void decode_adpcm(const unsigned char* input, float* output, const unsigned int sampleCount);
