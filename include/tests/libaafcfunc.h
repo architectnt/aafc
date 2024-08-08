@@ -33,76 +33,68 @@ typedef AAFCOUTPUT (*AFTExport)(AAFCFILETABLE* ftable);
 typedef AAFCFILETABLE* (*AFTImport)(unsigned char* data);
 
 
-class SharedLibraryHelper{
-public:
-    static SharedLibraryHelper& getInstance(const std::string& dllPath) {
-        static SharedLibraryHelper instance(dllPath);
-        return instance;
-    }
-
-    // o        h                .                   .
-    template<typename T> T getFunction(const std::string& functionName) {
-        if (!handle) {
-            return nullptr;
-        }
-#ifdef _WIN32
-        T func = reinterpret_cast<T>(GetProcAddress(static_cast<HMODULE>(handle), functionName.c_str()));
-        if (!func) {
-            std::cerr << "function get failure: " << functionName << std::endl;
-        }
-#else
-        T func = reinterpret_cast<T>(dlsym(handle, functionName.c_str()));
-        const char* error = dlerror();
-        if (error) {
-            std::cerr << "function get failure: " << functionName << " - " << error << std::endl;
-            func = nullptr;
-        }
-#endif
-        return func;
-    }
+class LibHandler{
 private:
     void* handle;
 
-    SharedLibraryHelper(const std::string& dllPath) : handle(nullptr) {
+    LibHandler(const char* path) : handle(nullptr) {
 #ifdef _WIN32
-        handle = LoadLibrary(dllPath.c_str());
-        if (!handle) {
-            std::cerr << "couldn't load dll: " << dllPath << std::endl;
-        }
+        handle = LoadLibrary(path);
+        if (!handle) std::cerr << "couldn't load dll: " << path << std::endl;
 #else
-        handle = dlopen(dllPath.c_str(), RTLD_LAZY);
-        if (!handle) {
-            std::cerr << "couldn't load .so: " << dllPath << std::endl;
-        }
+        handle = dlopen(path, RTLD_LAZY);
+        if (!handle) std::cerr << "couldn't load .so: " << path << std::endl;
 #endif
     }
 
-    ~SharedLibraryHelper() {
+    ~LibHandler() {
         if (handle) {
 #ifdef _WIN32
-            FreeLibrary(static_cast<HMODULE>(handle));
+            FreeLibrary((HMODULE)handle);
 #else
             dlclose(handle);
 #endif
         }
     }
 
-    SharedLibraryHelper(const SharedLibraryHelper&) = delete;
-    SharedLibraryHelper& operator=(const SharedLibraryHelper&) = delete;
+    LibHandler(const LibHandler&) = delete;
+    LibHandler& operator=(const LibHandler&) = delete;
+public:
+    static LibHandler& getInstance(const char* path) {
+        static LibHandler instance(path);
+        return instance;
+    }
+
+    // o        h                .                   .
+    template<typename T> T getFunc(const char* name) {
+        if (!handle)
+            return nullptr;
+#ifdef _WIN32
+        T func = (T)GetProcAddress((HMODULE)handle, name);
+        if (!func) std::cerr << "function get failure: " << name << std::endl;
+#else
+        T func = (T)dlsym(handle, name);
+        const char* error = dlerror();
+        if (error) {
+            std::cerr << "function get failure: " << name << " - " << error << std::endl;
+            func = nullptr;
+        }
+#endif
+        return func;
+    }
 };
 
 AAFCDECOUTPUT LoadAAFC(const unsigned char* data) {
-    SharedLibraryHelper& lib = SharedLibraryHelper::getInstance(LIB_AAFC_RPATH);
-    AAFCImport aimport = lib.getFunction<AAFCImport>("aafc_import");
+    AAFCImport aimport = LibHandler::getInstance(LIB_AAFC_RPATH).getFunc<AAFCImport>("aafc_import");
     if (!aimport) {
+        perror("Could not initialize AAFC functions.");
         return {};
     }
     return aimport(data);
 }
 
 AAFC_HEADER* GrabHeader(const unsigned char* data) {
-    SharedLibraryHelper& lib = SharedLibraryHelper::getInstance(LIB_AAFC_RPATH);
-    AAFCGetHeader aheader = lib.getFunction<AAFCGetHeader>("aafc_getheader");
+    AAFCGetHeader aheader = LibHandler::getInstance(LIB_AAFC_RPATH).getFunc<AAFCGetHeader>("aafc_getheader");
     if (aheader == NULL) {
         perror("Could not initialize AAFC functions.");
         return NULL;
@@ -111,8 +103,7 @@ AAFC_HEADER* GrabHeader(const unsigned char* data) {
 }
 
 AAFCOUTPUT ExportAAFC(float* samples, unsigned int freq, unsigned int channels, unsigned int samplelength, unsigned char bps = 16, unsigned char sampletype = 1, bool forcemono = false, unsigned int samplerateoverride = 0, bool normalize = false, float pitch = 1) {
-    SharedLibraryHelper& lib = SharedLibraryHelper::getInstance(LIB_AAFC_RPATH);
-    AAFCExport aexport = lib.getFunction<AAFCExport>("aafc_export");
+    AAFCExport aexport = LibHandler::getInstance(LIB_AAFC_RPATH).getFunc<AAFCExport>("aafc_export");
     if (aexport == NULL) {
         perror("Could not initialize AAFC functions.");
         return { nullptr, 0 };
@@ -121,8 +112,7 @@ AAFCOUTPUT ExportAAFC(float* samples, unsigned int freq, unsigned int channels, 
 }
 
 AAFCOUTPUT ExportAFT(AAFCFILETABLE* ftable) {
-    SharedLibraryHelper& lib = SharedLibraryHelper::getInstance(LIB_AAFC_RPATH);
-    AFTExport aftexp = lib.getFunction<AFTExport>("aft_export");
+    AFTExport aftexp = LibHandler::getInstance(LIB_AAFC_RPATH).getFunc<AFTExport>("aft_export");
     if (aftexp == NULL) {
         perror("Could not initialize AAFC functions.");
         return { nullptr, 0 };

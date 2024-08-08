@@ -176,8 +176,7 @@ AAFCOUTPUT ReadFile(const char* path) {
 		return {};
 	}
 
-	size_t byrd = fread(data, 1, fsize, file);
-	if (byrd != fsize) {
+	if (fread(data, 1, fsize, file) != fsize) {
 		perror("error trying to load the file");
 		fclose(file);
 		return {};
