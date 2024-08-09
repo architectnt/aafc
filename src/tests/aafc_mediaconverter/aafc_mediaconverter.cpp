@@ -74,7 +74,7 @@ int main(int argc, char* argv[]) {
 	bool normalize = false;
 	int batchlength;
 	char** batchfiles;
-	char* dirnm;
+	const char* dirnm;
 	unsigned char sampletype = 1;
 	unsigned int resampleoverride = 0;
 	float pitch = 1;
@@ -111,7 +111,7 @@ int main(int argc, char* argv[]) {
 		else if (input == "--batchi") {
 			batchconvert = true;
 			batchfiles = list_files(argv[++i], &batchlength);
-			dirnm = get_dir_name(argv[i]);
+			dirnm = strip_path_last(argv[i]);
 			printf("Batch converting files from %s\n", dirnm);
 		}
 		else if (input == "-ar" && i + 1 < argc) {
@@ -121,17 +121,17 @@ int main(int argc, char* argv[]) {
 	mkdir("aafc_conversions", 0755);
 
 	if (batchconvert) {
-		std::stringstream dirp; dirp << "aafc_conversions/" << dirnm;
+		char dirp[256];
+		snprintf(dirp, sizeof(dirp), "aafc_conversions/%s", dirnm);
 
-		mkdir(dirp.str().c_str(), 0755);
+		mkdir(dirp, 0755);
 
 		for (int i = 0; i < batchlength; i++) {
-			std::stringstream fbp; fbp << dirp.str().c_str() << "/" << filename_without_extension(batchfiles[i]) << ".aafc";
-
-			int rst = convertmedia(batchfiles[i], fbp.str().c_str(), usemono, normalize, outbps, sampletype, resampleoverride, pitch);
+			int rst = convertmedia(batchfiles[i], concat_path(dirp, filename_without_extension(batchfiles[i])), usemono, normalize, outbps, sampletype, resampleoverride, pitch);
 			if (rst == -1) {
 				continue;
-			} else if (rst < -1) {
+			}
+			else if (rst < -1) {
 				printf("aud2aafc: Failed to convert batch of media.\n");
 				return -128;
 			}
@@ -140,11 +140,13 @@ int main(int argc, char* argv[]) {
 		free(batchfiles);
 	}
 	else {
-		std::stringstream fp; fp << "aafc_conversions/" << filename_without_extension(fn) << ".aafc";
-		if (convertmedia(fn, fp.str().c_str(), usemono, normalize, outbps, sampletype, resampleoverride, pitch) != 0) {
-			printf("aud2aafc: Failed to convert  media.\n");
+		char* c = concat_path("aafc_conversions/", filename_without_extension(fn));
+		if (convertmedia(fn, c, usemono, normalize, outbps, sampletype, resampleoverride, pitch) != 0) {
+			free(c);
+			printf("aud2aafc: Failed to convert media.\n");
 			return -128;
 		}
+		free(c);
 	}
 
 	printf("aud2aafc: Completed conversion!\n");
