@@ -17,7 +17,7 @@
 #include <dirent.h>
 #endif
 
-static char** list_files(const char* dir, int* len) {
+static char** list_files(const char* dir, unsigned int* len) {
 	char** files = NULL;
 	*len = 0;
 	char abs_file_path[512];
@@ -30,7 +30,7 @@ static char** list_files(const char* dir, int* len) {
 	HANDLE fhndl = FindFirstFile(fullpath, &fdt);
 
 	if (fhndl == INVALID_HANDLE_VALUE) {
-		printf("cant get the first file >:((((((((((((((((: %d\n", GetLastError());
+		printf("cant get the first file >:((((((((((((((((: %lu\n", GetLastError());
 		return NULL;
 	}
 	while (FindNextFile(fhndl, &fdt) != 0){
