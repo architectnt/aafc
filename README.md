@@ -53,6 +53,7 @@ Convert standard audio formats to AAFC
 ``-ar <newsamplerate>`` - Resample audio to specifed sample rate\
 ``-p <pitch>`` - Change relative pitch of the audio (1 is normal)\
 ``-m`` - Force mono\
+``-n`` - Normalize\
 ``--batchi <path>`` - Input folder to batch convert files\
 ``--adpcm`` - Encode in ADPCM\
 ``--dpcm`` - Encode in NES-Style Delta PCM\
