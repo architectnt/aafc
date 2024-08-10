@@ -157,9 +157,6 @@ int main(int argc, char* argv[]) {
 	const PaStreamInfo* stri = Pa_GetStreamInfo(str);
 	sysfreq = (unsigned int)stri->sampleRate;
 	syschan = (unsigned char)2;
-
-	printf("%d %d\n", sysfreq, syschan);
-
 	Pa_StartStream(str);
 
 	while (!finished) {
