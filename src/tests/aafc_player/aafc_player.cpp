@@ -17,50 +17,66 @@
 #include <tests.h>
 
 unsigned int sysfreq;
+unsigned char syschan;
 
 AAFC_HEADER* adata;
 float* asmpls;
 double ipos = 0;
 bool finished = false;
 double totalDurationInSeconds;
+unsigned int splen;
 
-static int AudioHandler(const void* inputBuffer, void* outputBuffer, unsigned long framesPerBuffer, const PaStreamCallbackTimeInfo* timeInfo, PaStreamCallbackFlags statusFlags, void* userData) {
-	float* outspl = (float*)outputBuffer;
 
-	unsigned int smplen = adata->samplelength / adata->channels;
+// noooooo
+static inline double mind(double a, double b) {
+	return (a < b) ? a : b;
+}
 
-	for (unsigned int i = 0; i < framesPerBuffer; i++) {
-		unsigned int inputIndex = (unsigned int)ipos;
-		if (inputIndex >= smplen - 1) {
-			*(outspl + i * 2) = 0.0f;
-			*(outspl + i * 2 + 1) = 0.0f;
-			finished = true;
-		}
-		else {
-			double alpha = ipos - inputIndex;
-			float spleft = 0.0f, spright = 0.0f;
+static inline double maxd(double a, double b) {
+	return (a > b) ? a : b;
+}
 
-			if (inputIndex < smplen - 1) {
-				if (adata->channels == 1) {
-					spleft = spright = (1 - alpha) * asmpls[inputIndex] + alpha * asmpls[inputIndex + 1];
+static inline double clampd(double val, double a, double b) {
+	return maxf(minf(val, b), a);
+}
+
+static inline double lerp(double a, double b, double t) {
+	return a + (b - a) * clampd(t, 0.0f, 1.0f);
+}
+
+static int AudioHandler(const void* inp, void* outp, unsigned long frames, const PaStreamCallbackTimeInfo* tinfo, PaStreamCallbackFlags cflags, void* udata) {
+	memset(outp, 0, frames * sizeof(float));
+
+	float* outspl = (float*)outp;
+	unsigned char ch;
+	for (unsigned int i = 0; i < frames; i++) {
+		for(ch = 0; ch < syschan; ch++) {
+			float smpl = 0;
+			if(!finished) {
+				double spos = ipos + i * ((double)adata->freq / sysfreq);
+				if (spos >= splen - 1) {
+					ipos = 0;
+					finished = true;
 				}
-				else if (adata->channels == 2) {
-					spleft = (1 - alpha) * asmpls[2 * inputIndex] + alpha * asmpls[2 * (inputIndex + 1)];
-					spright = (1 - alpha) * asmpls[2 * inputIndex + 1] + alpha * asmpls[2 * (inputIndex + 1) + 1];
-				}
+
+				unsigned int index = (unsigned int)spos;
+				unsigned int nxind = (index + 1) % adata->samplelength;
+				double w = (spos - index);
+				
+				unsigned char sc = adata->channels > 1 ? ch : 0;
+				smpl = (float)lerp(*(asmpls + (index * adata->channels + sc)), *(asmpls + (nxind * adata->channels + sc)), w);
 			}
 
-			unsigned int bfri = i * 2;
-			*(outspl + bfri) = spleft;
-			*(outspl + bfri + 1) = spright;
-			ipos += (double)adata->freq / sysfreq;
+			*(outspl + i * syschan + ch) = smpl;
 		}
 	}
+
+	if(!finished) ipos += frames * (double)adata->freq / sysfreq;
 
 	return finished ? paComplete : paContinue;
 }
 
-void drawProgressBar(double esec, double tsec) {
+static void drawProgressBar(double esec, double tsec) {
 	const unsigned int barWidth = 32;
 
 	double progress = esec / tsec;
@@ -98,7 +114,8 @@ int main(int argc, char* argv[]) {
 		asmpls = outp.data;
 		adata = &outp.header;
 
-		totalDurationInSeconds = ((double)adata->samplelength / adata->channels) / adata->freq;
+		splen = adata->samplelength / adata->channels;
+		totalDurationInSeconds = ((double)splen) / adata->freq;
 		
 		const char* stypeformat;
 
@@ -137,10 +154,13 @@ int main(int argc, char* argv[]) {
 		return -1;
 	}
 
-	Pa_StartStream(str);
-
 	const PaStreamInfo* stri = Pa_GetStreamInfo(str);
 	sysfreq = (unsigned int)stri->sampleRate;
+	syschan = (unsigned char)2;
+
+	printf("%d %d\n", sysfreq, syschan);
+
+	Pa_StartStream(str);
 
 	while (!finished) {
 		drawProgressBar(ipos / adata->freq, totalDurationInSeconds);
