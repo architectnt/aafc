@@ -116,8 +116,7 @@ bool create_aftheader(AAFCFILETABLE* t) {
     if (t == NULL)
         return false;
 
-    memcpy(t->headr, AFT_STRING, sizeof(AFT_STRING));
+    t->signature = AFT_SIGNATURE;
     t->version = AAFCVERSION;
-
     return true;
 }

@@ -32,7 +32,8 @@
 #endif
 
 #define AAFC_STRING "AAFC"
-#define AFT_STRING "AFT"
+#define AAFC_SIGNATURE 0xAAFC
+#define AFT_SIGNATURE 0x0ADC
 
 // FORMATTED AS 'big SMALL TINY'
 #define AAFCVERSION 214
@@ -48,7 +49,7 @@ typedef struct {
 } AAFC_HEADER;
 
 typedef struct { // reserved for the next
-    char headr[4];
+    short signature;
     unsigned int version;
     unsigned int freq;
     unsigned char channels;
@@ -95,7 +96,7 @@ typedef struct {
 } FILETABLE;
 
 typedef struct {
-    char headr[4];
+    short signature;
     unsigned int version;
     FILETABLE* filetables;
     unsigned char size;
