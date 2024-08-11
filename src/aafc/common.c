@@ -79,8 +79,7 @@ float dminif(unsigned char val) {
 
     if (((val >> 3) & 0xF) == 0) {
         significand /= 8.0f;
-    }
-    else {
+    } else {
         significand += 0.5f;
     }
 
@@ -89,11 +88,15 @@ float dminif(unsigned char val) {
 }
 
 bool header_valid(const unsigned char* bytes) {
-    return *bytes == 'A' && *(bytes + 1) == 'A' && *(bytes + 2) == 'F' && *(bytes + 3) == 'C' && *((int*)bytes + 2) <= AAFCVERSION;
+    return *(unsigned short*)bytes == AAFC_SIGNATURE && *((unsigned short*)bytes + 1) <= AAFCVERSION;
+}
+
+bool legacy_header_valid(const unsigned char* bytes) {
+    return *bytes == 'A' && *(bytes + 1) == 'A' && *(bytes + 2) == 'F' && *(bytes + 3) == 'C' && *((unsigned int*)bytes + 2) <= AAFCVERSION;
 }
 
 bool aftheader_valid(const unsigned char* bytes) {
-    return *bytes == 'A' && *(bytes + 1) == 'F' && *(bytes + 2) == 'T' && *((int*)bytes + 2) <= AAFCVERSION;
+    return *(const unsigned short*)bytes == AFT_SIGNATURE && *((unsigned int*)bytes + 2) <= AAFCVERSION;
 }
 
 // this is what happens when you make A SINGLE STRUCT optional in your code.
@@ -101,13 +104,14 @@ AAFC_HEADER* create_header(unsigned int freq, unsigned char channels, unsigned i
     AAFC_HEADER* h = (AAFC_HEADER*)malloc(sizeof(AAFC_HEADER));
     if (h == NULL) return NULL;
 
-    memcpy(h->headr, AAFC_STRING, sizeof(AAFC_STRING));
+    h->signature = AAFC_SIGNATURE;
     h->version = AAFCVERSION;
     h->freq = freq;
     h->channels = channels;
     h->samplelength = samplelength;
     h->bps = bps;
     h->sampletype = sampletype;
+    h->loopst = h->loopend = 0;
 
     return h;
 }
@@ -117,6 +121,6 @@ bool create_aftheader(AAFCFILETABLE* t) {
         return false;
 
     t->signature = AFT_SIGNATURE;
-    t->version = AAFCVERSION;
+    t->version = AFTVERSION;
     return true;
 }

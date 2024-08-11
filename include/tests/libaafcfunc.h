@@ -106,7 +106,7 @@ AAFCOUTPUT ExportAAFC(float* samples, unsigned int freq, unsigned int channels, 
     AAFCExport aexport = LibHandler::getInstance(LIB_AAFC_RPATH).getFunc<AAFCExport>("aafc_export");
     if (aexport == NULL) {
         perror("Could not initialize AAFC functions.");
-        return { nullptr, 0 };
+        return {0, nullptr};
     }
     return aexport(samples, freq, channels, samplelength, bps, sampletype, forcemono, samplerateoverride, normalize, pitch);
 }
@@ -115,7 +115,7 @@ AAFCOUTPUT ExportAFT(AAFCFILETABLE* ftable) {
     AFTExport aftexp = LibHandler::getInstance(LIB_AAFC_RPATH).getFunc<AFTExport>("aft_export");
     if (aftexp == NULL) {
         perror("Could not initialize AAFC functions.");
-        return { nullptr, 0 };
+        return {0, nullptr};
     }
     return aftexp(ftable);
 }

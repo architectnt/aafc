@@ -63,7 +63,7 @@ set(AAFC_SRC
 	src/aafc/aafc.c
 	src/aafc/lib.h
 
-	"src/aafc/common.c"
+	src/aafc/common.c
 	src/aafc/submodules/filetable.h
 	src/aafc/submodules/filetable.c
 
@@ -90,9 +90,11 @@ if(BUILD_SHARED_LIBS)
 	message(STATUS "Building as shared library")
 	add_library(aafc SHARED ${AAFC_SRC})
 	target_compile_definitions(aafc PRIVATE BUILDING_SHARED_LIBRARY)
+	target_compile_definitions(aafc PRIVATE AAFC_FUNCT)
 else()
-message(STATUS "Building as static library")
+	message(STATUS "Building as static library")
 	add_library(aafc STATIC ${AAFC_SRC})
+	target_compile_definitions(aafc PRIVATE AAFC_FUNCT)
 endif()
 
 add_library(AAFC::aafc ALIAS aafc)

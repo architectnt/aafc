@@ -25,20 +25,32 @@
     #endif
 #else
     #if defined __GNUC__ || __clang__
-    #define EXPORT __attribute__((visibility("default")))
+        #define EXPORT __attribute__((visibility("default")))
     #else
-    #define EXPORT
+        #define EXPORT
     #endif
 #endif
 
-#define AAFC_STRING "AAFC"
-#define AAFC_SIGNATURE 0xAAFC
-#define AFT_SIGNATURE 0x0ADC
+#define AAFC_SIGNATURE 0xAAFC // aafc fits under hexadecimal !!!
+#define AFT_SIGNATURE 0x0AF7
 
 // FORMATTED AS 'big SMALL TINY'
-#define AAFCVERSION 214
+#define AAFCVERSION 300
+#define AFTVERSION 100
 
 typedef struct {
+    unsigned short signature;
+    unsigned short version;
+    unsigned int freq;
+    unsigned char channels;
+    unsigned char bps;
+    unsigned char sampletype;
+    unsigned int samplelength;
+    unsigned int loopst;
+    unsigned int loopend;
+} AAFC_HEADER;
+
+typedef struct { // used for older versions
     char headr[5];
     unsigned int version;
     unsigned int freq;
@@ -46,23 +58,11 @@ typedef struct {
     unsigned int samplelength;
     unsigned char bps;
     unsigned char sampletype;
-} AAFC_HEADER;
-
-typedef struct { // reserved for the next
-    short signature;
-    unsigned int version;
-    unsigned int freq;
-    unsigned char channels;
-    unsigned int samplelength;
-    unsigned char bps;
-    unsigned char sampletype;
-    unsigned int loopst;
-    unsigned int loopend;
-} AAFCNX_HEADER;
+} AAFC_LCHEADER;
 
 typedef struct {
-    unsigned char* data;
     size_t size;
+    unsigned char* data;
 } AAFCOUTPUT;
 
 typedef enum { // brought tragedy
@@ -93,23 +93,45 @@ typedef struct {
     unsigned short size;
     AAFCTABLEDEFINITION* table;
     DATATABLE* data;
-} FILETABLE;
+} TABLECONTENT;
 
 typedef struct {
-    short signature;
-    unsigned int version;
-    FILETABLE* filetables;
+    unsigned short signature;
+    unsigned short version;
     unsigned char size;
+    TABLECONTENT* filetables;
 } AAFCFILETABLE;
 
-// Compares if the input is a valid AAFC format
+// Compares if the input is a valid format
+bool legacy_header_valid(const unsigned char* bytes);
 bool header_valid(const unsigned char* bytes);
-
-// Compares if the input is a valid AAFC FILE TABLE format
 bool aftheader_valid(const unsigned char* bytes);
 
+#ifdef AAFC_FUNCT
 AAFC_HEADER* create_header(unsigned int freq, unsigned char channels, unsigned int samplelength, unsigned char bps, unsigned char sampletype);
-
 bool create_aftheader(AAFCFILETABLE* t);
 
+// Exports
+EXPORT AAFC_HEADER* aafc_getheader(const unsigned char* bytes);
+EXPORT AAFCOUTPUT aafc_export(float* samples, unsigned int freq, unsigned char channels, unsigned int samplelength, unsigned char bps, unsigned char sampletype, bool forcemono, unsigned int samplerateoverride, bool nm, float pitch);
+EXPORT AAFCDECOUTPUT aafc_import(const unsigned char* bytes);
+
+EXPORT float* aafc_chunk_read(const unsigned char* bytes, int start, int end);
+
+EXPORT void* aafc_float_to_int(float* arr, long size, unsigned char type);
+EXPORT void* aafc_int_to_float(void* arr, long size, unsigned char type);
+
+EXPORT float* aafc_resample_data(float* input, unsigned int samplerateoverride, unsigned int freq, unsigned char channels, unsigned int* samplelength, float pitch);
+EXPORT float* aafc_normalize(float* arr, int len);
+
+
+//TODO: aafc content tables
+#if 0
+EXPORT AAFCFILETABLE aft_create(unsigned char*** data, size_t tablelength, size_t* sizes);
+EXPORT AAFCOUTPUT aft_export(AAFCFILETABLE* ftable);
+EXPORT AAFCFILETABLE* aft_import(unsigned char* data);
+EXPORT AAFCOUTPUT aft_get_clip(AAFCFILETABLE* ftable, unsigned char group, unsigned short index);
 #endif
+#endif // AAFC_FUNCT
+
+#endif // AAFC_H

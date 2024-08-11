@@ -16,9 +16,9 @@ EXPORT AAFC_HEADER* aafc_getheader(const unsigned char* bytes) {
 }
 
 EXPORT AAFCOUTPUT aafc_export(float* samples, unsigned int freq, unsigned char channels, unsigned int samplelength, unsigned char bps, unsigned char sampletype, bool forcemono, unsigned int samplerateoverride, bool nm, float pitch) {
+    AAFCOUTPUT output = {0,NULL};
     if (!samples || bps == 0 || sampletype == 0) {
         printf("AAFC FATAL ERROR: samples, bps or sample type not set\n");
-        AAFCOUTPUT output = { NULL, 0 };
         return output;
     }
 
@@ -26,14 +26,12 @@ EXPORT AAFCOUTPUT aafc_export(float* samples, unsigned int freq, unsigned char c
 
     if (samplelength < 1) {
         printf("AAFC ERROR: samplelength cannot be below 1.\n");
-        AAFCOUTPUT output = { NULL, 0 };
         return output;
     }
 
     AAFC_HEADER* header = NULL;
     if ((header = create_header(freq, channels, samplelength, bps, sampletype)) == NULL) {
         printf("AAFC FATAL ERROR: could not allocate a new header.\n");
-        AAFCOUTPUT output = { NULL, 0 };
         return output;
     }
 
@@ -75,7 +73,6 @@ EXPORT AAFCOUTPUT aafc_export(float* samples, unsigned int freq, unsigned char c
         default: {
             free(header); free(rsptr);
             printf("AAFC ERROR: Invalid sample type!\n");
-            AAFCOUTPUT output = { NULL, 0 };
             return output;
         }
     }
@@ -83,7 +80,6 @@ EXPORT AAFCOUTPUT aafc_export(float* samples, unsigned int freq, unsigned char c
 
     if (!smpl) {
         free(rsptr); free(header);
-        AAFCOUTPUT output = { NULL, 0 };
         return output;
     }
 
@@ -96,24 +92,24 @@ EXPORT AAFCOUTPUT aafc_export(float* samples, unsigned int freq, unsigned char c
     free(smpl);
     if (rsptr != samples) free(rsptr);
 
-    AAFCOUTPUT output = { rst, tdsize };
+    output = (AAFCOUTPUT){ tdsize, rst };
     return output;
 }
 
 EXPORT AAFCDECOUTPUT aafc_import(const unsigned char* bytes) {
+    AAFCDECOUTPUT output = { (AAFC_HEADER){0}, NULL };
     if (!header_valid(bytes)) {
         printf("AAFC: invalid aafc data\n");
-        AAFCDECOUTPUT noutp = { };
-        return noutp;
+        return output;
     }
 
-    const AAFC_HEADER* header = (AAFC_HEADER*)bytes; // evil
-    AAFCDECOUTPUT output = { *header, NULL };
+    const AAFC_HEADER* header = (const AAFC_HEADER*)bytes; // evil
+    output.header = *header;
 
     if ((output.data = (float*)malloc(header->samplelength * sizeof(float))) == NULL) /* that's something */ {
         printf("AAFC: FAILED ALLOCATION OF DATA\n");
-        AAFCDECOUTPUT noutp = { };
-        return noutp;
+        output.header = (AAFC_HEADER){ 0 };
+        return output;
     }
     float* rsptr = output.data;
 
@@ -148,15 +144,12 @@ EXPORT AAFCDECOUTPUT aafc_import(const unsigned char* bytes) {
         default: {
             free(output.data);
             printf("AAFC IMPORT ERROR: Invalid sample type!\n");
-            AAFCDECOUTPUT noutp = { };
-            return noutp;
+            output.header = (AAFC_HEADER){0};
         }
     }
 
-    if (output.data == NULL) {
-        AAFCDECOUTPUT noutp = { };
-        return noutp;
-    }
+    if (output.data == NULL)
+        output.header = (AAFC_HEADER){0};
 
     return output;
 }
@@ -164,7 +157,7 @@ EXPORT AAFCDECOUTPUT aafc_import(const unsigned char* bytes) {
 EXPORT float* aafc_chunk_read(const unsigned char* bytes, int start, int end)
 {
     float* samples = (float*)malloc(end * sizeof(float));
-    if (header_valid(bytes)) {
+    if (legacy_header_valid(bytes)) {
         AAFC_HEADER* header = (AAFC_HEADER*)bytes;
         int sampleCount = header->samplelength;
         int bps = header->bps;
@@ -323,7 +316,7 @@ EXPORT AAFCOUTPUT aft_get_clip(AAFCFILETABLE* ftable, unsigned char group, unsig
 
     DATATABLE* datatable = &filetable->data[index];
 
-    AAFCOUTPUT output = { datatable->data, datatable->len };
+    AAFCOUTPUT output = {datatable->len, datatable->data};
     return output;
 }
 

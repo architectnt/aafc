@@ -19,8 +19,7 @@
 unsigned int sysfreq;
 unsigned char syschan;
 
-AAFC_HEADER* adata;
-float* asmpls;
+AAFCDECOUTPUT outp;
 double ipos = 0;
 bool finished = false;
 double totalDurationInSeconds;
@@ -44,34 +43,34 @@ static inline double lerp(double a, double b, double t) {
 	return a + (b - a) * clampd(t, 0.0f, 1.0f);
 }
 
-static int AudioHandler(const void* inp, void* outp, unsigned long frames, const PaStreamCallbackTimeInfo* tinfo, PaStreamCallbackFlags cflags, void* udata) {
-	memset(outp, 0, frames * sizeof(float));
+static int AudioHandler(const void* inp, void* otp, unsigned long frames, const PaStreamCallbackTimeInfo* tinfo, PaStreamCallbackFlags cflags, void* udata) {
+	memset(otp, 0, frames * sizeof(float));
 
-	float* outspl = (float*)outp;
+	float* outspl = (float*)otp;
 	unsigned char ch;
 	for (unsigned int i = 0; i < frames; i++) {
 		for(ch = 0; ch < syschan; ch++) {
 			float smpl = 0;
 			if(!finished) {
-				double spos = ipos + i * ((double)adata->freq / sysfreq);
+				double spos = ipos + i * ((double)outp.header.freq / sysfreq);
 				if (spos >= splen - 1) {
 					ipos = 0;
 					finished = true;
 				}
 
 				unsigned int index = (unsigned int)spos;
-				unsigned int nxind = (index + 1) % adata->samplelength;
+				unsigned int nxind = (index + 1) % outp.header.samplelength;
 				double w = (spos - index);
 				
-				unsigned char sc = adata->channels > 1 ? ch : 0;
-				smpl = (float)lerp(*(asmpls + (index * adata->channels + sc)), *(asmpls + (nxind * adata->channels + sc)), w);
+				unsigned char sc = outp.header.channels > 1 ? ch : 0;
+				smpl = (float)lerp(*(outp.data + (index * outp.header.channels + sc)), *(outp.data + (nxind * outp.header.channels + sc)), w);
 			}
 
 			*(outspl + i * syschan + ch) = smpl;
 		}
 	}
 
-	if(!finished) ipos += frames * (double)adata->freq / sysfreq;
+	if(!finished) ipos += frames * (double)outp.header.freq / sysfreq;
 
 	return finished ? paComplete : paContinue;
 }
@@ -105,21 +104,18 @@ int main(int argc, char* argv[]) {
 		printf("loading AAFC file.. ");
 
 		AAFCOUTPUT aafcfile = ReadFile(argv[1]);
-		AAFCDECOUTPUT outp = LoadAAFC(aafcfile.data);
+		outp = LoadAAFC(aafcfile.data);
 		if (outp.data == NULL) {
 			fprintf(stderr, "Failed to load AAFC\n");
 			return -1;
 		}
 
-		asmpls = outp.data;
-		adata = &outp.header;
-
-		splen = adata->samplelength / adata->channels;
-		totalDurationInSeconds = ((double)splen) / adata->freq;
+		splen = outp.header.samplelength / outp.header.channels;
+		totalDurationInSeconds = ((double)splen) / outp.header.freq;
 		
 		const char* stypeformat;
 
-		switch (adata->sampletype) {
+		switch (outp.header.sampletype) {
 			case 1:
 				stypeformat = "PCM";
 				break;
@@ -140,7 +136,7 @@ int main(int argc, char* argv[]) {
 				break;
 		}
 
-		printf("Loaded!\n\n-METADATA-\n[Sample Frequency: %d | Channels: %d | Sample Type: %s | AAFC VERSION EXPORTED: AAFC v%d] \n", adata->freq, adata->channels, stypeformat, adata->version);
+		printf("Loaded!\n\n-METADATA-\n[Sample Frequency: %d | Channels: %d | Sample Type: %s | AAFC VERSION EXPORTED: AAFC v%d] \n", outp.header.freq, outp.header.channels, stypeformat, outp.header.version);
 	}
 	else {
 		perror("aafc player requires a specifed path argument.");
@@ -155,12 +151,14 @@ int main(int argc, char* argv[]) {
 	}
 
 	const PaStreamInfo* stri = Pa_GetStreamInfo(str);
-	sysfreq = (unsigned int)stri->sampleRate;
-	syschan = (unsigned char)2;
+	if (stri) {
+		sysfreq = (unsigned int)stri->sampleRate;
+		syschan = 2;
+	}
 	Pa_StartStream(str);
 
 	while (!finished) {
-		drawProgressBar(ipos / adata->freq, totalDurationInSeconds);
+		drawProgressBar(ipos / outp.header.freq, totalDurationInSeconds);
 		Pa_Sleep(100);
 	}
 

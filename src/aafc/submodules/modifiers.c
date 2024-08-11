@@ -94,8 +94,8 @@ float* normalize(float* input, const unsigned int len) {
     float mx = 0.0f;
     float* ptr;
     for (ptr = input; ptr < input + len; ptr++) {
-        if (*ptr > mx)
-            mx = *ptr;
+        if (fabsf(*ptr) > mx)
+            mx = fabsf(*ptr);
     }
 
     if (mx < 1e-6) 

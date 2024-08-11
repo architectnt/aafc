@@ -146,5 +146,5 @@ static AAFCOUTPUT ReadFile(const char* path) {
 	}
 
 	fclose(file);
-	return {data, fsize};
+	return {fsize, data};
 }
