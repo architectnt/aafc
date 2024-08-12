@@ -1,5 +1,5 @@
 ﻿cmake_minimum_required(VERSION 3.11) # 3.11 because of the tools
-project(aafc VERSION 2 LANGUAGES C CXX)
+project(aafc VERSION 3 LANGUAGES C CXX)
 
 option(BUILD_TOOLS "Build AAFC tools" OFF)
 option(BUILD_SHARED_LIBS "Build shared libraries" OFF)

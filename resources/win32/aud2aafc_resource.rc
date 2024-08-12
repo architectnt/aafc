@@ -6,8 +6,8 @@ _AUD2AAFC ICON "../img/auta.ico"
 #define IDR_VERSION1                    1
 
 VS_VERSION_INFO VERSIONINFO
-FILEVERSION 2,1,4,0
-PRODUCTVERSION 2,1,4,0
+FILEVERSION 3,0,0,0
+PRODUCTVERSION 3,0,0,0
 FILEFLAGSMASK 0x3fL
 FILEFLAGS 0x0L
 FILEOS 0x40004L
@@ -20,11 +20,11 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Architect Enterprises"
             VALUE "FileDescription", "Standard to AAFC converter"
-            VALUE "FileVersion", "2.1.4.0"
+            VALUE "FileVersion", "3.0.0.0"
             VALUE "InternalName", "Audio2aafc"
             VALUE "OriginalFilename", "aud2aafc.exe"
             VALUE "ProductName", "AAFC"
-            VALUE "ProductVersion", "2.1.4.0"
+            VALUE "ProductVersion", "3.0.0.0"
         END
     END
     BLOCK "VarFileInfo"
