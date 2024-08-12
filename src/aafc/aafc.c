@@ -163,7 +163,7 @@ EXPORT float* aafc_chunk_read(const unsigned char* bytes, int start, int end)
         int bps = header->bps;
         const unsigned char* smpraw = bytes + sizeof(AAFC_HEADER);
 
-        //TODO: support more sample types
+        //TODO: support more sample types perhaps
 
         if (bps == 8) {
             const char* sptr = (const char*)smpraw;
@@ -207,8 +207,7 @@ EXPORT void* aafc_float_to_int(float* arr, long size, unsigned char type) {
     switch (type) {
         case 8: {
             char* csmpl = (char*)malloc(size * sizeof(char));
-            char* sptr = csmpl;
-            for (int i = 0; i < size; aptr++, sptr++, i++) {
+            for (char* sptr = csmpl, *n = sptr + size; n < size; aptr++, sptr++) {
                 *sptr = (char)round(clampf(*aptr * 127.0f, -128.0f, 127.0f));
             }
             rst = csmpl;
@@ -216,8 +215,7 @@ EXPORT void* aafc_float_to_int(float* arr, long size, unsigned char type) {
         }
         case 16: {
             short* csmpl = (short*)malloc(size * sizeof(short));
-            short* sptr = csmpl;
-            for (int i = 0; i < size; aptr++, sptr++, i++) {
+            for (short* sptr = csmpl, *n = sptr + size; n < size; aptr++, sptr++) {
                 *sptr = (short)clampf(*aptr * 32767.0f, -32768.0f, 32767.0f);
             }
             rst = csmpl;
@@ -225,9 +223,8 @@ EXPORT void* aafc_float_to_int(float* arr, long size, unsigned char type) {
         }
         case 32: {
             int* csmpl = (int*)malloc(size * sizeof(int));
-            int* sptr = csmpl;
-            for (int i = 0; i < size; aptr++, sptr++, i++) {
-                *sptr = (short)clampf(*aptr * 2147483647.0f, -2147483648.0f, 2147483647.0f);
+            for (int* sptr = csmpl, *n = sptr + size; n < size; aptr++, sptr++) {
+                *sptr = (int)clampf(*aptr * 2147483647.0f, -2147483648.0f, 2147483647.0f);
             }
             rst = csmpl;
             break;
@@ -244,25 +241,24 @@ EXPORT void* aafc_float_to_int(float* arr, long size, unsigned char type) {
 // compatibility layer for systems that use integers instead (useful for exporting)
 EXPORT void* aafc_int_to_float(void* arr, long size, unsigned char type) {
     float* csmpl = (float*)malloc(size * sizeof(float));
+    float* rsptr = csmpl;
+
     switch (type) {
         case 8: {
-            char* sptr = (char*)arr;
-            for (int i = 0; i < size; i++) {
-                *(csmpl + i) = *(sptr + i) * INT8_REC;
+            for (const char* sptr = (const char*)arr, *n = sptr + size; sptr < n; rsptr++, sptr++) {
+                *rsptr = *sptr * INT8_REC;
             }
             break;
         }
         case 16: {
-            short* sptr = (short*)arr;
-            for (int i = 0; i < size; i++) {
-                *(csmpl + i) = *(sptr + i) * INT16_REC;
+            for (const short* sptr = (const short*)arr, *n = sptr + size; sptr < n; rsptr++, sptr++) {
+                *rsptr = *sptr * INT16_REC;
             }
             break;
         }
         case 32: {
-            int* sptr = (int*)arr;
-            for (int i = 0; i < size; i++) {
-                *(csmpl + i) = *(sptr + i) * INT32_REC;
+            for (const int* sptr = (const int*)arr, *n = sptr + size; sptr < n; rsptr++, sptr++) {
+                *rsptr = *sptr * INT32_REC;
             }
             break;
         }
@@ -303,20 +299,9 @@ EXPORT AAFCFILETABLE* aft_import(unsigned char* data) {
 }
 
 EXPORT AAFCOUTPUT aft_get_clip(AAFCFILETABLE* ftable, unsigned char group, unsigned short index) {
-    if (group >= ftable->size) {
-        AAFCOUTPUT output = { NULL, 0 };
-        return output;
-    }
+    // TODO: REWORK FILE TABLES
 
-    FILETABLE* filetable = &ftable->filetables[group];
-    if (index >= filetable->size) {
-        AAFCOUTPUT output = { NULL, 0 };
-        return output;
-    }
-
-    DATATABLE* datatable = &filetable->data[index];
-
-    AAFCOUTPUT output = {datatable->len, datatable->data};
+    AAFCOUTPUT output = { };
     return output;
 }
 
