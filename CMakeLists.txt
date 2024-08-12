@@ -1,6 +1,5 @@
-﻿cmake_minimum_required (VERSION 3.11) # 3.11 because of the tests included
-project (aafc VERSION 2 LANGUAGES C CXX)
-add_subdirectory(include)
+﻿cmake_minimum_required(VERSION 3.11) # 3.11 because of the tools
+project(aafc VERSION 2 LANGUAGES C CXX)
 
 option(BUILD_TOOLS "Build AAFC tools" OFF)
 option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
@@ -134,13 +133,20 @@ if(BUILD_TOOLS) # insane
 	FetchContent_MakeAvailable(portaudio)
 	FetchContent_MakeAvailable(libsndfile)
 
-	add_executable(plyr src/tests/aafc_player/aafc_player.cpp)
+	set(toolsinc
+		include/tests.h
+		include/tests/filehandler.h
+		include/tests/libaafcfunc.h
+	)
+
+	add_executable(plyr ${toolsinc} ${aafcheadr} src/tests/aafc_player/aafc_player.cpp)
 	target_link_libraries(plyr PRIVATE portaudio_static)
-	add_executable(aud2aafc src/tests/aafc_mediaconverter/aafc_mediaconverter.cpp)
+
+	add_executable(aud2aafc ${toolsinc} ${aafcheadr} src/tests/aafc_mediaconverter/aafc_mediaconverter.cpp)
 	target_link_libraries(aud2aafc PRIVATE SndFile::sndfile)
 
-	add_executable(aftcreator src/tests/aftcreator/aftcreator.cpp)
-	
+	add_executable(aftcreator ${toolsinc} ${aafcheadr} src/tests/aftcreator/aftcreator.cpp)
+
 	include_directories(${aafc_SOURCE_DIR}/include)
 	include_directories(${PROJECT_BINARY_DIR}/include)
 
