@@ -207,7 +207,7 @@ EXPORT void* aafc_float_to_int(float* arr, long size, unsigned char type) {
     switch (type) {
         case 8: {
             char* csmpl = (char*)malloc(size * sizeof(char));
-            for (char* sptr = csmpl, *n = sptr + size; n < size; aptr++, sptr++) {
+            for (char* sptr = csmpl, *n = sptr + size; sptr < n; aptr++, sptr++) {
                 *sptr = (char)round(clampf(*aptr * 127.0f, -128.0f, 127.0f));
             }
             rst = csmpl;
@@ -215,7 +215,7 @@ EXPORT void* aafc_float_to_int(float* arr, long size, unsigned char type) {
         }
         case 16: {
             short* csmpl = (short*)malloc(size * sizeof(short));
-            for (short* sptr = csmpl, *n = sptr + size; n < size; aptr++, sptr++) {
+            for (short* sptr = csmpl, *n = sptr + size; sptr < n; aptr++, sptr++) {
                 *sptr = (short)clampf(*aptr * 32767.0f, -32768.0f, 32767.0f);
             }
             rst = csmpl;
@@ -223,7 +223,7 @@ EXPORT void* aafc_float_to_int(float* arr, long size, unsigned char type) {
         }
         case 32: {
             int* csmpl = (int*)malloc(size * sizeof(int));
-            for (int* sptr = csmpl, *n = sptr + size; n < size; aptr++, sptr++) {
+            for (int* sptr = csmpl, *n = sptr + size; sptr < n; aptr++, sptr++) {
                 *sptr = (int)clampf(*aptr * 2147483647.0f, -2147483648.0f, 2147483647.0f);
             }
             rst = csmpl;
