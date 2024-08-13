@@ -112,6 +112,7 @@ AAFC_HEADER* create_header(unsigned int freq, unsigned char channels, unsigned i
 bool create_aftheader(AAFCFILETABLE* t);
 
 // Exports
+EXPORT unsigned short aafc_getversion();
 EXPORT AAFC_HEADER* aafc_getheader(const unsigned char* bytes);
 EXPORT AAFCOUTPUT aafc_export(float* samples, unsigned int freq, unsigned char channels, unsigned int samplelength, unsigned char bps, unsigned char sampletype, bool forcemono, unsigned int samplerateoverride, bool nm, float pitch);
 EXPORT AAFCDECOUTPUT aafc_import(const unsigned char* bytes);

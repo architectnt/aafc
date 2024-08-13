@@ -11,6 +11,10 @@
 #include <aafc.h>
 #include "lib.h"
 
+EXPORT unsigned short aafc_getversion() {
+    return AAFCVERSION;
+}
+
 EXPORT AAFC_HEADER* aafc_getheader(const unsigned char* bytes) {
     return header_valid(bytes) ? (AAFC_HEADER*)bytes : NULL;
 }
