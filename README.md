@@ -1,17 +1,22 @@
 # ![aafc_logo](https://architectenterprises.net/cdn/aafc_snwavtr.png) AAFC - Lightweight audio interface
-![aafc_logo](https://architectenterprises.net/cdn/aafc_lgo.svg)
+![aafc_slogo](https://architectenterprises.net/cdn/aafc_lgo.svg)
 
-**The audio interface designed for ultra-fast loading times**\
+**The audio interface designed for ultra-fast loading times and runtime importing on-the-fly**\
 ..*and a way to bring back audio limitations* ***purposely*** 
 
-## ![aafc_logo](https://architectenterprises.net/cdn/fusionresource/fpg_ico.png) FEATURES
-- 1, 4, 8, 12, 16, 24, and 32-bit PCM
-- 8-bit uLaw PCM
-- 4-bit ADPCM
-- Single bit Delta PCM
-- 8-bit & 16-bit "Small Float" PCM
-- Encoding & Decoding directly
-- Resampling
+## ![aafc_logo](https://architectenterprises.net/cdn/fusionresource/fpg_ico.png) FEATURE HIGHLIGHT
+
+### EXPORT/IMPORT
+| TYPE | SUPPORTED BIT DEPTHS |
+| ------------- | ------------- |
+| PCM | `1` `4` `8` `10` `12` `16` `24` `32 (float)` |
+| SFPCM | `8` `16` |
+| ADPCM | `4` |
+| DPCM | `1` |
+| ULAW | `8` |
+
+### MODIFIERS
+- Resampling w/ pitch shifting
 - Normalizer
 
 ## Installing
@@ -38,7 +43,7 @@ make
 ```
 
 ## AAFC TOOLS
-*you may have to enable the `BUILD_TOOLS` option*
+*you may have to enable the `BUILD_TOOLS` option additionally with `BUILD_SHARED_LIBS`*
 
 ### plyr
 Small player for debugging audio files\
@@ -48,18 +53,21 @@ Small player for debugging audio files\
 ### aud2aafc
 Convert standard audio formats to AAFC
 
-*CLI COMMANDS*\
-``-i <path>`` - Input file\
-``-ar <newsamplerate>`` - Resample audio to specifed sample rate\
-``-p <pitch>`` - Change relative pitch of the audio (1 is normal)\
-``-m`` - Force mono\
-``-n`` - Normalize\
-``--batchi <path>`` - Input folder to batch convert files\
-``--adpcm`` - Encode in ADPCM\
-``--dpcm`` - Encode in NES-Style Delta PCM\
-``--sfpcm`` - Encode in Small Float PCM\
-``--ulaw`` - Encode in uLaw\
-``--bps`` - Use specific bits per sample
+
+*CLI COMMANDS*
+| ARGUMENT | PARAMETER | DESCRIPTION |
+| ------------- | ------------- | ------------- |
+| `-i` | `relative/absolute path` | Input file |
+| `--batchi` | `relative/absolute path` | Input folder to batch convert files |
+| `--bps` | `whole number` | Resample audio to specified sample rate |
+| `-ar` | `whole number` | Use specific bits per sample |
+| `-p` | `number (1.0 is normal)` | Change relative pitch of the audio |
+| `-m` | - | Force mono |
+| `-n` | - | Normalize |
+| `--adpcm` | - | Encode in ADPCM |
+| `--dpcm` | - | Encode in Delta PCM |
+| `--sfpcm` | - | Encode in 'Small Float' PCM |
+| `--ulaw` | - | Encode in uLaw |
 
 *EXAMPLE*\
 ``./aud2aafc -i input.wav -m --adpcm -ar 16000``
