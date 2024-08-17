@@ -13,10 +13,6 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
 
-if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-    set(CMAKE_OSX_ARCHITECTURES arm64;x86_64)
-endif()
-
 function(msvc_set_flags)
 	set(MSVC_FLAGSREL "/Oxyi /Ob2 /OPT:REF /fp:fast /MD")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /MP")
@@ -89,11 +85,9 @@ if(BUILD_SHARED_LIBS)
 	message(STATUS "Building as shared library")
 	add_library(aafc SHARED ${AAFC_SRC})
 	target_compile_definitions(aafc PRIVATE BUILDING_SHARED_LIBRARY)
-	target_compile_definitions(aafc PRIVATE AAFC_FUNCT)
 else()
 	message(STATUS "Building as static library")
 	add_library(aafc STATIC ${AAFC_SRC})
-	target_compile_definitions(aafc PRIVATE AAFC_FUNCT)
 endif()
 
 add_library(AAFC::aafc ALIAS aafc)
@@ -135,7 +129,7 @@ if(BUILD_TOOLS) # insane
 
 	set(toolsinc
 		include/tests.h
-		include/tests/filehandler.h
+		"include/tests/fileutils.h"
 		include/tests/libaafcfunc.h
 	)
 

@@ -4,4 +4,4 @@
 */
 
 #include <tests/libaafcfunc.h>
-#include <tests/filehandler.h>
+#include <tests/fileutils.h>

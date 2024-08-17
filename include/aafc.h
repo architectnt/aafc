@@ -15,7 +15,6 @@
 #include <aafc/helpers.h>
 #include <aafc/common.h>
 
-#define HAVE_AAFC_CORE
 
 #ifdef _WIN32
     #ifdef BUILDING_SHARED_LIBRARY
@@ -107,7 +106,6 @@ bool legacy_header_valid(const unsigned char* bytes);
 bool header_valid(const unsigned char* bytes);
 bool aftheader_valid(const unsigned char* bytes);
 
-#ifdef AAFC_FUNCT
 AAFC_HEADER* create_header(unsigned int freq, unsigned char channels, unsigned int samplelength, unsigned char bps, unsigned char sampletype);
 bool create_aftheader(AAFCFILETABLE* t);
 
@@ -133,6 +131,5 @@ EXPORT AAFCOUTPUT aft_export(AAFCFILETABLE* ftable);
 EXPORT AAFCFILETABLE* aft_import(unsigned char* data);
 EXPORT AAFCOUTPUT aft_get_clip(AAFCFILETABLE* ftable, unsigned char group, unsigned short index);
 #endif
-#endif // AAFC_FUNCT
 
 #endif // AAFC_H

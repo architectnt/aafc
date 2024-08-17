@@ -17,7 +17,7 @@ unsigned char* encode_dpcm(float* ptr, unsigned int samplelength, size_t* audsiz
 
     float prevsample = 0;
     float dlt;
-    int b;
+    unsigned char b;
     bool alternate = false;
 
     int windowSize = 100;
@@ -47,7 +47,7 @@ unsigned char* encode_dpcm(float* ptr, unsigned int samplelength, size_t* audsiz
         }
         else {
             b = (dlt >= 0) ? 1 : 0;
-            alternate = (dlt >= 0) ? false : true;
+            alternate = !b;
         }
 
         *(dpcm_base + (i / 8)) |= b << (i % 8);
@@ -62,8 +62,9 @@ void decode_dpcm(const unsigned char* input, float* output, const unsigned int s
     const unsigned char* smpraw = input + sizeof(AAFC_HEADER);
     float prevsmpl = 0;
     float delta = 0.0256;
+    unsigned char b = 0;
     for (unsigned int i = 0; i < sampleCount; i++) {
-        unsigned char b = (*(smpraw + (i / 8)) >> (i % 8)) & 1;
+        b = (*(smpraw + (i / 8)) >> (i % 8)) & 1;
         prevsmpl += !b ? -delta : delta;
         *output++ = clampf(prevsmpl, -1.0, 1.0);
     }

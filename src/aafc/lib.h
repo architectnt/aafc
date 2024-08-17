@@ -3,8 +3,6 @@
     This file is a part of AAFC and is licenced under the MIT Licence.
 */
 
-#define HAVE_AAFC
-
 #include <aafc.h>
 #include "submodules/adpcm.h"
 #include "submodules/dpcm.h"

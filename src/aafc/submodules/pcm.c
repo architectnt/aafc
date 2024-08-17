@@ -151,22 +151,23 @@ void decode_pcm(const unsigned char* input, float* output, const unsigned int sa
         case 1: {
             printf("L O L\n");
             float mixvol = 0.4;
+            unsigned char b = 0;
             for (unsigned int i = 0; i < sampleCount; i++) {
-                unsigned char b = (*(smpraw + (i / 8)) >> (i % 8)) & 1;
+                b = (*(smpraw + (i / 8)) >> (i % 8)) & 1;
                 *output++ = !b ? -mixvol : mixvol;
             }
             break;
         }
         case 4: {
             printf("LOL\n");
-            for (unsigned int i = 0; i < sampleCount; i += 2) {
-                unsigned char smpl = *smpraw++;
-                int smp1 = smpl & 0x0F;
-                if (smp1 > 7) smp1 -= 16;
-                *output++ = smp1 * INT4_REC;
-                int smp2 = (smpl >> 4) & 0x0F;
-                if (smp2 > 7) smp2 -= 16;
-                *output++ = smp2 * INT4_REC;
+            int sp = 0, sl = 0;
+            for (unsigned int i = 0; i < sampleCount; smpraw++, i += 2) {
+                sp = *smpraw & 0x0F;
+                if (sp > 7) sp -= 16;
+                *output++ = sp * INT4_REC;
+                sl = (*smpraw >> 4) & 0x0F;
+                if (sl > 7) sl -= 16;
+                *output++ = sl * INT4_REC;
             }
             break;
         }

@@ -18,6 +18,7 @@ signed char* encode_adpcm(float* ptr, unsigned int samplelength, size_t* audsize
     const short* stptr = adpcm_step_size_table;
     const signed char* itbptr = adpcm_index_table;
 
+    short sample = 0;
     signed char index = 0;
     short step;
     signed char delta;
@@ -25,7 +26,7 @@ signed char* encode_adpcm(float* ptr, unsigned int samplelength, size_t* audsize
     int valpred = 0;
     int vpdiff;
     unsigned char bufferstep;
-    int outputbuffer;
+    signed char outputbuffer;
     signed char sign;
 
     step = *stptr;
@@ -33,7 +34,7 @@ signed char* encode_adpcm(float* ptr, unsigned int samplelength, size_t* audsize
     bufferstep = 1;
 
     for (unsigned int i = 0; i < samplelength; ptr++, i++) {
-        short sample = (short)clampf(*ptr * 32767.0f, -32768.0f, 32767.0f);
+        sample = (short)clampf(*ptr * 32767.0f, -32768.0f, 32767.0f);
 
         diff = sample - valpred;
         sign = (diff < 0) ? 8 : 0;
