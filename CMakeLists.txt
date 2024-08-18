@@ -129,7 +129,7 @@ if(BUILD_TOOLS) # insane
 
 	set(toolsinc
 		include/tests.h
-		"include/tests/fileutils.h"
+		include/tests/fileutils.h
 		include/tests/libaafcfunc.h
 	)
 
