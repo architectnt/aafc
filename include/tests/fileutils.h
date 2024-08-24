@@ -18,7 +18,7 @@
 static char** list_files(const char* dir, unsigned int* len) {
 	char** files = NULL;
 	*len = 0;
-	char abs_file_path[512];
+	char afp[512];
 
 #ifdef _WIN32
 	char fullpath[512];
@@ -33,9 +33,9 @@ static char** list_files(const char* dir, unsigned int* len) {
 	}
 	while (FindNextFile(fhndl, &fdt) != 0){
 		if (!(fdt.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
-			snprintf(abs_file_path, sizeof(abs_file_path), "%s\\%s", dir, fdt.cFileName);
+			snprintf(afp, sizeof(afp), "%s\\%s", dir, fdt.cFileName);
 			files = (char**)realloc(files, (*len + 1) * sizeof(char*));
-			files[*len] = strdup(abs_file_path);
+			files[*len] = strdup(afp);
 			(*len)++;
 		}
 	}

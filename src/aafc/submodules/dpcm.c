@@ -12,8 +12,8 @@
 
 unsigned char* encode_dpcm(float* ptr, unsigned int samplelength, size_t* audsize) {
     size_t bsize = ((size_t)samplelength + 7) / 8;
-    unsigned char* dpcm_base = (unsigned char*)malloc(bsize);
-    memset(dpcm_base, 0, bsize);
+    unsigned char* dpcm = (unsigned char*)malloc(bsize);
+    memset(dpcm, 0, bsize);
 
     float prevsample = 0;
     float dlt;
@@ -50,12 +50,12 @@ unsigned char* encode_dpcm(float* ptr, unsigned int samplelength, size_t* audsiz
             alternate = !b;
         }
 
-        *(dpcm_base + (i / 8)) |= b << (i % 8);
+        *(dpcm + (i / 8)) |= b << (i % 8);
         prevsample += ((b == 0) ? -threshold : threshold);
     }
 
     *audsize = bsize;
-    return dpcm_base;
+    return dpcm;
 }
 
 void decode_dpcm(const unsigned char* input, float* output, const unsigned int sampleCount) {

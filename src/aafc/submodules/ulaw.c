@@ -10,12 +10,12 @@
 #include "ulaw.h"
 
 unsigned char* encode_ulaw(float* ptr, unsigned int samplelength, size_t* audsize) {
-    unsigned char* ulaw_base = (unsigned char*)malloc(samplelength);
-    unsigned char* ulaw = ulaw_base;
+    unsigned char* ulaw = (unsigned char*)malloc(samplelength);
+    unsigned char* uptr = ulaw;
 
-    const short* explut = exp_lut;
+    const short* explut = explut;
 
-    for (unsigned int i = 0; i < samplelength; ptr++, ulaw++, i++) {
+    for (unsigned int i = 0; i < samplelength; ptr++, uptr++, i++) {
         short sample = (short)clampf(*ptr * 32767.0f, -32768.0f, 32767.0f);
         short sign = (sample >> 8) & 0x80;
         if (sign != 0) sample = -sample;
@@ -24,16 +24,16 @@ unsigned char* encode_ulaw(float* ptr, unsigned int samplelength, size_t* audsiz
         sample += BIAS;
         short exponent = *(explut + ((sample >> 7) & 0xFF));
         short mantissa = (sample >> (exponent + 3)) & 0x0F;
-        *ulaw = ~(sign | (exponent << 4) | mantissa);
+        *uptr = ~(sign | (exponent << 4) | mantissa);
     }
 
     *audsize = samplelength;
-    return ulaw_base;
+    return ulaw;
 }
 
 void decode_ulaw(const unsigned char* input, float* output, const unsigned int sampleCount) {
     const unsigned char* smpraw = input + sizeof(AAFC_HEADER);
-    const short* explut = exp_lutd;
+    const short* explut = explutd;
 
     for (const unsigned char* n = smpraw + sampleCount; smpraw < n; smpraw++, output++) {
         unsigned char smpl = ~(*smpraw);

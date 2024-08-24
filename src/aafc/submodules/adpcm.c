@@ -15,8 +15,8 @@ signed char* encode_adpcm(float* ptr, unsigned int samplelength, size_t* audsize
 
     signed char* adpcm_base = (signed char*)malloc(bsize);
     signed char* adpcm = adpcm_base;
-    const short* stptr = adpcm_step_size_table;
-    const signed char* itbptr = adpcm_index_table;
+    const short* stptr = adpcmStepSize;
+    const signed char* itbptr = adpcmIndexTable;
 
     short sample = 0;
     signed char index = 0;
@@ -93,8 +93,8 @@ signed char* encode_adpcm(float* ptr, unsigned int samplelength, size_t* audsize
 
 void decode_adpcm(const unsigned char* input, float* output, const unsigned int sampleCount) {
     const signed char* adpcm = (const signed char*)(input + sizeof(AAFC_HEADER));
-    const short* stptr = adpcm_step_size_table;
-    const signed char* itbptr = adpcm_index_table;
+    const short* stptr = adpcmStepSize;
+    const signed char* itbptr = adpcmIndexTable;
 
     signed char index = 0;
     short step = *stptr;

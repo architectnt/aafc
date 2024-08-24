@@ -8,6 +8,7 @@
 
 #include <stdio.h>
 #include <stdbool.h>
+#include <stdint.h> // shucks
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
@@ -78,13 +79,13 @@ typedef struct decoutput {
 } AAFCDECOUTPUT;
 
 typedef struct {
-    unsigned long long int len;
+    int64_t len;
     unsigned char* data;
 } DATATABLE;
 
 typedef struct {
     AAFC_HEADER header;
-    unsigned long long int startloc;
+    int64_t startloc;
     char identifier[];
 } AAFCTABLEDEFINITION;
 
