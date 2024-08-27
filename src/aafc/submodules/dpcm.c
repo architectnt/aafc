@@ -15,43 +15,20 @@ unsigned char* encode_dpcm(float* ptr, unsigned int samplelength, size_t* audsiz
     unsigned char* dpcm = (unsigned char*)malloc(bsize);
     memset(dpcm, 0, bsize);
 
-    float prevsample = 0;
-    float dlt;
-    unsigned char b;
-    bool alternate = false;
-
-    int windowSize = 100;
-    float sumamp = 0;
-    float avgamp = 0;
-    float threshold = 0.0256;
-    float dynamicThreshold;
-
-    for (unsigned int i = 0; i < samplelength; i++) {
-        float sample = *(ptr + i);
-
-        sumamp += sample;
-        if (i >= windowSize) {
-            sumamp -= fabs(*(ptr + i - windowSize));
-            avgamp = sumamp / windowSize;
-            dynamicThreshold = threshold + avgamp;
+    unsigned char accum = 63;
+    for (unsigned int i = 0; i < samplelength; ptr++, i++) {
+        unsigned char next = (int)((*ptr + 1.0f) * 63.5f);
+        if (next > accum) {
+            *(dpcm + (i >> 3)) |= 1 << (i & 7);
+            accum++;
         }
         else {
-            dynamicThreshold = threshold;
+            *(dpcm + (i >> 3)) &= ~(1 << (i & 7));
+            accum--;
         }
 
-        dlt = sample - prevsample;
-
-        if (fabs(dlt) < dynamicThreshold) {
-            b = alternate ? 1 : 0;
-            alternate = !alternate;
-        }
-        else {
-            b = (dlt >= 0) ? 1 : 0;
-            alternate = !b;
-        }
-
-        *(dpcm + (i / 8)) |= b << (i % 8);
-        prevsample += ((b == 0) ? -threshold : threshold);
+        if (accum > 127) accum = 127;
+        if (accum < 0) accum = 0;
     }
 
     *audsize = bsize;
@@ -60,12 +37,11 @@ unsigned char* encode_dpcm(float* ptr, unsigned int samplelength, size_t* audsiz
 
 void decode_dpcm(const unsigned char* input, float* output, const unsigned int sampleCount) {
     const unsigned char* smpraw = input + sizeof(AAFC_HEADER);
-    float prevsmpl = 0;
-    float delta = 0.0256;
-    unsigned char b = 0;
+    signed char accum = 0;
     for (unsigned int i = 0; i < sampleCount; i++) {
-        b = (*(smpraw + (i / 8)) >> (i % 8)) & 1;
-        prevsmpl += !b ? -delta : delta;
-        *output++ = clampf(prevsmpl, -1.0, 1.0);
+        accum += ((*(smpraw + (i >> 3)) >> (i & 7)) & 1) ? 1 : -1;
+        if (accum > 63) accum = 63;
+        if (accum < -64) accum = -64;
+        *output++ = accum * INT7_REC;
     }
 }

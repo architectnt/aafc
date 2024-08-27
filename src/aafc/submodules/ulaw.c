@@ -13,7 +13,7 @@ unsigned char* encode_ulaw(float* ptr, unsigned int samplelength, size_t* audsiz
     unsigned char* ulaw = (unsigned char*)malloc(samplelength);
     unsigned char* uptr = ulaw;
 
-    const short* explut = explut;
+    const short* explut = expLut;
 
     for (unsigned int i = 0; i < samplelength; ptr++, uptr++, i++) {
         short sample = (short)clampf(*ptr * 32767.0f, -32768.0f, 32767.0f);
@@ -33,7 +33,7 @@ unsigned char* encode_ulaw(float* ptr, unsigned int samplelength, size_t* audsiz
 
 void decode_ulaw(const unsigned char* input, float* output, const unsigned int sampleCount) {
     const unsigned char* smpraw = input + sizeof(AAFC_HEADER);
-    const short* explut = explutd;
+    const short* explut = expLutd;
 
     for (const unsigned char* n = smpraw + sampleCount; smpraw < n; smpraw++, output++) {
         unsigned char smpl = ~(*smpraw);

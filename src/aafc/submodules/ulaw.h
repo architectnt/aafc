@@ -8,7 +8,7 @@
 #define BIAS 0x84
 #define CLIP 32635
 
-static const short explut[256] = {
+static const short expLut[256] = {
   0, 0, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3,
   4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
   5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
@@ -27,7 +27,7 @@ static const short explut[256] = {
   7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7
 };
 
-static const short explutd[8] = { 
+static const short expLutd[8] = { 
 	0, 132, 396, 924, 1980, 4092, 8316, 16764 
 };
 
