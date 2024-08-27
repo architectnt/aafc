@@ -19,10 +19,9 @@ void* encode_pcm(float* ptr, unsigned int samplelength, size_t* audsize, unsigne
             unsigned char* stbs = (unsigned char*)malloc(bsize);
             memset(stbs, 0, bsize);
 
-            for (int i = 0; i < samplelength; ptr++, i++) {
-                unsigned char bit = (*ptr >= 0) ? 1 : 0;
-                *(stbs + (i / 8)) |= bit << (i % 8);
-            }
+            for (int i = 0; i < samplelength; ptr++, i++)
+                *(stbs + (i >> 3)) |= (*ptr > 0) << (i & 7);
+
             *audsize = bsize;
             return stbs;
         }
@@ -151,10 +150,8 @@ void decode_pcm(const unsigned char* input, float* output, const unsigned int sa
         case 1: {
             printf("L O L\n");
             float mixvol = 0.4;
-            unsigned char b = 0;
             for (unsigned int i = 0; i < sampleCount; i++) {
-                b = (*(smpraw + (i / 8)) >> (i % 8)) & 1;
-                *output++ = !b ? -mixvol : mixvol;
+                *output++ = ((*(smpraw + (i >> 3)) >> (i & 7)) & 1) ? mixvol : -mixvol;
             }
             break;
         }

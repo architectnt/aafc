@@ -132,10 +132,8 @@ void decode_adpcm(const unsigned char* input, float* output, const unsigned int 
         else
             valpred += vpdiff;
 
-        if (valpred > 32767)
-            valpred = 32767;
-        else if (valpred < -32768)
-            valpred = -32768;
+        if (valpred > 32767) valpred = 32767;
+        if (valpred < -32768) valpred = -32768;
 
         step = *(stptr + index);
 

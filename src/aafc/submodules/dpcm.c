@@ -17,7 +17,7 @@ unsigned char* encode_dpcm(float* ptr, unsigned int samplelength, size_t* audsiz
 
     unsigned char accum = 63;
     for (unsigned int i = 0; i < samplelength; ptr++, i++) {
-        unsigned char next = (unsigned char)((*ptr + 1.0f) * 63.5f);
+        unsigned char next = (unsigned char)(clampf((*ptr + 1.0f) * 63.5f, 0.0f, 255.0f));
         if (next > accum) {
             *(dpcm + (i >> 3)) |= 1 << (i & 7);
             accum++;
