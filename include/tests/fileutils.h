@@ -50,9 +50,9 @@ static char** list_files(const char* dir, unsigned int* len) {
 
 	while ((entry = readdir(dirc)) != NULL) {
 		if (entry->d_type == DT_REG) {
-			snprintf(abs_file_path, sizeof(abs_file_path), "%s/%s", dir, entry->d_name);
+			snprintf(afp, sizeof(afp), "%s/%s", dir, entry->d_name);
 			files = (char**)realloc(files, (*len + 1) * sizeof(char*));
-			files[*len] = strdup(abs_file_path);
+			files[*len] = strdup(afp);
 			(*len)++;
 		}
 	}
