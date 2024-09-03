@@ -19,43 +19,54 @@
 #include <sstream>
 #include "tests.h"
 
+typedef struct {
+	int statuscode;
+	char* message;
+} ConversionResult;
 
-int convertmedia(const char* fn, const char* outpath, bool usemono, bool normalize, unsigned char bps, unsigned char sampletype, unsigned int spoverride, float pitch) {
+ConversionResult convertmedia(const char* fn, const char* outpath, bool usemono, bool normalize, unsigned char bps, unsigned char sampletype, unsigned int spoverride, float pitch) {
+	ConversionResult s = { 0, NULL};
+
 	SF_INFO info;
 	memset(&info, 0, sizeof(SF_INFO));
 
 	SNDFILE* ifl = sf_open(fn, SFM_READ, &info);
 	if (!ifl) {
-		printf("aud2aafc: failed to open file :(\n");
-		return -1;
+		s.message = (char*)"failed to open file :("; // what
+		s.statuscode = -1;
+		return s;
 	}
 
 	size_t nitms = info.frames * info.channels;
 	float* smpl = (float*)malloc(nitms * sizeof(float));
 	if (smpl == NULL) {
 		sf_close(ifl);
-		printf("aud2aafc: failed to allocate memory D:\n");
-		return -2;
+		s.message = (char*)"failed to allocate memory D:"; // what
+		s.statuscode = -2;
+		return s;
 	}
 
 	if (sf_readf_float(ifl, smpl, info.frames) != info.frames) {
-		printf("aud2aafc: unexpected sample count! >:(\n");
+		s.message = (char*)"result has an unmatched sample count"; // what
+		s.statuscode = 1;
 	}
 
 	AAFCOUTPUT out = ExportAAFC(smpl, info.samplerate, info.channels, nitms, bps, sampletype, usemono, spoverride, normalize, pitch);
 	if (out.data == NULL) {
 		sf_close(ifl);
 		free(smpl);
-		printf("aud2aafc: export failed >:(\n");
-		return -3;
+		s.message = (char*)"EXPORT FAILED >:("; // what
+		s.statuscode = -3;
+		return s;
 	}
 
 	FILE* ofile = fopen(outpath, "wb");
 	if (ofile == NULL) {
 		sf_close(ifl);
 		free(smpl);
-		perror("aud2aafc: failed to open output file >:((((");
-		return -4;
+		s.message = (char*)"could not open file >:((((((((((("; // what
+		s.statuscode = -4;
+		return s;
 	}
 
 	fwrite(out.data, sizeof(unsigned char), out.size, ofile);
@@ -64,7 +75,7 @@ int convertmedia(const char* fn, const char* outpath, bool usemono, bool normali
 	free(smpl);
 
 	fclose(ofile);
-	return 0;
+	return s;
 }
 
 int main(int argc, char* argv[]) {
@@ -111,21 +122,23 @@ int main(int argc, char* argv[]) {
 		else if (input == "--batchi") {
 			batchfiles = list_files(argv[++i], &batchlength);
 			dirnm = strip_path_last(argv[i]);
-			printf("Batch converting files from %s\n", dirnm);
+			printf("Batch converting files from \"%s\"\n", dirnm);
 		}
 		else if (input == "-ar" && i + 1 < argc) {
 			resampleoverride = (unsigned int)std::stof(argv[++i], NULL);
 		}
 	}
 	mkdir("aafc_conversions", 0755);
+	ConversionResult rst;
 
 	if (batchlength == 0) {
 		char* c = concat_path("aafc_conversions/", filename_without_extension(fn));
-		if (convertmedia(fn, c, usemono, normalize, outbps, sampletype, resampleoverride, pitch) != 0) {
+		if ((rst = convertmedia(fn, c, usemono, normalize, outbps, sampletype, resampleoverride, pitch)).statuscode != 0) {
 			free(c);
-			printf("aud2aafc: Failed to convert media.\n");
+			printf("Failed to convert media: %s [%d]\n", rst.message, rst.statuscode);
 			return -128;
 		}
+
 		free(c);
 	}
 	else {
@@ -135,13 +148,13 @@ int main(int argc, char* argv[]) {
 		mkdir(dirp, 0755);
 
 		for (unsigned int i = 0; i < batchlength; i++) {
-			int rst = convertmedia(batchfiles[i], concat_path(dirp, filename_without_extension(batchfiles[i])), usemono, normalize, outbps, sampletype, resampleoverride, pitch);
-			if (rst == -1) {
+			rst = convertmedia(batchfiles[i], concat_path(dirp, filename_without_extension(batchfiles[i])), usemono, normalize, outbps, sampletype, resampleoverride, pitch);
+			if (rst.statuscode == -1) {
 				continue;
 			}
-			else if (rst < -1) {
+			else if (rst.statuscode < -1) {
 				free(batchfiles);
-				printf("aud2aafc: Failed to convert batch of media.\n");
+				printf("Failed to convert media: %s [%d]\n", rst.message, rst.statuscode);
 				return -128;
 			}
 			free(batchfiles[i]);
@@ -149,7 +162,12 @@ int main(int argc, char* argv[]) {
 		free(batchfiles);
 	}
 
-	printf("aud2aafc: Completed conversion!\n");
+	if (rst.statuscode > 0) {
+		printf("conversion completed with warnings: %s [%d]\n", rst.message, rst.statuscode);
+	}
+	else {
+		printf("Completed conversion!\n");
+	}
 
 	return 0;
 }

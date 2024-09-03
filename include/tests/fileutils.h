@@ -28,7 +28,6 @@ static char** list_files(const char* dir, unsigned int* len) {
 	HANDLE fhndl = FindFirstFile(fullpath, &fdt);
 
 	if (fhndl == INVALID_HANDLE_VALUE) {
-		printf("cant get the first file >:((((((((((((((((: %lu\n", GetLastError());
 		return NULL;
 	}
 	while (FindNextFile(fhndl, &fdt) != 0){

@@ -39,15 +39,10 @@
 #define AFTVERSION 100
 
 typedef struct {
-    unsigned short signature;
-    unsigned short version;
+    unsigned short signature, version;
     unsigned int freq;
-    unsigned char channels;
-    unsigned char bps;
-    unsigned char sampletype;
-    unsigned int samplelength;
-    unsigned int loopst;
-    unsigned int loopend;
+    unsigned char channels, bps, sampletype;
+    unsigned int samplelength, loopst, loopend;
 } AAFC_HEADER;
 
 typedef struct { // used for older versions
@@ -96,8 +91,7 @@ typedef struct {
 } TABLECONTENT;
 
 typedef struct {
-    unsigned short signature;
-    unsigned short version;
+    unsigned short signature, version;
     unsigned char size;
     TABLECONTENT* filetables;
 } AAFCFILETABLE;
@@ -126,11 +120,9 @@ EXPORT float* aafc_normalize(float* arr, int len);
 
 
 //TODO: aafc content tables
-#if 0
 EXPORT AAFCFILETABLE aft_create(unsigned char*** data, size_t tablelength, size_t* sizes);
 EXPORT AAFCOUTPUT aft_export(AAFCFILETABLE* ftable);
 EXPORT AAFCFILETABLE* aft_import(unsigned char* data);
 EXPORT AAFCOUTPUT aft_get_clip(AAFCFILETABLE* ftable, unsigned char group, unsigned short index);
-#endif
 
 #endif // AAFC_H
