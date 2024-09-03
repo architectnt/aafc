@@ -7,8 +7,8 @@
 #include "filetable.h"
 
 AAFCOUTPUT create_filetable_stream(AAFCFILETABLE* ftable) {
+    AAFCOUTPUT output = { 0, NULL };
     if (ftable == NULL) {
-        AAFCOUTPUT output = { 0, NULL };
         return output;
     }
 
@@ -44,6 +44,11 @@ AAFCOUTPUT create_filetable_stream(AAFCFILETABLE* ftable) {
             memcpy(ptr, &(tabledef->header), sizeof(AAFC_HEADER)); ptr += sizeof(AAFC_HEADER);
             *(int64_t*)ptr = tabledef->startloc; ptr += sizeof(tabledef->startloc);
             size_t ilen = strnlen(tabledef->identifier, 255) + 1;
+            if (ilen >= 256) { // Just..in..case....
+                free(rst);
+                return output;
+            } 
+
             memcpy(ptr, tabledef->identifier, ilen); ptr += ilen;
         }
         for (k = 0; k < content->size; k++) {
@@ -53,7 +58,7 @@ AAFCOUTPUT create_filetable_stream(AAFCFILETABLE* ftable) {
         }
     }
 
-    AAFCOUTPUT output = {tsize, rst};
+    output = (AAFCOUTPUT){tsize, rst};
     return output;
 }
 
@@ -99,14 +104,20 @@ AAFCFILETABLE* decode_filetable_stream(unsigned char* data) {
             memcpy(&(tabledef->header), ptr, sizeof(AAFC_HEADER)); ptr += sizeof(AAFC_HEADER);
             tabledef->startloc = *(int64_t*)ptr; ptr += sizeof(int64_t);
             size_t ilen = strnlen((char*)ptr, 255) + 1;
+            if (ilen >= 256) { // also check here
+                free(content->data);
+                free(content->table);
+                free(ftable->filetables);
+                free(ftable);
+                return NULL;
+            }
+
             memcpy(tabledef->identifier, ptr, ilen); ptr += ilen;
         }
 
         for (k = 0; k < content->size; k++) {
             DATATABLE* dtable = content->data + k;
-
             dtable->len = *(int64_t*)ptr; ptr += sizeof(int64_t);
-
             if ((dtable->data = (unsigned char*)malloc(dtable->len)) == NULL) {
                 for (int l = 0; l < k; l++)
                     free(content->data[l].data);
