@@ -284,16 +284,6 @@ EXPORT float* aafc_normalize(float* arr, int len) {
     return normalize(arr, len);
 }
 
-#if 0
-
-EXPORT AAFCFILETABLE aft_create(unsigned char*** data, size_t tablelength, size_t* sizes) {
-    AAFCFILETABLE ftable = {};
-
-    // TODO: REWORK FILE TABLES
-
-    return ftable;
-}
-
 EXPORT AAFCOUTPUT aft_export(AAFCFILETABLE* ftable) {
     return create_filetable_stream(ftable);
 }
@@ -302,11 +292,76 @@ EXPORT AAFCFILETABLE* aft_import(unsigned char* data) {
     return decode_filetable_stream(data);
 }
 
-EXPORT AAFCOUTPUT aft_get_clip(AAFCFILETABLE* ftable, unsigned char group, unsigned short index) {
+EXPORT AAFCOUTPUT aft_get_clip_from_index(AAFCFILETABLE* ftable, unsigned char group, unsigned short index) {
+    AAFCOUTPUT output = { 0, NULL };
+    if (!ftable || group >= ftable->size) {
+        printf("invalid group\n");
+        return output;
+    }
+
+    TABLECONTENT* content = ftable->filetables + group;
+    if (index >= content->size) {
+        printf("invalid table\n");
+        return output;
+    }
+
+    AAFCTABLEDEFINITION* def = content->table + index;
+    DATATABLE* dtb = content->data + index;
+
+    size_t csize = sizeof(AAFC_HEADER) + dtb->len;
+    unsigned char* rst = (unsigned char*)malloc(csize);
+    if (!rst) {
+        printf("INTERNAL ALLOCATION ERROR\n");
+        return output;
+    }
+
+    memcpy(rst, &(def->header), sizeof(AAFC_HEADER));
+    memcpy(rst + sizeof(AAFC_HEADER), dtb->data, dtb->len);
+
+    output = (AAFCOUTPUT){ csize, rst };
+    return output;
+}
+
+EXPORT AAFCOUTPUT aft_get_clip_from_name(AAFCFILETABLE* ftable, unsigned char group, const char* identifier) {
+    AAFCOUTPUT output = { 0, NULL };
+    if (!ftable || !identifier || group >= ftable->size) {
+        printf("invalid inputs\n");
+        return output;
+    }
+
+    TABLECONTENT* content = ftable->filetables + group;
+    for (unsigned short i = 0; i < content->size; i++) {
+        AAFCTABLEDEFINITION* def = content->table + i;
+        if (strncmp(def->identifier, identifier, 255) == 0) {
+            DATATABLE* dtb = content->data + i;
+
+            size_t csize = sizeof(AAFC_HEADER) + dtb->len;
+            unsigned char* rst = (unsigned char*)malloc(csize);
+            if (!rst) {
+                printf("INTERNAL ALLOCATION ERROR\n");
+                return output;
+            }
+
+            memcpy(rst, &(def->header), sizeof(AAFC_HEADER));
+            memcpy(rst + sizeof(AAFC_HEADER), dtb->data, dtb->len);
+
+            output = (AAFCOUTPUT){ csize, rst };
+            return output;
+        }
+    }
+
+    printf("identifier invalid\n");
+    return output;
+}
+
+#if 0
+
+EXPORT AAFCFILETABLE aft_create(unsigned char*** data, size_t tablelength, size_t* sizes) {
+    AAFCFILETABLE ftable = {};
+
     // TODO: REWORK FILE TABLES
 
-    AAFCOUTPUT output = { };
-    return output;
+    return ftable;
 }
 
 #endif

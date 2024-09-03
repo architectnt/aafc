@@ -123,6 +123,7 @@ EXPORT float* aafc_normalize(float* arr, int len);
 EXPORT AAFCFILETABLE aft_create(unsigned char*** data, size_t tablelength, size_t* sizes);
 EXPORT AAFCOUTPUT aft_export(AAFCFILETABLE* ftable);
 EXPORT AAFCFILETABLE* aft_import(unsigned char* data);
-EXPORT AAFCOUTPUT aft_get_clip(AAFCFILETABLE* ftable, unsigned char group, unsigned short index);
+EXPORT AAFCOUTPUT aft_get_clip_from_index(AAFCFILETABLE* ftable, unsigned char group, unsigned short index);
+EXPORT AAFCOUTPUT aft_get_clip_from_name(AAFCFILETABLE* ftable, unsigned char group, const char* identifier);
 
 #endif // AAFC_H

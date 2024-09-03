@@ -11,23 +11,22 @@
 #include "modifiers.h"
 
 void forceMono(float* input, AAFC_HEADER* header, unsigned char* channels, unsigned int* samplelength) {
-    if (*channels > 1) {
-        const unsigned int splen = *samplelength / *channels;
-        unsigned char chn;
-        float accu;
-        for (unsigned int i = 0; i < splen; i++)
-        {
-            for (chn = 0, accu = 0; chn < *channels; chn++)
-            {
-                accu += *(input + (i * *channels + chn));
-            }
-            *(input + i) = accu / *channels;
-        }
-        header->samplelength = splen;
-        header->channels = 1;
-        *samplelength /= *channels;
-        *channels = 1;
+    if (*channels < 2)
+        return;
+
+    const unsigned int splen = *samplelength / *channels;
+    unsigned char chn;
+    float accu;
+    for (unsigned int i = 0; i < splen; i++)
+    {
+        for (chn = 0, accu = 0; chn < *channels; chn++)
+            accu += *(input + (i * *channels + chn));
+        *(input + i) = accu / *channels;
     }
+    header->samplelength = splen;
+    header->channels = 1;
+    *samplelength /= *channels;
+    *channels = 1;
 }
 
 float* resampleAudio(float* input, AAFC_HEADER* header, unsigned int samplerateoverride, unsigned int freq, unsigned char channels, unsigned int* samplelength, float pitch) {
@@ -79,9 +78,8 @@ float* force_independent_channels(float* input, const unsigned char channels, co
     const unsigned int splen = samplelength / channels;
     unsigned int i;
     for (unsigned char ch = 0; ch < channels; ch++) {
-        for (i = 0; i < splen; i++) {
+        for (i = 0; i < splen; i++)
             *(output + (i + splen * ch)) = *(input + (i * channels + ch));
-        }
     }
 
     return output;
@@ -119,9 +117,8 @@ float* force_interleave_channels(float* input, const unsigned char channels, con
     unsigned int splen = samplelength / channels;
     unsigned char ch;
     for (unsigned int i = 0; i < splen; i++) {
-        for (ch = 0; ch < channels; ch++) {
+        for (ch = 0; ch < channels; ch++)
             *(output + (i * channels + ch)) = *(input + (i + splen * ch));
-        }
     }
     return output;
 }

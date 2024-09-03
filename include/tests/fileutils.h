@@ -91,6 +91,18 @@ static char* concat_path(const char* dir, const char* filename) {
 	return result;
 }
 
+static char* concat_path_aft(const char* dir, const char* filename) {
+	if (dir == NULL || filename == NULL || *dir == '\0' || *filename == '\0')
+		return NULL;
+
+	size_t len = (strlen(dir) + strlen(filename) + strlen(".aft/")) + 1;
+	char* result = (char*)malloc(len);
+	if (result)
+		snprintf(result, len, "%s/%s.aft", dir, filename);
+	return result;
+}
+
+
 static char* filename_without_extension(const char* path) {
 	if (path == NULL || *path == '\0')
 		return NULL;
