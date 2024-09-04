@@ -14,6 +14,7 @@ AAFCOUTPUT create_filetable_stream(AAFCFILETABLE* ftable) {
 
     size_t tsize = sizeof(ftable->signature) + sizeof(ftable->version) + sizeof(ftable->size);
     unsigned int i, j, k;
+    int64_t doffset = 0;
 
     for (i = 0; i < ftable->size; i++) {
         TABLECONTENT* tablecontent = ftable->filetables + i;
@@ -24,7 +25,11 @@ AAFCOUTPUT create_filetable_stream(AAFCFILETABLE* ftable) {
             tsize += strnlen(tabledef->identifier, 255) + 1;
         }
         for (k = 0; k < tablecontent->size; k++) {
+            AAFCTABLEDEFINITION* tabledef = tablecontent->table + k;
             DATATABLE* dtb = tablecontent->data + k;
+            tsize += sizeof(dtb->len) + dtb->len;
+            doffset = tsize;
+            tabledef->startloc = doffset;
             tsize += sizeof(dtb->len) + dtb->len;
         }
     }
@@ -83,6 +88,8 @@ AAFCFILETABLE* decode_filetable_stream(unsigned char* data) {
     }
 
     unsigned int i, j, k;
+    int64_t doffset = 0;
+
     for (i = 0; i < ftable->size; i++) {
         TABLECONTENT* content = ftable->filetables + i;
         content->size = *(unsigned short*)ptr; ptr += sizeof(unsigned short);
@@ -102,7 +109,7 @@ AAFCFILETABLE* decode_filetable_stream(unsigned char* data) {
         for (j = 0; j < content->size; j++) {
             AAFCTABLEDEFINITION* tabledef = content->table + j;
             memcpy(&(tabledef->header), ptr, sizeof(AAFC_HEADER)); ptr += sizeof(AAFC_HEADER);
-            tabledef->startloc = *(int64_t*)ptr; ptr += sizeof(int64_t);
+            tabledef->startloc = doffset;
             size_t ilen = strnlen((char*)ptr, 255) + 1;
             if (ilen >= 256) { // also check here
                 free(content->data);
@@ -130,6 +137,7 @@ AAFCFILETABLE* decode_filetable_stream(unsigned char* data) {
             }
             memcpy(dtable->data, ptr, dtable->len);
             ptr += dtable->len;
+            doffset += dtable->len + sizeof(dtable->len);
         }
     }
 

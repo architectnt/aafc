@@ -354,14 +354,64 @@ EXPORT AAFCOUTPUT aft_get_clip_from_name(AAFCFILETABLE* ftable, unsigned char gr
     return output;
 }
 
-#if 0
-
-EXPORT AAFCFILETABLE aft_create(unsigned char*** data, size_t tablelength, size_t* sizes) {
+EXPORT AAFCFILETABLE aft_create(AFTINPUT data[], unsigned char grouplength) {
     AAFCFILETABLE ftable = {};
+    if (!data || grouplength == 0) {
+        printf("Invalid input\n");
+        return ftable;
+    }
 
-    // TODO: REWORK FILE TABLES
+    ftable.signature = AFT_SIGNATURE;
+    ftable.version = AFTVERSION;
+    ftable.size = grouplength;
+
+    if ((ftable.filetables = (TABLECONTENT*)malloc(grouplength * sizeof(TABLECONTENT))) == NULL) {
+        printf("Memory allocation failed\n");
+        return ftable;
+    }
+
+    unsigned char i;
+    unsigned short j;
+    int64_t doffset = 0;
+
+    for (i = 0; i < grouplength; i++) {
+        AFTINPUT* input = &data[i];
+        TABLECONTENT* tablecontent = &ftable.filetables[i];
+        tablecontent->size = input->len;
+
+        if ((tablecontent->table = (AAFCTABLEDEFINITION*)malloc(input->len * sizeof(AAFCTABLEDEFINITION))) == NULL
+            || (tablecontent->data = (DATATABLE*)malloc(input->len * sizeof(DATATABLE))) == NULL) {
+            free(ftable.filetables);
+            return ftable;
+        }
+
+        for (j = 0; j < input->len; j++) {
+            AFTSUBINPUT* subinput = &input->table[j];
+            AAFCTABLEDEFINITION* tabledef = &tablecontent->table[j];
+            DATATABLE* dtb = &tablecontent->data[j];
+            memcpy(&tabledef->header, subinput->data, sizeof(AAFC_HEADER));
+            tabledef->startloc = doffset;
+            dtb->len = subinput->len - sizeof(AAFC_HEADER);
+            if ((dtb->data = (unsigned char*)malloc(dtb->len)) == NULL) {
+                free(tablecontent->table);
+                free(tablecontent->data);
+                free(ftable.filetables);
+                return ftable;
+            }
+            memcpy(dtb->data, subinput->data + sizeof(AAFC_HEADER), dtb->len);
+            size_t ilen = strnlen(subinput->identifier, 255);
+            if (ilen >= 255) {
+                free(tablecontent->table);
+                free(dtb->data);
+                free(tablecontent->data);
+                free(ftable.filetables);
+                return ftable;
+            }
+            memcpy(tabledef->identifier, subinput->identifier, ilen);
+            tabledef->identifier[ilen] = '\0';
+            doffset += dtb->len + sizeof(dtb->len);
+        }
+    }
 
     return ftable;
 }
-
-#endif

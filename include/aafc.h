@@ -96,6 +96,17 @@ typedef struct {
     TABLECONTENT* filetables;
 } AAFCFILETABLE;
 
+typedef struct {
+    int64_t len;
+    unsigned char* data; // binary data and contains the AAFC_HEADER inside, be sure you split AAFC_DATA and the actual data itself within it.
+    char identifier[];
+} AFTSUBINPUT;
+
+typedef struct {
+    unsigned short len;
+    AFTSUBINPUT table[];
+} AFTINPUT;
+
 // Compares if the input is a valid format
 bool legacy_header_valid(const unsigned char* bytes);
 bool header_valid(const unsigned char* bytes);
@@ -120,7 +131,7 @@ EXPORT float* aafc_normalize(float* arr, int len);
 
 
 //TODO: aafc content tables
-EXPORT AAFCFILETABLE aft_create(unsigned char*** data, size_t tablelength, size_t* sizes);
+EXPORT AAFCFILETABLE aft_create(AFTINPUT data[], unsigned char grouplength);
 EXPORT AAFCOUTPUT aft_export(AAFCFILETABLE* ftable);
 EXPORT AAFCFILETABLE* aft_import(unsigned char* data);
 EXPORT AAFCOUTPUT aft_get_clip_from_index(AAFCFILETABLE* ftable, unsigned char group, unsigned short index);
