@@ -25,6 +25,28 @@ void* encode_pcm(float* ptr, unsigned int samplelength, size_t* audsize, unsigne
             *audsize = bsize;
             return stbs;
         }
+        case 3: {
+            printf("why would you use this LOL\n");
+            size_t bsize = ((size_t)samplelength + 1) / 2;
+            unsigned char* stbs = (unsigned char*)malloc(bsize);
+            unsigned char* sptr = stbs;
+
+            for (int i = 0; i < samplelength; ptr += 2, i += 2) {
+                int smp1 = (int)round(clampf(*ptr * 3.0f, -4.0f, 3.0f));
+                smp1 = smp1 < 0 ? smp1 + 8 : smp1;
+
+                int smp2 = 0;
+                if (i + 1 < samplelength) {
+                    smp2 = (int)round(clampf(*(ptr + 1) * 3.0f, -4.0f, 3.0f));
+                    smp2 = smp2 < 0 ? smp2 + 8 : smp2;
+                }
+
+                *sptr++ = (smp1 & 0x07) | ((smp2 & 0x07) << 3);
+            }
+
+            *audsize = bsize;
+            return stbs;
+        }
         case 4: { // LOL
             printf(";)\n");
             size_t bsize = ((size_t)samplelength + 1) / 2;
@@ -152,6 +174,23 @@ void decode_pcm(const unsigned char* input, float* output, const unsigned int sa
             float mixvol = 0.4;
             for (unsigned int i = 0; i < sampleCount; i++) {
                 *output++ = ((*(smpraw + (i >> 3)) >> (i & 7)) & 1) ? mixvol : -mixvol;
+            }
+            break;
+        }
+        case 3: {
+            printf("h       a          h          a\n");
+            for (unsigned int i = 0; i < sampleCount; smpraw++, i += 2) {
+                int smp1 = (*smpraw) & 0x07;
+                if (smp1 > 3) smp1 -= 8;
+
+                *output++ = smp1 * INT3_REC;
+
+                if (i + 1 < sampleCount) {
+                    int smp2 = ((*smpraw) >> 3) & 0x07;
+                    if (smp2 > 3) smp2 -= 8;
+
+                    *output++ = smp2 * INT3_REC;
+                }
             }
             break;
         }

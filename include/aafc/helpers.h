@@ -33,6 +33,7 @@ static inline float clampf(float val, float a, float b) {
 // Constant division (allows faster computation)
 
 //HAH
+static const float INT3_REC = 1.0f / 0x03;
 static const float INT4_REC = 1.0f / 0x07;
 
 static const float INT7_REC = 1.0f / 0x3f;
