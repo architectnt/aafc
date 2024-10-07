@@ -89,11 +89,15 @@ int main(int argc, char* argv[]) {
 	unsigned char sampletype = 1;
 	unsigned int resampleoverride = 0;
 	float pitch = 1;
+	const char* outpath = "aafc_conversions";
 
 	for (unsigned int i = 1; i < argc; i++) {
 		std::string input = std::string(argv[i]);
 		if (input == "-i" && i + 1 < argc) {
 			fn = argv[++i];
+		}
+		if (input == "-o" && i + 1 < argc) {
+			outpath = argv[++i];
 		}
 		else if (input == "--bps" && i + 1 < argc) {
 			outbps = (unsigned int)std::stof(argv[++i], NULL);
@@ -128,11 +132,13 @@ int main(int argc, char* argv[]) {
 			resampleoverride = (unsigned int)std::stof(argv[++i], NULL);
 		}
 	}
-	mkdir("aafc_conversions", 0755);
+	mkdir(outpath, 0755);
 	ConversionResult rst;
 
+
+
 	if (batchlength == 0) {
-		char* c = concat_path("aafc_conversions/", filename_without_extension(fn));
+		char* c = concat_path(outpath, filename_without_extension(fn));
 		if ((rst = convertmedia(fn, c, usemono, normalize, outbps, sampletype, resampleoverride, pitch)).statuscode != 0) {
 			free(c);
 			printf("Failed to convert media: %s [%d]\n", rst.message, rst.statuscode);
@@ -143,7 +149,7 @@ int main(int argc, char* argv[]) {
 	}
 	else {
 		char dirp[256];
-		snprintf(dirp, sizeof(dirp), "aafc_conversions/%s", dirnm);
+		snprintf(dirp, sizeof(dirp), "%s/%s", outpath, dirnm);
 
 		mkdir(dirp, 0755);
 
