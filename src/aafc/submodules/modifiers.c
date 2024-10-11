@@ -29,7 +29,7 @@ void forceMono(float* input, AAFC_HEADER* header, unsigned char* channels, unsig
     *channels = 1;
 }
 
-float* resampleAudio(float* input, AAFC_HEADER* header, unsigned int samplerateoverride, unsigned int freq, unsigned char channels, unsigned int* samplelength, float pitch) {
+float* resampleAudio(float* input, AAFC_HEADER* header, unsigned int samplerateoverride, unsigned int freq, unsigned char channels, unsigned int* samplelength, float pitch, bool nointerp) {
     if (pitch == 0)
         pitch = 1;
 
@@ -48,18 +48,33 @@ float* resampleAudio(float* input, AAFC_HEADER* header, unsigned int samplerateo
 
     float* rsmpled = (float*)malloc(resampledlen * sizeof(float));
 
-    for (unsigned char ch = 0; ch < channels; ch++) {
-        for (i = 0; i < resampledlenc; i++) {
-            oindx = i / ratio;
-            idx0 = (unsigned int)oindx;
-            ind = i * channels + ch;
 
-            y0 = (idx0 > 0 ? idx0 - 1 : 0) * channels + ch;
-            y1 = idx0 * channels + ch;
-            y2 = (idx0 + 1 < splen ? idx0 + 1 : splen - 1) * channels + ch;
-            y3 = (idx0 + 2 < splen ? idx0 + 2 : splen - 1) * channels + ch;
-            mu = oindx - idx0;
-            *(rsmpled + ind) = smooth_interpol(*(input + y0), *(input + y1), *(input + y2), *(input + y3), mu);
+    if (nointerp || samplerateoverride <= freq) /*eh whatevs we save the branch predictor anyways*/ {
+        for (unsigned char ch = 0; ch < channels; ch++) {
+            for (i = 0; i < resampledlenc; i++) {
+                oindx = i / ratio;
+                idx0 = (unsigned int)oindx;
+                ind = i * channels + ch;
+
+                idx0 = (idx0 < splen) ? idx0 : splen - 1;
+                *(rsmpled + ind) = *(input + idx0 * channels + ch);
+            }
+        }
+    }
+    else {
+        for (unsigned char ch = 0; ch < channels; ch++) {
+            for (i = 0; i < resampledlenc; i++) {
+                oindx = i / ratio;
+                idx0 = (unsigned int)oindx;
+                ind = i * channels + ch;
+
+                y0 = (idx0 > 0 ? idx0 - 1 : 0) * channels + ch;
+                y1 = idx0 * channels + ch;
+                y2 = (idx0 + 1 < splen ? idx0 + 1 : splen - 1) * channels + ch;
+                y3 = (idx0 + 2 < splen ? idx0 + 2 : splen - 1) * channels + ch;
+                mu = oindx - idx0;
+                *(rsmpled + ind) = smooth_interpol(*(input + y0), *(input + y1), *(input + y2), *(input + y3), mu);
+            }
         }
     }
 

@@ -24,7 +24,7 @@ typedef struct {
 	char* message;
 } ConversionResult;
 
-ConversionResult convertmedia(const char* fn, const char* outpath, bool usemono, bool normalize, unsigned char bps, unsigned char sampletype, unsigned int spoverride, float pitch) {
+ConversionResult convertmedia(const char* fn, const char* outpath, bool usemono, bool normalize, unsigned char bps, unsigned char sampletype, unsigned int spoverride, float pitch, bool nointerp) {
 	ConversionResult s = { 0, NULL};
 
 	SF_INFO info;
@@ -51,7 +51,7 @@ ConversionResult convertmedia(const char* fn, const char* outpath, bool usemono,
 		s.statuscode = 1;
 	}
 
-	AAFCOUTPUT out = ExportAAFC(smpl, info.samplerate, info.channels, nitms, bps, sampletype, usemono, spoverride, normalize, pitch);
+	AAFCOUTPUT out = ExportAAFC(smpl, info.samplerate, info.channels, nitms, bps, sampletype, usemono, spoverride, normalize, pitch, nointerp);
 	if (out.data == NULL) {
 		sf_close(ifl);
 		free(smpl);
@@ -81,8 +81,7 @@ ConversionResult convertmedia(const char* fn, const char* outpath, bool usemono,
 int main(int argc, char* argv[]) {
 	const char* fn = "input.wav";
 	unsigned char outbps = 16;
-	bool usemono = false;
-	bool normalize = false;
+	bool usemono = false, nointerp = false, normalize = false;
 	unsigned int batchlength = 0;
 	char** batchfiles;
 	const char* dirnm;
@@ -104,6 +103,9 @@ int main(int argc, char* argv[]) {
 		}
 		else if (input == "-m") {
 			usemono = true;
+		}
+		else if (input == "-nointerp") {
+			nointerp = true;
 		}
 		else if (input == "--adpcm") {
 			sampletype = 2;
@@ -139,7 +141,7 @@ int main(int argc, char* argv[]) {
 
 	if (batchlength == 0) {
 		char* c = concat_path(outpath, filename_without_extension(fn));
-		if ((rst = convertmedia(fn, c, usemono, normalize, outbps, sampletype, resampleoverride, pitch)).statuscode != 0) {
+		if ((rst = convertmedia(fn, c, usemono, normalize, outbps, sampletype, resampleoverride, pitch, nointerp)).statuscode != 0) {
 			free(c);
 			printf("Failed to convert media: %s [%d]\n", rst.message, rst.statuscode);
 			return -128;
@@ -154,7 +156,7 @@ int main(int argc, char* argv[]) {
 		mkdir(dirp, 0755);
 
 		for (unsigned int i = 0; i < batchlength; i++) {
-			rst = convertmedia(batchfiles[i], concat_path(dirp, filename_without_extension(batchfiles[i])), usemono, normalize, outbps, sampletype, resampleoverride, pitch);
+			rst = convertmedia(batchfiles[i], concat_path(dirp, filename_without_extension(batchfiles[i])), usemono, normalize, outbps, sampletype, resampleoverride, pitch, nointerp);
 			if (rst.statuscode == -1) {
 				continue;
 			}

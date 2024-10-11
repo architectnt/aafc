@@ -27,7 +27,7 @@
 
 typedef AAFCDECOUTPUT (*AAFCImport)(const unsigned char*);
 typedef AAFC_HEADER* (*AAFCGetHeader)(const unsigned char*);
-typedef AAFCOUTPUT (*AAFCExport)(float* samples, unsigned int freq, unsigned char channels, unsigned int samplelength, unsigned char bps, unsigned char sampletype, bool forcemono, unsigned int samplerateoverride, bool normalize, float pitch);
+typedef AAFCOUTPUT (*AAFCExport)(float* samples, unsigned int freq, unsigned char channels, unsigned int samplelength, unsigned char bps, unsigned char sampletype, bool forcemono, unsigned int samplerateoverride, bool normalize, float pitch, bool nointerp);
 typedef AAFCFILETABLE (*AFTCreate)(unsigned char*** data, size_t tablelength, size_t* sizes);
 typedef AAFCOUTPUT (*AFTExport)(AAFCFILETABLE* ftable);
 typedef AAFCFILETABLE* (*AFTImport)(unsigned char* data);
@@ -102,13 +102,13 @@ AAFC_HEADER* GrabHeader(const unsigned char* data) {
     return aheader(data);
 }
 
-AAFCOUTPUT ExportAAFC(float* samples, unsigned int freq, unsigned int channels, unsigned int samplelength, unsigned char bps = 16, unsigned char sampletype = 1, bool forcemono = false, unsigned int samplerateoverride = 0, bool normalize = false, float pitch = 1) {
+AAFCOUTPUT ExportAAFC(float* samples, unsigned int freq, unsigned int channels, unsigned int samplelength, unsigned char bps = 16, unsigned char sampletype = 1, bool forcemono = false, unsigned int samplerateoverride = 0, bool normalize = false, float pitch = 1, bool nointerp = false) {
     AAFCExport aexport = LibHandler::getInstance(LIB_AAFC_RPATH).getFunc<AAFCExport>("aafc_export");
     if (aexport == NULL) {
         perror("Could not initialize AAFC functions.");
         return {0, nullptr};
     }
-    return aexport(samples, freq, channels, samplelength, bps, sampletype, forcemono, samplerateoverride, normalize, pitch);
+    return aexport(samples, freq, channels, samplelength, bps, sampletype, forcemono, samplerateoverride, normalize, pitch, nointerp);
 }
 
 AAFCOUTPUT ExportAFT(AAFCFILETABLE* ftable) {

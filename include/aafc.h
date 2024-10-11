@@ -118,7 +118,7 @@ bool create_aftheader(AAFCFILETABLE* t);
 // Exports
 EXPORT unsigned short aafc_getversion();
 EXPORT AAFC_HEADER* aafc_getheader(const unsigned char* bytes);
-EXPORT AAFCOUTPUT aafc_export(float* samples, unsigned int freq, unsigned char channels, unsigned int samplelength, unsigned char bps, unsigned char sampletype, bool forcemono, unsigned int samplerateoverride, bool nm, float pitch);
+EXPORT AAFCOUTPUT aafc_export(float* samples, unsigned int freq, unsigned char channels, unsigned int samplelength, unsigned char bps, unsigned char sampletype, bool forcemono, unsigned int samplerateoverride, bool nm, float pitch, bool nointerp);
 EXPORT AAFCDECOUTPUT aafc_import(const unsigned char* bytes);
 
 EXPORT float* aafc_chunk_read(const unsigned char* bytes, int start, int end);
@@ -126,7 +126,7 @@ EXPORT float* aafc_chunk_read(const unsigned char* bytes, int start, int end);
 EXPORT void* aafc_float_to_int(float* arr, long size, unsigned char type);
 EXPORT void* aafc_int_to_float(void* arr, long size, unsigned char type);
 
-EXPORT float* aafc_resample_data(float* input, unsigned int samplerateoverride, unsigned int freq, unsigned char channels, unsigned int* samplelength, float pitch);
+EXPORT float* aafc_resample_data(float* input, unsigned int samplerateoverride, unsigned int freq, unsigned char channels, unsigned int* samplelength, float pitch, bool nointerp);
 EXPORT float* aafc_normalize(float* arr, int len);
 
 
