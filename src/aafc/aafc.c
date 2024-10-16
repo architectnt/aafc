@@ -95,6 +95,7 @@ EXPORT AAFCOUTPUT aafc_export(float* samples, unsigned int freq, unsigned char c
     memcpy(rst + sizeof(AAFC_HEADER), smpl, audsize);
     free(smpl);
     if (rsptr != samples) free(rsptr);
+    rsptr = NULL;
 
     output = (AAFCOUTPUT){ tdsize, rst };
     return output;
@@ -155,6 +156,7 @@ EXPORT AAFCDECOUTPUT aafc_import(const unsigned char* bytes) {
     if (output.data == NULL)
         output.header = (AAFC_HEADER){0};
 
+    rsptr = NULL;
     return output;
 }
 

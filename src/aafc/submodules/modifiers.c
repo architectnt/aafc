@@ -118,6 +118,7 @@ float* normalize(float* input, const unsigned int len) {
         *ptr /= mx;
     }
 
+    ptr = NULL;
     return input;
 }
 

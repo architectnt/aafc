@@ -278,4 +278,5 @@ void decode_pcm(const unsigned char* input, float* output, const unsigned int sa
             return;
         }
     }
+    smpraw = NULL;
 }

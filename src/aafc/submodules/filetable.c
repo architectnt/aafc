@@ -141,5 +141,6 @@ AAFCFILETABLE* decode_filetable_stream(unsigned char* data) {
         }
     }
 
+    ptr = NULL;
     return ftable;
 }
