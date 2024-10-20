@@ -59,8 +59,8 @@ Convert standard audio formats to AAFC
 | ------------- | ------------- | ------------- |
 | `-i` | `relative/absolute path` | Input file |
 | `--batchi` | `relative/absolute path` | Input folder to batch convert files |
-| `--bps` | `whole number` | Resample audio to specified sample rate |
-| `-ar` | `whole number` | Use specific bits per sample |
+| `--bps` | `whole number` | Use specific bits per sample |
+| `-ar` | `whole number` | Resample audio to specified sample rate |
 | `-p` | `number (1.0 is normal)` | Change relative pitch of the audio |
 | `-m` | - | Force mono |
 | `-n` | - | Normalize |
