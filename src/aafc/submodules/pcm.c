@@ -159,7 +159,7 @@ void* encode_pcm(float* ptr, unsigned int samplelength, size_t* audsize, unsigne
             return stbs;
         }
         default: {
-            printf("AAFC PCM: invalid bits per sample. (1, 4, 8, 10, 12, 16, 24, and 32 valid)\n");
+            printf("AAFC PCM: invalid bits per sample. (1, 3, 4, 8, 10, 12, 16, 24, and 32 valid)\n");
             return NULL;
         }
     }

@@ -9,7 +9,7 @@
 ### EXPORT/IMPORT
 | TYPE | SUPPORTED BIT DEPTHS |
 | ------------- | ------------- |
-| PCM | `1` `4` `8` `10` `12` `16` `24` `32 (float)` |
+| PCM | `1` `3` `4` `8` `10` `12` `16` `24` `32 (float)` |
 | SFPCM | `8` `16` |
 | ADPCM | `4` |
 | DPCM | `1` |
