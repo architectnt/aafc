@@ -20,7 +20,6 @@ void* encode_sfpcm(float* ptr, unsigned int samplelength, size_t* audsize, unsig
             }
 
             *audsize = samplelength;
-            sptr = NULL;
             return stbs;
         }
         case 16: {
@@ -32,7 +31,6 @@ void* encode_sfpcm(float* ptr, unsigned int samplelength, size_t* audsize, unsig
             }
 
             *audsize = bsize;
-            sptr = NULL;
             return stbs;
         }
         default: {

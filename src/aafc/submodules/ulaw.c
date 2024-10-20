@@ -28,7 +28,6 @@ unsigned char* encode_ulaw(float* ptr, unsigned int samplelength, size_t* audsiz
     }
 
     *audsize = samplelength;
-    uptr = NULL;
     return ulaw;
 }
 
@@ -46,5 +45,4 @@ void decode_ulaw(const unsigned char* input, float* output, const unsigned int s
 
         *output = lin * INT16_REC;
     }
-    smpraw = NULL;
 }

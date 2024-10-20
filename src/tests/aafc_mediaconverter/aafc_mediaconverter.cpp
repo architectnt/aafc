@@ -89,6 +89,7 @@ int main(int argc, char* argv[]) {
 	unsigned int resampleoverride = 0;
 	float pitch = 1;
 	const char* outpath = "aafc_conversions";
+	char* ofn = NULL;
 
 	for (unsigned int i = 1; i < argc; i++) {
 		std::string input = std::string(argv[i]);
@@ -97,6 +98,9 @@ int main(int argc, char* argv[]) {
 		}
 		if (input == "-o" && i + 1 < argc) {
 			outpath = argv[++i];
+		}
+		if (input == "-fn" && i + 1 < argc) {
+			ofn = argv[++i];
 		}
 		else if (input == "--bps" && i + 1 < argc) {
 			outbps = (unsigned int)std::stof(argv[++i], NULL);
@@ -140,7 +144,9 @@ int main(int argc, char* argv[]) {
 
 
 	if (batchlength == 0) {
-		char* c = concat_path(outpath, filename_without_extension(fn));
+		char fnc[256];
+		snprintf(fnc, sizeof(fnc), "%s", ofn == NULL || *ofn == '\0' ? filename_without_extension(fn) : filename_without_extension(ofn)); // aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+		char* c = concat_path(outpath, fnc);
 		if ((rst = convertmedia(fn, c, usemono, normalize, outbps, sampletype, resampleoverride, pitch, nointerp)).statuscode != 0) {
 			free(c);
 			printf("Failed to convert media: %s [%d]\n", rst.message, rst.statuscode);

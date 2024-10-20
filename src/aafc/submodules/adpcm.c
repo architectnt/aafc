@@ -88,9 +88,6 @@ signed char* encode_adpcm(float* ptr, unsigned int samplelength, size_t* audsize
     }
 
     *audsize = bsize;
-    adpcm = NULL;
-    stptr = NULL;
-    itbptr = NULL;
     return adpcm_base;
 }
 
@@ -142,6 +139,4 @@ void decode_adpcm(const unsigned char* input, float* output, const unsigned int 
 
         *output = valpred * INT16_REC;
     }
-    stptr = NULL;
-    itbptr = NULL;
 }

@@ -155,8 +155,6 @@ EXPORT AAFCDECOUTPUT aafc_import(const unsigned char* bytes) {
 
     if (output.data == NULL)
         output.header = (AAFC_HEADER){0};
-
-    rsptr = NULL;
     return output;
 }
 

@@ -44,5 +44,4 @@ void decode_dpcm(const unsigned char* input, float* output, const unsigned int s
         if (accum < -64) accum = -64;
         *output++ = accum * INT7_REC;
     }
-    smpraw = NULL;
 }
