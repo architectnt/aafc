@@ -64,6 +64,8 @@ Convert standard audio formats to AAFC
 | `-p` | `number (1.0 is normal)` | Change relative pitch of the audio |
 | `-m` | - | Force mono |
 | `-n` | - | Normalize |
+| `-o` | - | Output directory |
+| `-fn` | - | Output filename |
 | `--adpcm` | - | Encode in ADPCM |
 | `--dpcm` | - | Encode in Delta PCM |
 | `--sfpcm` | - | Encode in 'Small Float' PCM |
