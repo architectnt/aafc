@@ -49,7 +49,7 @@ float* resampleAudio(float* input, AAFC_HEADER* header, unsigned int samplerateo
     float* rsmpled = (float*)malloc(resampledlen * sizeof(float));
 
 
-    if (nointerp || samplerateoverride <= freq) /*eh whatevs we save the branch predictor anyways*/ {
+    if (nointerp) /*eh whatevs we save the branch predictor anyways*/ {
         for (unsigned char ch = 0; ch < channels; ch++) {
             for (i = 0; i < resampledlenc; i++) {
                 oindx = i / ratio;
