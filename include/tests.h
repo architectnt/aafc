@@ -1,6 +1,5 @@
 /*
-    Copyright (C) 2024 Architect Enterprises
-    This file is apart of AAFC and is licenced under the MIT Licence.
+	optional external tests that don't matter but are useful
 */
 
 #include <tests/libaafcfunc.h>

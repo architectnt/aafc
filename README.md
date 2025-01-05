@@ -76,7 +76,7 @@ Convert standard audio formats to AAFC
 
 
 ## FOOTNOTES
-Copyright (C) 2024 Architect Enterprises
+Copyright (C) 2024-2025 Architect Enterprises
 
 Architect Audio Clip Format (AAFC) is licenced under the [MIT licence](LICENSE).
 

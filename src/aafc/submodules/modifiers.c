@@ -3,7 +3,7 @@
     Sample modifiers
 
 
-    Copyright (C) 2024 Architect Enterprises
+    Copyright (C) 2024-2025 Architect Enterprises
     This file is a part of AAFC and is licenced under the MIT Licence.
 */
 
@@ -11,21 +11,21 @@
 #include "modifiers.h"
 
 void forceMono(float* input, AAFC_HEADER* header, unsigned char* channels, unsigned int* samplelength) {
-    if (*channels < 2)
-        return;
+    if (*channels < 2) return;
 
     const unsigned int splen = *samplelength / *channels;
     unsigned char chn;
     float accu;
+    const float scale = 1.0f / *channels;
     for (unsigned int i = 0; i < splen; i++)
     {
         for (chn = 0, accu = 0; chn < *channels; chn++)
             accu += *(input + (i * *channels + chn));
-        *(input + i) = accu / *channels;
+        *(input + i) = accu * scale;
     }
     header->samplelength = splen;
     header->channels = 1;
-    *samplelength /= *channels;
+    *samplelength = splen;
     *channels = 1;
 }
 
@@ -39,42 +39,43 @@ float* resampleAudio(float* input, AAFC_HEADER* header, unsigned int samplerateo
     if (pitch != 1 && samplerateoverride == 0)
         samplerateoverride = freq;
 
-    const double ratio = ((double)samplerateoverride / freq) / pitch;
-    const unsigned int splen = *samplelength / channels;
-    const unsigned int resampledlen = (unsigned int)(*samplelength * ratio);
-    const unsigned int resampledlenc = (unsigned int)(splen * ratio);
-    unsigned int i, ind, idx0, y0, y1, y2, y3;
+    const double ratio = ((double)samplerateoverride / freq) / pitch, iratio = 1.0 / ratio;
+    const unsigned int splen = *samplelength / channels, 
+        resampledlen = (unsigned int)(*samplelength * ratio),
+        resampledlenc = (unsigned int)(splen * ratio);
+    unsigned int i, ind, idx0;
     double oindx, mu;
 
     float* rsmpled = (float*)malloc(resampledlen * sizeof(float));
+    if (!rsmpled) return input;
 
+    if (nointerp) { // eh whatevs we save the branch predictor anyways
+        for (i = 0; i < resampledlenc; i++) {
+            ind = (unsigned int)(i * iratio),
+                idx0 = (ind < splen) ? ind : splen - 1;
 
-    if (nointerp) /*eh whatevs we save the branch predictor anyways*/ {
-        for (unsigned char ch = 0; ch < channels; ch++) {
-            for (i = 0; i < resampledlenc; i++) {
-                oindx = i / ratio;
-                idx0 = (unsigned int)oindx;
-                ind = i * channels + ch;
-
-                idx0 = (idx0 < splen) ? idx0 : splen - 1;
-                *(rsmpled + ind) = *(input + idx0 * channels + ch);
-            }
+            for (unsigned char ch = 0; ch < channels; ch++)
+                rsmpled[i * channels + ch] = input[idx0 * channels + ch];
         }
     }
     else {
-        for (unsigned char ch = 0; ch < channels; ch++) {
-            for (i = 0; i < resampledlenc; i++) {
-                oindx = i / ratio;
-                idx0 = (unsigned int)oindx;
-                ind = i * channels + ch;
+        for (i = 0; i < resampledlenc; i++) {
+            oindx = i * iratio;
+            idx0 = (unsigned int)oindx;
+            mu = oindx - idx0;
 
-                y0 = (idx0 > 0 ? idx0 - 1 : 0) * channels + ch;
-                y1 = idx0 * channels + ch;
-                y2 = (idx0 + 1 < splen ? idx0 + 1 : splen - 1) * channels + ch;
-                y3 = (idx0 + 2 < splen ? idx0 + 2 : splen - 1) * channels + ch;
-                mu = oindx - idx0;
-                *(rsmpled + ind) = smooth_interpol(*(input + y0), *(input + y1), *(input + y2), *(input + y3), mu);
-            }
+            const unsigned int i0 = (idx0 > 0 ? idx0 - 1 : 0),
+                i1 = (idx0 + 1 < splen ? idx0 + 1 : splen - 1),
+                i2 = (idx0 + 2 < splen ? idx0 + 2 : splen - 1);
+
+            for (unsigned char ch = 0; ch < channels; ch++)
+                rsmpled[i * channels + ch] = smooth_interpol(
+                    input[i0 * channels + ch],
+                    input[idx0 * channels + ch],
+                    input[i1 * channels + ch],
+                    input[i2 * channels + ch],
+                    mu
+                );
         }
     }
 

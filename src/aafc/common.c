@@ -22,11 +22,13 @@ float dhalf(unsigned short val) {
 }
 
 float smooth_interpol(float y0, float y1, float y2, float y3, double t) {
-    float c0 = y1;
-    float c1 = 0.5f * (y2 - y0);
-    float c2 = y0 - 2.5f * y1 + 2 * y2 - 0.5f * y3;
-    float c3 = 0.5f * (y3 - y0) + 1.5f * (y1 - y2);
-    return ((c3 * t + c2) * t + c1) * t + c0;
+    float t2 = t * t, 
+        t3 = t2 * t;
+    float c0 = y1,
+        c1 = (y2 - y0) * 0.5f,
+        c2 = y0 - y1 * 2.5f + y2 * 2.0f - y3 * 0.5f,
+        c3 = (y3 - y0) * 0.5f + (y1 - y2) * 1.5f;
+    return c0 + c1 * t + c2 * t2 + c3 * t3;
 }
 
 unsigned char minifloat(float val) {

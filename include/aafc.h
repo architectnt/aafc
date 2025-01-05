@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2024 Architect Enterprises
+    Copyright (C) 2024-2025 Architect Enterprises
     This file is apart of AAFC and is licenced under the MIT Licence.
 */
 
@@ -60,6 +60,13 @@ typedef struct {
     unsigned char* data;
 } AAFCOUTPUT;
 
+typedef struct {
+    AAFC_HEADER header;
+    unsigned int length; // size of the data
+    unsigned int position;
+    void* data;
+} AAFCSTREAM;
+
 typedef enum { // brought tragedy
     OUTPUT_T_FLOAT,
     OUTPUT_T_UNSIGNED_BYTE,
@@ -67,6 +74,12 @@ typedef enum { // brought tragedy
     OUTPUT_T_SHORT,
     OUTPUT_T_INT,
 } OUTPUTTYPE;
+
+typedef enum {
+    STATIC,
+    DYNAMIC,
+    VOLATILE,
+} STREAMTYPE;
 
 typedef struct decoutput {
     AAFC_HEADER header;
