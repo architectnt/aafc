@@ -10,38 +10,40 @@
 #include <aafc.h>
 #include "modifiers.h"
 
-void forceMono(float* input, AAFC_HEADER* header, unsigned char* channels, unsigned int* samplelength) {
-    if (*channels < 2) return;
+void forceMono(float* input, AAFC_HEADER* h) {
+    if (h->channels < 2) return;
 
-    const unsigned int splen = *samplelength / *channels;
+    const unsigned int splen = h->samplelength / h->channels;
     unsigned char chn;
     float accu;
-    const float scale = 1.0f / *channels;
+    const float scale = 1.0f / h->channels;
     for (unsigned int i = 0; i < splen; i++)
     {
-        for (chn = 0, accu = 0; chn < *channels; chn++)
-            accu += *(input + (i * *channels + chn));
+        for (chn = 0, accu = 0; chn < h->channels; chn++)
+            accu += *(input + (i * h->channels + chn));
         *(input + i) = accu * scale;
     }
-    header->samplelength = splen;
-    header->channels = 1;
-    *samplelength = splen;
-    *channels = 1;
+    h->samplelength = splen;
+    h->channels = 1;
 }
 
-float* resampleAudio(float* input, AAFC_HEADER* header, unsigned int samplerateoverride, unsigned int freq, unsigned char channels, unsigned int* samplelength, float pitch, bool nointerp) {
+float* resampleAudio(float* input, AAFC_HEADER* header, unsigned int samplerateoverride, float pitch, bool nointerp) {
+    if (header == NULL) {
+        return NULL;
+    }
+
     if (pitch == 0)
         pitch = 1;
 
-    if (samplerateoverride == freq && pitch == 1)
+    if (samplerateoverride == header->freq && pitch == 1)
         return input;
 
     if (pitch != 1 && samplerateoverride == 0)
-        samplerateoverride = freq;
+        samplerateoverride = header->freq;
 
-    const double ratio = ((double)samplerateoverride / freq) / pitch, iratio = 1.0 / ratio;
-    const unsigned int splen = *samplelength / channels, 
-        resampledlen = (unsigned int)(*samplelength * ratio),
+    const double ratio = ((double)samplerateoverride / header->freq) / pitch, iratio = 1.0 / ratio;
+    const unsigned int splen = header->samplelength / header->channels,
+        resampledlen = (unsigned int)(header->samplelength * ratio),
         resampledlenc = (unsigned int)(splen * ratio);
     unsigned int i, ind, idx0;
     double oindx, mu;
@@ -54,8 +56,8 @@ float* resampleAudio(float* input, AAFC_HEADER* header, unsigned int samplerateo
             ind = (unsigned int)(i * iratio),
                 idx0 = (ind < splen) ? ind : splen - 1;
 
-            for (unsigned char ch = 0; ch < channels; ch++)
-                rsmpled[i * channels + ch] = input[idx0 * channels + ch];
+            for (unsigned char ch = 0; ch < header->channels; ch++)
+                rsmpled[i * header->channels + ch] = input[idx0 * header->channels + ch];
         }
     }
     else {
@@ -68,46 +70,43 @@ float* resampleAudio(float* input, AAFC_HEADER* header, unsigned int samplerateo
                 i1 = (idx0 + 1 < splen ? idx0 + 1 : splen - 1),
                 i2 = (idx0 + 2 < splen ? idx0 + 2 : splen - 1);
 
-            for (unsigned char ch = 0; ch < channels; ch++)
-                rsmpled[i * channels + ch] = smooth_interpol(
-                    input[i0 * channels + ch],
-                    input[idx0 * channels + ch],
-                    input[i1 * channels + ch],
-                    input[i2 * channels + ch],
+            for (unsigned char ch = 0; ch < header->channels; ch++)
+                rsmpled[i * header->channels + ch] = smooth_interpol(
+                    input[i0 * header->channels + ch],
+                    input[idx0 * header->channels + ch],
+                    input[i1 * header->channels + ch],
+                    input[i2 * header->channels + ch],
                     mu
                 );
         }
     }
 
-    *samplelength = resampledlen;
-    if (header != NULL) {
-        header->freq = samplerateoverride;
-        header->samplelength = resampledlen;
-    }
+    header->freq = samplerateoverride;
+    header->samplelength = resampledlen;
 
     return rsmpled;
 }
 
-float* force_independent_channels(float* input, const unsigned char channels, const unsigned int samplelength) {
-    float* output = (float*)malloc(samplelength * sizeof(float));
+float* force_independent_channels(float* input, const AAFC_HEADER* h) {
+    float* output = (float*)malloc(h->samplelength * sizeof(float));
 
-    const unsigned int splen = samplelength / channels;
+    const unsigned int splen = h->samplelength / h->channels;
     unsigned int i;
-    for (unsigned char ch = 0; ch < channels; ch++) {
+    for (unsigned char ch = 0; ch < h->channels; ch++) {
         for (i = 0; i < splen; i++)
-            *(output + (i + splen * ch)) = *(input + (i * channels + ch));
+            *(output + (i + splen * ch)) = *(input + (i * h->channels + ch));
     }
 
     return output;
 }
 
-float* normalize(float* input, const unsigned int len) {
-    if (input == NULL || len <= 0)
+float* normalize(float* input, const AAFC_HEADER* h) {
+    if (input == NULL || h->samplelength <= 0)
         return input;
 
     float mx = 0.0f;
     float* ptr;
-    for (ptr = input; ptr < input + len; ptr++) {
+    for (ptr = input; ptr < input + h->samplelength; ptr++) {
         if (fabsf(*ptr) > mx)
             mx = fabsf(*ptr);
     }
@@ -115,26 +114,26 @@ float* normalize(float* input, const unsigned int len) {
     if (mx < 1e-6) 
         return input;
 
-    for (ptr = input; ptr < input + len; ptr++) {
+    for (ptr = input; ptr < input + h->samplelength; ptr++) {
         *ptr /= mx;
     }
 
     return input;
 }
 
-float* force_interleave_channels(float* input, const unsigned char channels, const unsigned int samplelength) {
-    if (!input || channels <= 0 || samplelength <= 0)
+float* force_interleave_channels(float* input, const AAFC_HEADER* h) {
+    if (!input || h->channels <= 0 || h->samplelength <= 0)
         return NULL;
 
-    float* output = (float*)malloc(samplelength * sizeof(float));
+    float* output = (float*)malloc(h->samplelength * sizeof(float));
     if (!output)
         return NULL;
 
-    unsigned int splen = samplelength / channels;
+    unsigned int splen = h->samplelength / h->channels;
     unsigned char ch;
     for (unsigned int i = 0; i < splen; i++) {
-        for (ch = 0; ch < channels; ch++)
-            *(output + (i * channels + ch)) = *(input + (i + splen * ch));
+        for (ch = 0; ch < h->channels; ch++)
+            *(output + (i * h->channels + ch)) = *(input + (i + splen * ch));
     }
     return output;
 }

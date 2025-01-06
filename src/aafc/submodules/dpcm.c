@@ -10,13 +10,13 @@
 #include <aafc.h>
 #include "dpcm.h"
 
-unsigned char* encode_dpcm(float* ptr, unsigned int samplelength, size_t* audsize) {
-    size_t bsize = ((size_t)samplelength + 7) / 8;
+unsigned char* encode_dpcm(float* ptr, const AAFC_HEADER* h, size_t* audsize) {
+    size_t bsize = ((size_t)h->samplelength + 7) / 8;
     unsigned char* dpcm = (unsigned char*)malloc(bsize);
     memset(dpcm, 0, bsize);
 
     unsigned char accum = 63;
-    for (unsigned int i = 0; i < samplelength; ptr++, i++) {
+    for (unsigned int i = 0; i < h->samplelength; ptr++, i++) {
         unsigned char next = (unsigned char)(clampf((*ptr + 1.0f) * 63.5f, 0.0f, 255.0f));
         if (next > accum) {
             *(dpcm + (i >> 3)) |= 1 << (i & 7);
@@ -35,10 +35,10 @@ unsigned char* encode_dpcm(float* ptr, unsigned int samplelength, size_t* audsiz
     return dpcm;
 }
 
-void decode_dpcm(const unsigned char* input, float* output, const unsigned int sampleCount) {
+void decode_dpcm(const unsigned char* input, float* output, const AAFC_HEADER* h) {
     const unsigned char* smpraw = input + sizeof(AAFC_HEADER);
     signed char accum = 0;
-    for (unsigned int i = 0; i < sampleCount; i++) {
+    for (unsigned int i = 0; i < h->samplelength; i++) {
         accum += ((*(smpraw + (i >> 3)) >> (i & 7)) & 1) ? 1 : -1;
         if (accum > 63) accum = 63;
         if (accum < -64) accum = -64;

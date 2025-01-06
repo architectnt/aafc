@@ -139,8 +139,8 @@ EXPORT float* aafc_chunk_read(const unsigned char* bytes, int start, int end);
 EXPORT void* aafc_float_to_int(float* arr, long size, unsigned char type);
 EXPORT void* aafc_int_to_float(void* arr, long size, unsigned char type);
 
-EXPORT float* aafc_resample_data(float* input, unsigned int samplerateoverride, unsigned int freq, unsigned char channels, unsigned int* samplelength, float pitch, bool nointerp);
-EXPORT float* aafc_normalize(float* arr, int len);
+EXPORT float* aafc_resample_data(float* input, unsigned int samplerateoverride, AAFC_HEADER* h, float pitch, bool nointerp);
+EXPORT float* aafc_normalize(float* arr, const AAFC_HEADER* h);
 
 
 //TODO: aafc content tables

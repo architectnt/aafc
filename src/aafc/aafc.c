@@ -42,36 +42,36 @@ EXPORT AAFCOUTPUT aafc_export(float* samples, unsigned int freq, unsigned char c
     float* rsptr = samples;
 
     if (forcemono && channels != 1)
-        forceMono(rsptr, header, &channels, &samplelength);
+        forceMono(rsptr, header);
 
     if ((samplerateoverride != 0 && samplerateoverride != freq) || pitch != 1)
-        rsptr = resampleAudio(rsptr, header, samplerateoverride, freq, channels, &samplelength, pitch, nointerp);
+        rsptr = resampleAudio(rsptr, header, samplerateoverride, pitch, nointerp);
 
-    if (nm) normalize(rsptr, samplelength);
+    if (nm) normalize(rsptr, header);
 
     void* smpl = NULL;
     size_t audsize = 0;
 
     switch (sampletype) {
         case 1: {
-            smpl = encode_pcm(rsptr, samplelength, &audsize, bps);
+            smpl = encode_pcm(rsptr, header, &audsize);
             break;
         }
         case 2: {
-            if (channels > 1) rsptr = force_independent_channels(rsptr, channels, samplelength);
-            smpl = encode_adpcm(rsptr, samplelength, &audsize);
+            if (channels > 1) rsptr = force_independent_channels(rsptr, header);
+            smpl = encode_adpcm(rsptr, header, &audsize);
             break;
         }
         case 3: {
-            smpl = encode_dpcm(rsptr, samplelength, &audsize);
+            smpl = encode_dpcm(rsptr, header, &audsize);
             break;
         }
         case 4: {
-            smpl = encode_sfpcm(rsptr, samplelength, &audsize, bps);
+            smpl = encode_sfpcm(rsptr, header, &audsize);
             break;
         }
         case 5: {
-            smpl = encode_ulaw(rsptr, samplelength, &audsize);
+            smpl = encode_ulaw(rsptr, header, &audsize);
             break;
         }
         default: {
@@ -120,13 +120,13 @@ EXPORT AAFCDECOUTPUT aafc_import(const unsigned char* bytes) {
 
     switch (header->sampletype) {
         case 1: {
-            decode_pcm(bytes, rsptr, header->samplelength, header->bps);
+            decode_pcm(bytes, rsptr, header);
             break;
         }
         case 2: {
-            decode_adpcm(bytes, rsptr, header->samplelength);
+            decode_adpcm(bytes, rsptr, header);
             if (header->channels > 1) {
-                float* itrsamples = force_interleave_channels(output.data, header->channels, header->samplelength);
+                float* itrsamples = force_interleave_channels(output.data, header);
                 if (itrsamples) {
                     free(output.data);
                     output.data = itrsamples;
@@ -135,15 +135,15 @@ EXPORT AAFCDECOUTPUT aafc_import(const unsigned char* bytes) {
             break;
         }
         case 3: {
-            decode_dpcm(bytes, rsptr, header->samplelength);
+            decode_dpcm(bytes, rsptr, header);
             break;
         }
         case 4: {
-            decode_sfpcm(bytes, rsptr, header->samplelength, header->bps);
+            decode_sfpcm(bytes, rsptr, header);
             break;
         }
         case 5: {
-            decode_ulaw(bytes, rsptr, header->samplelength);
+            decode_ulaw(bytes, rsptr, header);
             break;
         }
         default: {
@@ -276,12 +276,12 @@ EXPORT void* aafc_int_to_float(void* arr, long size, unsigned char type) {
     return csmpl;
 }
 
-EXPORT float* aafc_resample_data(float* input, unsigned int samplerateoverride, unsigned int freq, unsigned char channels, unsigned int* samplelength, float pitch, bool nointerp) {
-    return resampleAudio(input, NULL, samplerateoverride, freq, channels, samplelength, pitch, nointerp);
+EXPORT float* aafc_resample_data(float* input, unsigned int samplerateoverride, AAFC_HEADER* h, float pitch, bool nointerp) {
+    return resampleAudio(input, h, samplerateoverride, pitch, nointerp);
 }
 
-EXPORT float* aafc_normalize(float* arr, int len) {
-    return normalize(arr, len);
+EXPORT float* aafc_normalize(float* arr, const AAFC_HEADER* h) {
+    return normalize(arr, h);
 }
 
 EXPORT AAFCOUTPUT aft_export(AAFCFILETABLE* ftable) {

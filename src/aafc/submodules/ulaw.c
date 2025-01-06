@@ -9,13 +9,13 @@
 #include <aafc.h>
 #include "ulaw.h"
 
-unsigned char* encode_ulaw(float* ptr, unsigned int samplelength, size_t* audsize) {
-    unsigned char* ulaw = (unsigned char*)malloc(samplelength);
+unsigned char* encode_ulaw(float* ptr, const AAFC_HEADER* h, size_t* audsize) {
+    unsigned char* ulaw = (unsigned char*)malloc(h->samplelength);
     unsigned char* uptr = ulaw;
 
     const short* explut = expLut;
 
-    for (unsigned int i = 0; i < samplelength; ptr++, uptr++, i++) {
+    for (unsigned int i = 0; i < h->samplelength; ptr++, uptr++, i++) {
         short sample = (short)clampf(*ptr * 32767.0f, -32768.0f, 32767.0f);
         short sign = (sample >> 8) & 0x80;
         if (sign != 0) sample = -sample;
@@ -27,15 +27,15 @@ unsigned char* encode_ulaw(float* ptr, unsigned int samplelength, size_t* audsiz
         *uptr = ~(sign | (exponent << 4) | mantissa);
     }
 
-    *audsize = samplelength;
+    *audsize = h->samplelength;
     return ulaw;
 }
 
-void decode_ulaw(const unsigned char* input, float* output, const unsigned int sampleCount) {
+void decode_ulaw(const unsigned char* input, float* output, const AAFC_HEADER* h) {
     const unsigned char* smpraw = input + sizeof(AAFC_HEADER);
     const short* explut = expLutd;
 
-    for (const unsigned char* n = smpraw + sampleCount; smpraw < n; smpraw++, output++) {
+    for (const unsigned char* n = smpraw + h->samplelength; smpraw < n; smpraw++, output++) {
         unsigned char smpl = ~(*smpraw);
         short sign = (smpl & 0x80);
         short exponent = (smpl >> 4) & 0x07;

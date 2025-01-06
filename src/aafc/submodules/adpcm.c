@@ -10,8 +10,8 @@
 #include <aafc.h>
 #include "adpcm.h"
 
-signed char* encode_adpcm(float* ptr, unsigned int samplelength, size_t* audsize) {
-    size_t bsize = samplelength / 2;
+signed char* encode_adpcm(float* ptr, const AAFC_HEADER* h, size_t* audsize) {
+    size_t bsize = h->samplelength / 2;
 
     signed char* adpcm_base = (signed char*)malloc(bsize);
     signed char* adpcm = adpcm_base;
@@ -33,7 +33,7 @@ signed char* encode_adpcm(float* ptr, unsigned int samplelength, size_t* audsize
 
     bufferstep = 1;
 
-    for (unsigned int i = 0; i < samplelength; ptr++, i++) {
+    for (unsigned int i = 0; i < h->samplelength; ptr++, i++) {
         sample = (short)clampf(*ptr * 32767.0f, -32768.0f, 32767.0f);
 
         diff = sample - valpred;
@@ -91,7 +91,7 @@ signed char* encode_adpcm(float* ptr, unsigned int samplelength, size_t* audsize
     return adpcm_base;
 }
 
-void decode_adpcm(const unsigned char* input, float* output, const unsigned int sampleCount) {
+void decode_adpcm(const unsigned char* input, float* output, const AAFC_HEADER* h) {
     const signed char* adpcm = (const signed char*)(input + sizeof(AAFC_HEADER));
     const short* stptr = adpcmStepSize;
     const signed char* itbptr = adpcmIndexTable;
@@ -105,7 +105,7 @@ void decode_adpcm(const unsigned char* input, float* output, const unsigned int 
     int inputbuffer = 0;
     signed char sign;
 
-    for (const float* n = output + sampleCount; output < n; output++) {
+    for (const float* n = output + h->samplelength; output < n; output++) {
         if (bufferstep) {
             delta = inputbuffer & 0xf;
         }

@@ -5,5 +5,5 @@
 
 #include <aafc.h>
 
-void* encode_sfpcm(float* ptr, unsigned int samplelength, size_t* audsize, unsigned char bps);
-void decode_sfpcm(const unsigned char* input, float* output, const unsigned int sampleCount, const unsigned char bps);
+void* encode_sfpcm(float* ptr, const AAFC_HEADER* h, size_t* audsize);
+void decode_sfpcm(const unsigned char* input, float* output, const AAFC_HEADER* h);

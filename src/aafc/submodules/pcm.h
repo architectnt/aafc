@@ -5,5 +5,5 @@
 
 #include <aafc.h>
 
-void* encode_pcm(float* ptr, unsigned int samplelength, size_t* audsize, unsigned char bps);
-void decode_pcm(const unsigned char* input, float* output, const unsigned int sampleCount, const unsigned char bps);
+void* encode_pcm(float* ptr, const AAFC_HEADER* h, size_t* audsize);
+void decode_pcm(const unsigned char* input, float* output, const AAFC_HEADER* h);

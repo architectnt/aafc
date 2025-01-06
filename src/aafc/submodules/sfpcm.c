@@ -10,23 +10,23 @@
 #include <aafc.h>
 #include "sfpcm.h"
 
-void* encode_sfpcm(float* ptr, unsigned int samplelength, size_t* audsize, unsigned char bps) {
-    switch (bps) {
+void* encode_sfpcm(float* ptr, const AAFC_HEADER* h, size_t* audsize) {
+    switch (h->bps) {
         case 8: {
-            unsigned char* stbs = (unsigned char*)malloc(samplelength);
+            unsigned char* stbs = (unsigned char*)malloc(h->samplelength);
             unsigned char* sptr = stbs;
-            for (unsigned int i = 0; i < samplelength; ptr++, sptr++, i++) {
+            for (unsigned int i = 0; i < h->samplelength; ptr++, sptr++, i++) {
                 *sptr = minifloat(clampf(*ptr * 127.0f, -128.0f, 127.0f));
             }
 
-            *audsize = samplelength;
+            *audsize = h->samplelength;
             return stbs;
         }
         case 16: {
-            size_t bsize = samplelength * sizeof(short);
+            size_t bsize = h->samplelength * sizeof(short);
             unsigned short* stbs = (unsigned short*)malloc(bsize);
             unsigned short* sptr = stbs;
-            for (unsigned int i = 0; i < samplelength; ptr++, sptr++, i++) {
+            for (unsigned int i = 0; i < h->samplelength; ptr++, sptr++, i++) {
                 *sptr = halfpercision(*ptr);
             }
 
@@ -40,20 +40,20 @@ void* encode_sfpcm(float* ptr, unsigned int samplelength, size_t* audsize, unsig
     }
 }
 
-void decode_sfpcm(const unsigned char* input, float* output, const unsigned int sampleCount, const unsigned char bps) {
+void decode_sfpcm(const unsigned char* input, float* output, const AAFC_HEADER* h) {
     const unsigned char* smpraw = input + sizeof(AAFC_HEADER);
 
-    switch (bps) {
+    switch (h->bps) {
         case 8: {
             const char* sptr = (const char*)smpraw;
-            for (unsigned int i = 0; i < sampleCount; output++, sptr++, i++) {
+            for (unsigned int i = 0; i < h->samplelength; output++, sptr++, i++) {
                 *output = dminif(*sptr) * INT8_REC;
             }
             break;
         }
         case 16: {
             const short* sptr = (const short*)smpraw;
-            for (unsigned int i = 0; i < sampleCount; output++, sptr++, i++) {
+            for (unsigned int i = 0; i < h->samplelength; output++, sptr++, i++) {
                 *output = dhalf(*sptr);
             }
             break;

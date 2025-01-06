@@ -31,5 +31,5 @@ static const short expLutd[8] = {
 	0, 132, 396, 924, 1980, 4092, 8316, 16764 
 };
 
-unsigned char* encode_ulaw(float* ptr, unsigned int samplelength, size_t* audsize);
-void decode_ulaw(const unsigned char* input, float* output, const unsigned int sampleCount);
+unsigned char* encode_ulaw(float* ptr, const AAFC_HEADER* h, size_t* audsize);
+void decode_ulaw(const unsigned char* input, float* output, const AAFC_HEADER* h);
