@@ -27,7 +27,6 @@ EXPORT AAFCOUTPUT aafc_export(float* samples, unsigned int freq, unsigned char c
     }
 
     if (pitch == 0) pitch = 1;
-
     if (samplelength < 1) {
         printf("AAFC ERROR: samplelength cannot be below 1.\n");
         return output;
@@ -43,42 +42,26 @@ EXPORT AAFCOUTPUT aafc_export(float* samples, unsigned int freq, unsigned char c
 
     if (forcemono && channels != 1)
         forceMono(rsptr, header);
-
     if ((samplerateoverride != 0 && samplerateoverride != freq) || pitch != 1)
         rsptr = resampleAudio(rsptr, header, samplerateoverride, pitch, nointerp);
-
     if (nm) normalize(rsptr, header);
 
     void* smpl = NULL;
     size_t audsize = 0;
 
     switch (sampletype) {
-        case 1: {
-            smpl = encode_pcm(rsptr, header, &audsize);
-            break;
-        }
-        case 2: {
+        case 1: smpl = encode_pcm(rsptr, header, &audsize); break;
+        case 2:
             if (channels > 1) rsptr = force_independent_channels(rsptr, header);
             smpl = encode_adpcm(rsptr, header, &audsize);
             break;
-        }
-        case 3: {
-            smpl = encode_dpcm(rsptr, header, &audsize);
-            break;
-        }
-        case 4: {
-            smpl = encode_sfpcm(rsptr, header, &audsize);
-            break;
-        }
-        case 5: {
-            smpl = encode_ulaw(rsptr, header, &audsize);
-            break;
-        }
-        default: {
+        case 3: smpl = encode_dpcm(rsptr, header, &audsize); break;
+        case 4: smpl = encode_sfpcm(rsptr, header, &audsize); break;
+        case 5: smpl = encode_ulaw(rsptr, header, &audsize); break;
+        default:             
             free(header); free(rsptr);
             printf("AAFC ERROR: Invalid sample type!\n");
             return output;
-        }
     }
 
 
