@@ -107,54 +107,35 @@ EXPORT AAFCDECOUTPUT aafc_import(const unsigned char* bytes) {
         printf("AAFC: invalid aafc data\n");
         return output;
     }
-
-    const AAFC_HEADER* header = (const AAFC_HEADER*)bytes; // evil
-    output.header = *header;
-
-    if ((output.data = (float*)malloc(header->samplelength * sizeof(float))) == NULL) /* that's something */ {
+    output.header = *(AAFC_HEADER*)bytes; // evil
+    if ((output.data = (float*)malloc(output.header.samplelength * sizeof(float))) == NULL) { // that's something
         printf("AAFC: FAILED ALLOCATION OF DATA\n");
         output.header = (AAFC_HEADER){ 0 };
         return output;
     }
     float* rsptr = output.data;
-
-    switch (header->sampletype) {
-        case 1: {
-            decode_pcm(bytes, rsptr, header);
-            break;
-        }
-        case 2: {
-            decode_adpcm(bytes, rsptr, header);
-            if (header->channels > 1) {
-                float* itrsamples = force_interleave_channels(output.data, header);
+    switch (output.header.sampletype) {
+        case 1: decode_pcm(bytes, rsptr, &output.header); break;
+        case 2:
+            decode_adpcm(bytes, rsptr, &output.header);
+            if (output.header.channels > 1) {
+                float* itrsamples = force_interleave_channels(output.data, &output.header);
                 if (itrsamples) {
                     free(output.data);
                     output.data = itrsamples;
                 }
             }
             break;
-        }
-        case 3: {
-            decode_dpcm(bytes, rsptr, header);
-            break;
-        }
-        case 4: {
-            decode_sfpcm(bytes, rsptr, header);
-            break;
-        }
-        case 5: {
-            decode_ulaw(bytes, rsptr, header);
-            break;
-        }
-        default: {
+        case 3: decode_dpcm(bytes, rsptr, &output.header); break;
+        case 4: decode_sfpcm(bytes, rsptr, &output.header); break;
+        case 5: decode_ulaw(bytes, rsptr, &output.header); break;
+        default:
             free(output.data);
             printf("AAFC IMPORT ERROR: Invalid sample type!\n");
-            output.header = (AAFC_HEADER){0};
-        }
+            output.header = (AAFC_HEADER){ 0 };
+            break;
     }
 
-    if (output.data == NULL)
-        output.header = (AAFC_HEADER){0};
     return output;
 }
 

@@ -48,25 +48,30 @@ static int AudioHandler(const void* inp, void* otp, unsigned long frames, const 
 
 	float* outspl = (float*)otp;
 	unsigned char ch;
+	const double scal = (double)outp.header.freq / sysfreq;
 	for (unsigned int i = 0; i < frames; i++) {
 		for(ch = 0; ch < syschan; ch++) {
 			float smpl = 0;
 			if(!finished) {
-				double spos = ipos + i * ((double)outp.header.freq / sysfreq);
+				double spos = ipos + i * scal;
 				if (spos >= splen - 1) {
 					ipos = 0;
 					finished = true;
 				}
 
-				unsigned int index = (unsigned int)spos;
-				unsigned int nxind = (index + 1) % outp.header.samplelength;
+				unsigned int index = (unsigned int)spos,
+					nxind = (index + 1) % outp.header.samplelength;
 				double w = (spos - index);
 				
 				unsigned char sc = outp.header.channels > 1 ? ch : 0;
-				smpl = (float)lerp(*(outp.data + (index * outp.header.channels + sc)), *(outp.data + (nxind * outp.header.channels + sc)), w);
+				smpl = (float)lerp(
+					outp.data[index * outp.header.channels + sc], 
+					outp.data[nxind * outp.header.channels + sc], 
+					w
+				);
 			}
 
-			*(outspl + i * syschan + ch) = smpl;
+			outspl[i * syschan + ch] = smpl;
 		}
 	}
 
@@ -88,10 +93,10 @@ static void drawProgressBar(double esec, double tsec) {
 	}
 	std::cout << "] ";
 
-	int min = esec / 60;
-	int sec = (int)esec % 60;
-	int tmin = tsec / 60;
-	int tsecs = (int)tsec % 60;
+	int min = esec / 60,
+		sec = (int)esec % 60,
+		tmin = tsec / 60,
+		tsecs = (int)tsec % 60;
 
 	printf("%02d:%02d/%02d:%02d", min, sec, tmin, tsecs);
 	std::cout.flush();
@@ -116,24 +121,12 @@ int main(int argc, char* argv[]) {
 		const char* stypeformat;
 
 		switch (outp.header.sampletype) {
-			case 1:
-				stypeformat = "PCM";
-				break;
-			case 2:
-				stypeformat = "ADPCM";
-				break;
-			case 3:
-				stypeformat = "DPCM";
-				break;
-			case 4:
-				stypeformat = "SFPCM";
-				break;
-			case 5:
-				stypeformat = "uLaw";
-				break;
-			default:
-				stypeformat = "unformated";
-				break;
+			case 1: stypeformat = "PCM"; break;
+			case 2: stypeformat = "ADPCM"; break;
+			case 3: stypeformat = "DPCM"; break;
+			case 4: stypeformat = "SFPCM"; break;
+			case 5: stypeformat = "uLaw"; break;
+			default: stypeformat = "unformated"; break;
 		}
 
 		printf("Loaded!\n\n-METADATA-\n[Sample Frequency: %d | Channels: %d | Sample Type: %s | AAFC VERSION EXPORTED: AAFC v%d] \n", outp.header.freq, outp.header.channels, stypeformat, outp.header.version);
