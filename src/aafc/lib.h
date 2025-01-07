@@ -13,23 +13,12 @@
 #include "submodules/ulaw.h"
 #include "submodules/stream.h"
 
-static inline void* allocSampleType(OUTPUTTYPE type, unsigned int sampleCount) 
-{
+static inline void* allocSampleType(OUTPUTTYPE type, unsigned int sampleCount) {
 	switch (type) {
-	case OUTPUT_T_FLOAT:
-		return malloc(sampleCount * sizeof(float));
-		break;
-	case OUTPUT_T_UNSIGNED_BYTE:
-		return malloc(sampleCount);
-		break;
-	case OUTPUT_T_BYTE:
-		return malloc(sampleCount);
-		break;
-	case OUTPUT_T_SHORT:
-		return malloc(sampleCount * sizeof(short));
-		break;
-	case OUTPUT_T_INT:
-		return malloc(sampleCount * sizeof(int));
-		break;
+		case OUTPUT_T_FLOAT: return malloc(sampleCount * sizeof(float));
+		case OUTPUT_T_UNSIGNED_BYTE: return malloc(sampleCount);
+		case OUTPUT_T_BYTE: return malloc(sampleCount);
+		case OUTPUT_T_SHORT: return malloc(sampleCount * sizeof(short));
+		case OUTPUT_T_INT: return malloc(sampleCount * sizeof(int));
 	}
 };
