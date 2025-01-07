@@ -36,10 +36,9 @@ unsigned char* encode_dpcm(float* ptr, const AAFC_HEADER* h, size_t* audsize) {
 }
 
 void decode_dpcm(const unsigned char* input, float* output, const AAFC_HEADER* h) {
-    const unsigned char* smpraw = input + sizeof(AAFC_HEADER);
     signed char accum = 0;
     for (unsigned int i = 0; i < h->samplelength; i++) {
-        accum += ((*(smpraw + (i >> 3)) >> (i & 7)) & 1) ? 1 : -1;
+        accum += ((*(input + (i >> 3)) >> (i & 7)) & 1) ? 1 : -1;
         if (accum > 63) accum = 63;
         if (accum < -64) accum = -64;
         *output++ = accum * INT7_REC;

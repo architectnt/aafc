@@ -87,7 +87,7 @@ float dminif(unsigned char val) {
 }
 
 bool header_valid(const unsigned char* bytes) {
-    return *(unsigned short*)bytes == AAFC_SIGNATURE && *((unsigned short*)bytes + 1) <= AAFCVERSION;
+    return bytes != NULL && *(unsigned short*)bytes == AAFC_SIGNATURE && *((unsigned short*)bytes + 1) <= AAFCVERSION;
 }
 
 bool legacy_header_valid(const unsigned char* bytes) {

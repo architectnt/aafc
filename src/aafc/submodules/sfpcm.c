@@ -41,18 +41,16 @@ void* encode_sfpcm(float* ptr, const AAFC_HEADER* h, size_t* audsize) {
 }
 
 void decode_sfpcm(const unsigned char* input, float* output, const AAFC_HEADER* h) {
-    const unsigned char* smpraw = input + sizeof(AAFC_HEADER);
-
     switch (h->bps) {
         case 8: {
-            const char* sptr = (const char*)smpraw;
+            const char* sptr = (const char*)input;
             for (unsigned int i = 0; i < h->samplelength; output++, sptr++, i++) {
                 *output = dminif(*sptr) * INT8_REC;
             }
             break;
         }
         case 16: {
-            const short* sptr = (const short*)smpraw;
+            const short* sptr = (const short*)input;
             for (unsigned int i = 0; i < h->samplelength; output++, sptr++, i++) {
                 *output = dhalf(*sptr);
             }

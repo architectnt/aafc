@@ -92,7 +92,7 @@ signed char* encode_adpcm(float* ptr, const AAFC_HEADER* h, size_t* audsize) {
 }
 
 void decode_adpcm(const unsigned char* input, float* output, const AAFC_HEADER* h) {
-    const signed char* adpcm = (const signed char*)(input + sizeof(AAFC_HEADER));
+    const signed char* adpcm = (const signed char*)input;
     const short* stptr = adpcmStepSize;
     const signed char* itbptr = adpcmIndexTable;
 

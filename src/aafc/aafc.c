@@ -96,11 +96,12 @@ EXPORT AAFCDECOUTPUT aafc_import(const unsigned char* bytes) {
         output.header = (AAFC_HEADER){ 0 };
         return output;
     }
-    float* rsptr = output.data;
+    float* ptr = output.data;
+    const unsigned char* dt = bytes+sizeof(AAFC_HEADER);
     switch (output.header.sampletype) {
-        case 1: decode_pcm(bytes, rsptr, &output.header); break;
+        case 1: decode_pcm(dt, ptr, &output.header); break;
         case 2:
-            decode_adpcm(bytes, rsptr, &output.header);
+            decode_adpcm(dt, ptr, &output.header);
             if (output.header.channels > 1) {
                 float* itrsamples = force_interleave_channels(output.data, &output.header);
                 if (itrsamples) {
@@ -109,16 +110,15 @@ EXPORT AAFCDECOUTPUT aafc_import(const unsigned char* bytes) {
                 }
             }
             break;
-        case 3: decode_dpcm(bytes, rsptr, &output.header); break;
-        case 4: decode_sfpcm(bytes, rsptr, &output.header); break;
-        case 5: decode_ulaw(bytes, rsptr, &output.header); break;
+        case 3: decode_dpcm(dt, ptr, &output.header); break;
+        case 4: decode_sfpcm(dt, ptr, &output.header); break;
+        case 5: decode_ulaw(dt, ptr, &output.header); break;
         default:
             free(output.data);
             printf("AAFC IMPORT ERROR: Invalid sample type!\n");
             output.header = (AAFC_HEADER){ 0 };
             break;
     }
-
     return output;
 }
 
@@ -169,41 +169,31 @@ EXPORT float* aafc_chunk_read(const unsigned char* bytes, int start, int end)
 
 // compatibility layer for any subsystem that can only use integers instead of floats
 EXPORT void* aafc_float_to_int(float* arr, long size, unsigned char type) {
-    void* rst;
     float* aptr = arr;
-
     switch (type) {
         case 8: {
-            char* csmpl = (char*)malloc(size * sizeof(char));
-            for (char* sptr = csmpl, *n = sptr + size; sptr < n; aptr++, sptr++) {
-                *sptr = (char)round(clampf(*aptr * 127.0f, -128.0f, 127.0f));
-            }
-            rst = csmpl;
-            break;
+            signed char* csmpl = (signed char*)malloc(size);
+            for (signed char* sptr = csmpl, *n = sptr + size; sptr < n; aptr++, sptr++)
+                *sptr = (signed char)round(clampf(*aptr * 127.0f, -128.0f, 127.0f));
+            return csmpl;
         }
         case 16: {
             short* csmpl = (short*)malloc(size * sizeof(short));
-            for (short* sptr = csmpl, *n = sptr + size; sptr < n; aptr++, sptr++) {
+            for (short* sptr = csmpl, *n = sptr + size; sptr < n; aptr++, sptr++)
                 *sptr = (short)clampf(*aptr * 32767.0f, -32768.0f, 32767.0f);
-            }
-            rst = csmpl;
-            break;
+            return csmpl;
         }
         case 32: {
             int* csmpl = (int*)malloc(size * sizeof(int));
-            for (int* sptr = csmpl, *n = sptr + size; sptr < n; aptr++, sptr++) {
+            for (int* sptr = csmpl, *n = sptr + size; sptr < n; aptr++, sptr++)
                 *sptr = (int)clampf(*aptr * 2147483647.0f, -2147483648.0f, 2147483647.0f);
-            }
-            rst = csmpl;
-            break;
+            return csmpl;
         }
         default: {
             printf("unknown integer type: %d", type);
             return NULL;
         }
     }
-
-    return rst;
 }
 
 // compatibility layer for systems that use integers instead (useful for exporting)
@@ -213,27 +203,24 @@ EXPORT void* aafc_int_to_float(void* arr, long size, unsigned char type) {
 
     switch (type) {
         case 8: {
-            for (const char* sptr = (const char*)arr, *n = sptr + size; sptr < n; rsptr++, sptr++) {
+            for (const char* sptr = (const char*)arr, *n = sptr + size; sptr < n; rsptr++, sptr++)
                 *rsptr = *sptr * INT8_REC;
-            }
             break;
         }
         case 16: {
-            for (const short* sptr = (const short*)arr, *n = sptr + size; sptr < n; rsptr++, sptr++) {
+            for (const short* sptr = (const short*)arr, *n = sptr + size; sptr < n; rsptr++, sptr++)
                 *rsptr = *sptr * INT16_REC;
-            }
             break;
         }
         case 32: {
-            for (const int* sptr = (const int*)arr, *n = sptr + size; sptr < n; rsptr++, sptr++) {
+            for (const int* sptr = (const int*)arr, *n = sptr + size; sptr < n; rsptr++, sptr++)
                 *rsptr = *sptr * INT32_REC;
-            }
             break;
         }
         default: {
            free(csmpl);
            printf("unknown integer type: %d", type);
-            return NULL;
+           return NULL;
         }
     }
 

@@ -32,11 +32,10 @@ unsigned char* encode_ulaw(float* ptr, const AAFC_HEADER* h, size_t* audsize) {
 }
 
 void decode_ulaw(const unsigned char* input, float* output, const AAFC_HEADER* h) {
-    const unsigned char* smpraw = input + sizeof(AAFC_HEADER);
     const short* explut = expLutd;
 
-    for (const unsigned char* n = smpraw + h->samplelength; smpraw < n; smpraw++, output++) {
-        unsigned char smpl = ~(*smpraw);
+    for (const unsigned char* n = input + h->samplelength; input < n; input++, output++) {
+        unsigned char smpl = ~(*input);
         short sign = (smpl & 0x80);
         short exponent = (smpl >> 4) & 0x07;
         short mantissa = smpl & 0x0F;
