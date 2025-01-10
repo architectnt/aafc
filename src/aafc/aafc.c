@@ -52,7 +52,7 @@ EXPORT AAFCOUTPUT aafc_export(float* samples, unsigned int freq, unsigned char c
     switch (sampletype) {
         case 1: smpl = encode_pcm(rsptr, header, &audsize); break;
         case 2:
-            if (channels > 1) rsptr = force_independent_channels(rsptr, header);
+            if (channels > 1) rsptr = forceIndependentChannels(rsptr, header);
             smpl = encode_adpcm(rsptr, header, &audsize);
             break;
         case 3: smpl = encode_dpcm(rsptr, header, &audsize); break;
@@ -71,7 +71,7 @@ EXPORT AAFCOUTPUT aafc_export(float* samples, unsigned int freq, unsigned char c
     }
 
     size_t tdsize = sizeof(AAFC_HEADER) + audsize;
-    unsigned char* rst = (unsigned char*)malloc(tdsize);
+    unsigned char* const rst = (unsigned char*)malloc(tdsize);
 
     memcpy(rst, header, sizeof(AAFC_HEADER));
     free(header);
@@ -103,7 +103,7 @@ EXPORT AAFCDECOUTPUT aafc_import(const unsigned char* bytes) {
         case 2:
             decode_adpcm(dt, ptr, &output.header);
             if (output.header.channels > 1) {
-                float* itrsamples = force_interleave_channels(output.data, &output.header);
+                float* itrsamples = forceInterleaveChannels(output.data, &output.header);
                 if (itrsamples) {
                     free(output.data);
                     output.data = itrsamples;
@@ -174,19 +174,19 @@ EXPORT void* aafc_float_to_int(float* arr, long size, unsigned char type) {
         case 8: {
             signed char* csmpl = (signed char*)malloc(size);
             for (signed char* sptr = csmpl, *n = sptr + size; sptr < n; aptr++, sptr++)
-                *sptr = (signed char)round(clampf(*aptr * 127.0f, -128.0f, 127.0f));
+                *sptr = (signed char)round(CLAMP(*aptr * 127.0f, -128.0f, 127.0f));
             return csmpl;
         }
         case 16: {
             short* csmpl = (short*)malloc(size * sizeof(short));
             for (short* sptr = csmpl, *n = sptr + size; sptr < n; aptr++, sptr++)
-                *sptr = (short)clampf(*aptr * 32767.0f, -32768.0f, 32767.0f);
+                *sptr = (short)CLAMP(*aptr * 32767.0f, -32768.0f, 32767.0f);
             return csmpl;
         }
         case 32: {
             int* csmpl = (int*)malloc(size * sizeof(int));
             for (int* sptr = csmpl, *n = sptr + size; sptr < n; aptr++, sptr++)
-                *sptr = (int)clampf(*aptr * 2147483647.0f, -2147483648.0f, 2147483647.0f);
+                *sptr = (int)CLAMP(*aptr * 2147483647.0f, -2147483648.0f, 2147483647.0f);
             return csmpl;
         }
         default: {

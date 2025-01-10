@@ -5,4 +5,5 @@
 */
 
 AAFCSTREAM* createStream(void* data, AAFC_HEADER header, unsigned int size);
-int disposeStream(AAFCSTREAM* str);
+int readFromStream(AAFCSTREAM* str, void* out, unsigned int* length);
+int WriteToStream(AAFCSTREAM* str, void* input, unsigned int length, bool fixed);

@@ -14,9 +14,9 @@ void* encode_pcm(float* ptr, const AAFC_HEADER* h, size_t* audsize) {
     switch (h->bps) {
         case 1: { // unlol-ing all of this will break everything
             printf(":>\n");
-            size_t bsize = ((size_t)h->samplelength + 7) / 8;
+            const size_t bsize = ((size_t)h->samplelength + 7) / 8;
 
-            unsigned char* stbs = (unsigned char*)malloc(bsize);
+            unsigned char* const stbs = (unsigned char*)malloc(bsize);
             memset(stbs, 0, bsize);
 
             for (unsigned int i = 0; i < h->samplelength; ptr++, i++)
@@ -27,17 +27,17 @@ void* encode_pcm(float* ptr, const AAFC_HEADER* h, size_t* audsize) {
         }
         case 3: {
             printf("why would you use this LOL\n");
-            size_t bsize = ((size_t)h->samplelength + 1) / 2;
-            unsigned char* stbs = (unsigned char*)malloc(bsize);
+            const size_t bsize = ((size_t)h->samplelength + 1) / 2;
+            unsigned char* const stbs = (unsigned char*)malloc(bsize);
             unsigned char* sptr = stbs;
 
             for (unsigned int i = 0; i < h->samplelength; ptr += 2, i += 2) {
-                int smp1 = (int)round(clampf(*ptr * 3.0f, -4.0f, 3.0f));
+                int smp1 = (int)round(CLAMP(*ptr * 3.0f, -4.0f, 3.0f));
                 smp1 = smp1 < 0 ? smp1 + 8 : smp1;
 
                 int smp2 = 0;
                 if (i + 1 < h->samplelength) {
-                    smp2 = (int)round(clampf(*(ptr + 1) * 3.0f, -4.0f, 3.0f));
+                    smp2 = (int)round(CLAMP(*(ptr + 1) * 3.0f, -4.0f, 3.0f));
                     smp2 = smp2 < 0 ? smp2 + 8 : smp2;
                 }
 
@@ -49,17 +49,17 @@ void* encode_pcm(float* ptr, const AAFC_HEADER* h, size_t* audsize) {
         }
         case 4: { // LOL
             printf(";)\n");
-            size_t bsize = ((size_t)h->samplelength + 1) / 2;
-            unsigned char* stbs = (unsigned char*)malloc(bsize);
+            const size_t bsize = ((size_t)h->samplelength + 1) / 2;
+            unsigned char* const stbs = (unsigned char*)malloc(bsize);
             unsigned char* sptr = stbs;
 
             for (unsigned int i = 0; i < h->samplelength; ptr += 2, i += 2) {
-                int smp1 = (int)round(clampf(*ptr * 7.0f, -8.0f, 7.0f));
+                int smp1 = (int)round(CLAMP(*ptr * 7.0f, -8.0f, 7.0f));
                 smp1 = smp1 < 0 ? smp1 + 16 : smp1;
 
                 int smp2 = 0;
                 if (i + 1 < h->samplelength) {
-                    smp2 = (int)round(clampf(*(ptr + 1) * 7.0f, -8.0f, 7.0f));
+                    smp2 = (int)round(CLAMP(*(ptr + 1) * 7.0f, -8.0f, 7.0f));
                     smp2 = smp2 < 0 ? smp2 + 16 : smp2;
                 }
 
@@ -69,25 +69,25 @@ void* encode_pcm(float* ptr, const AAFC_HEADER* h, size_t* audsize) {
             return stbs;
         }
         case 8: {
-            signed char* stbs = (signed char*)malloc(h->samplelength);
+            signed char* const stbs = (signed char*)malloc(h->samplelength);
             signed char* sptr = stbs;
             for (unsigned int i = 0; i < h->samplelength; ptr++, sptr++, i++) {
-                *sptr = (signed char)round(clampf(*ptr * 127.0f, -128.0f, 127.0f));
+                *sptr = (signed char)round(CLAMP(*ptr * 127.0f, -128.0f, 127.0f));
             }
             *audsize = h->samplelength;
             return stbs;
         }
         case 10:{
-            size_t bsize = ((size_t)(h->samplelength + 3) / 4) * 5;
-            unsigned char* stbs = (unsigned char*)malloc(bsize);
+            const size_t bsize = ((size_t)(h->samplelength + 3) / 4) * 5;
+            unsigned char* const stbs = (unsigned char*)malloc(bsize);
             unsigned char* sptr = stbs;
 
             // i don't know what to say about this
             for (unsigned int i = 0; i < h->samplelength; i += 4) {
-                int sample1 = (int)round(clampf(*(ptr + i) * 511.0f, -512.0f, 511.0f));
-                int sample2 = (i + 1 < h->samplelength) ? (int)round(clampf(*(ptr + i + 1) * 511.0f, -512.0f, 511.0f)) : 0;
-                int sample3 = (i + 2 < h->samplelength) ? (int)round(clampf(*(ptr + i + 2) * 511.0f, -512.0f, 511.0f)) : 0;
-                int sample4 = (i + 3 < h->samplelength) ? (int)round(clampf(*(ptr + i + 3) * 511.0f, -512.0f, 511.0f)) : 0;
+                int sample1 = (int)round(CLAMP(*(ptr + i) * 511.0f, -512.0f, 511.0f));
+                int sample2 = (i + 1 < h->samplelength) ? (int)round(CLAMP(*(ptr + i + 1) * 511.0f, -512.0f, 511.0f)) : 0;
+                int sample3 = (i + 2 < h->samplelength) ? (int)round(CLAMP(*(ptr + i + 2) * 511.0f, -512.0f, 511.0f)) : 0;
+                int sample4 = (i + 3 < h->samplelength) ? (int)round(CLAMP(*(ptr + i + 3) * 511.0f, -512.0f, 511.0f)) : 0;
 
                 *sptr++ = (sample1 & 0xFF);
                 *sptr++ = ((sample1 >> 8) & 0x03) | ((sample2 & 0x3F) << 2);
@@ -100,16 +100,16 @@ void* encode_pcm(float* ptr, const AAFC_HEADER* h, size_t* audsize) {
             return stbs;
         }
         case 12: {
-            size_t bsize = ((size_t)(h->samplelength + 1) / 2) * 3;
+            const size_t bsize = ((size_t)(h->samplelength + 1) / 2) * 3;
             char* stbs = (char*)malloc(bsize);
             char* sptr = stbs;
 
             for (unsigned int i = 0; i < h->samplelength; i += 2) {
-                int sample1 = (int)clampf(*(ptr + i) * 2047.0f, -2048.0f, 2047.0f);
+                int sample1 = (int)CLAMP(*(ptr + i) * 2047.0f, -2048.0f, 2047.0f);
                 if (sample1 < 0) sample1 = 0xFFF + sample1 + 1;
 
 
-                int sample2 = (i < h->samplelength) ? (int)clampf(*(ptr + i + 1) * 2047.0f, -2048.0f, 2047.0f) : 0;
+                int sample2 = (i < h->samplelength) ? (int)CLAMP(*(ptr + i + 1) * 2047.0f, -2048.0f, 2047.0f) : 0;
                 if (sample2 < 0) sample1 = 0xFFF + sample1 + 1;
 
                 *sptr++ = (sample1 & 0xFF);
@@ -121,23 +121,23 @@ void* encode_pcm(float* ptr, const AAFC_HEADER* h, size_t* audsize) {
             return stbs;
         }
         case 16: {
-            size_t bsize = h->samplelength * sizeof(short);
+            const size_t bsize = h->samplelength * sizeof(short);
 
-            short* stbs = (short*)malloc(bsize);
+            short* const stbs = (short*)malloc(bsize);
             short* sptr = stbs;
             for (unsigned int i = 0; i < h->samplelength; ptr++, sptr++, i++) {
-                *sptr = (short)clampf(*ptr * 32767.0f, -32768.0f, 32767.0f);
+                *sptr = (short)CLAMP(*ptr * 32767.0f, -32768.0f, 32767.0f);
             }
             *audsize = bsize;
             return stbs;
         }
         case 24: {
-            size_t bsize = (size_t)h->samplelength * 3;
+            const size_t bsize = (size_t)h->samplelength * 3;
 
-            char* stbs = (char*)malloc(bsize);
+            char* const stbs = (char*)malloc(bsize);
             char* sptr = stbs;
             for (unsigned int i = 0; i < h->samplelength; ptr++, i++) {
-                int spl24 = (int)clampf(*ptr * 8388607.0f, -8388608.0f, 8388607.0f);
+                int spl24 = (int)CLAMP(*ptr * 8388607.0f, -8388608.0f, 8388607.0f);
     
                 if (spl24 < 0) {
                    spl24 = 0xFFFFFF + spl24 + 1;
@@ -151,7 +151,7 @@ void* encode_pcm(float* ptr, const AAFC_HEADER* h, size_t* audsize) {
             return stbs;
         }
         case 32: {
-            size_t bsize = h->samplelength * sizeof(float);
+            const size_t bsize = h->samplelength * sizeof(float);
 
             float* stbs = (float*)malloc(bsize);
             memcpy(stbs, ptr, bsize);

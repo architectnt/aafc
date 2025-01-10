@@ -10,13 +10,13 @@
 #include "ulaw.h"
 
 unsigned char* encode_ulaw(float* ptr, const AAFC_HEADER* h, size_t* audsize) {
-    unsigned char* ulaw = (unsigned char*)malloc(h->samplelength);
+    unsigned char* const ulaw = (unsigned char*)malloc(h->samplelength);
     unsigned char* uptr = ulaw;
 
     const short* explut = expLut;
 
     for (unsigned int i = 0; i < h->samplelength; ptr++, uptr++, i++) {
-        short sample = (short)clampf(*ptr * 32767.0f, -32768.0f, 32767.0f);
+        short sample = (short)CLAMP(*ptr * 32767.0f, -32768.0f, 32767.0f);
         short sign = (sample >> 8) & 0x80;
         if (sign != 0) sample = -sample;
         if (sample > CLIP) sample = CLIP;

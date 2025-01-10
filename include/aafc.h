@@ -62,7 +62,7 @@ typedef struct {
 
 typedef struct {
     AAFC_HEADER header;
-    unsigned int length; // size of the data
+    unsigned int length;
     unsigned int position;
     void* data;
 } AAFCSTREAM;
@@ -111,7 +111,7 @@ typedef struct {
 
 typedef struct {
     int64_t len;
-    unsigned char* data; // binary data and contains the AAFC_HEADER inside, be sure you split AAFC_DATA and the actual data itself within it.
+    unsigned char* data;
     char identifier[];
 } AFTSUBINPUT;
 

@@ -10,14 +10,11 @@
 #include "stream.h"
 #include <aafc.h>
 
-AAFCSTREAM** streams;
-unsigned int strc = 0; // demand? what demand? what could you do with SO MANY STREAMS LOADED AT ONCE?
-
 AAFCSTREAM* createStream(void* data, AAFC_HEADER header, unsigned int size) {
     if (size == 0 || !data) {
         printf("invalid stream parameters\n");
+        return NULL;
     }
-
 
     AAFCSTREAM* s = (AAFCSTREAM*)malloc(sizeof(AAFCSTREAM) + size);
     if (s == NULL) {
@@ -29,56 +26,47 @@ AAFCSTREAM* createStream(void* data, AAFC_HEADER header, unsigned int size) {
     s->length = size;
     s->data = (void*)((char*)s + sizeof(AAFCSTREAM)); // what the hell
     s->position = 0;
-    if (data && size > 0) {
+    if (data && size > 0)
         memcpy(s->data, data, size);
-    }
-
-    for (unsigned int i = 0; i < strc; ++i) {
-        if (streams[i] == NULL) {
-            streams[i] = s;
-            return s;
-        }
-    }
-
-    AAFCSTREAM** temp = (AAFCSTREAM**)realloc(streams, (strc + 1) * sizeof(AAFCSTREAM*));
-    if (temp == NULL) {
-        printf("memory alloc error for stream instancing\n");
-        free(s);
-        return NULL;
-    }
-    streams = temp;
-    streams[strc++] = s;
 
     return s;
 }
 
-AAFCSTREAM* getStream(unsigned int index) {
-    if (index > strc || index < 0) {
-        printf("invalid stream index\n");
-        return NULL;
-    }
-
-    for (unsigned i = strc; i-- > 0;) {
-        if (i == index && streams[index] != NULL) {
-            return streams[i];
-        }
-    }
-
-    printf("stream not found\n");
-    return NULL;
-}
-
-int disposeStream(AAFCSTREAM* str) {
-    if (str == NULL || streams == NULL) {
+int readFromStream(AAFCSTREAM* str, void* out, unsigned int* length) {
+    if (str == NULL || out == NULL || length == NULL)
+        return 1;
+    unsigned int remaining = str->length - str->position;
+    if (remaining == 0) {
+        *length = 0;
         return 2;
     }
 
-    for (unsigned i = strc; i-- > 0;) {
-        if (streams[i] == str) {
-            free(streams[i]);
-            streams[i] = NULL;
-            return 0;
+    memcpy(out, (char*)str->data + str->position, remaining);
+    str->position += remaining;
+    *length = remaining;
+
+    return 0;
+}
+
+int WriteToStream(AAFCSTREAM* str, void* input, unsigned int length, bool fixed) {
+    if (str == NULL || input == NULL)
+        return 1;
+
+    if (str->position + length > str->length) {
+        if(fixed) return 2;
+        else {
+            unsigned int newSize = str->position + length + 1024;
+            AAFCSTREAM* newStr = (AAFCSTREAM*)realloc(str, sizeof(AAFCSTREAM) + newSize);
+            if (newStr == NULL) {
+                return 3;
+            }
+
+            str = newStr;
+            str->length = newSize;
+            str->data = (void*)((char*)str + sizeof(AAFCSTREAM));
         }
     }
-    return 1;
+    memcpy((char*)str->data + str->position, input, length);
+    str->position += length;
+    return 0;
 }

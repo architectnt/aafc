@@ -87,7 +87,7 @@ float* resampleAudio(float* input, AAFC_HEADER* header, unsigned int samplerateo
     return rsmpled;
 }
 
-float* force_independent_channels(float* input, const AAFC_HEADER* h) {
+float* forceIndependentChannels(float* input, const AAFC_HEADER* h) {
     float* output = (float*)malloc(h->samplelength * sizeof(float));
 
     const unsigned int splen = h->samplelength / h->channels;
@@ -121,7 +121,7 @@ float* normalize(float* input, const AAFC_HEADER* h) {
     return input;
 }
 
-float* force_interleave_channels(float* input, const AAFC_HEADER* h) {
+float* forceInterleaveChannels(float* input, const AAFC_HEADER* h) {
     if (!input || h->channels <= 0 || h->samplelength <= 0)
         return NULL;
 

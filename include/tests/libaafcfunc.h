@@ -40,11 +40,10 @@ private:
     LibHandler(const char* path) : handle(nullptr) {
 #ifdef _WIN32
         handle = LoadLibrary(path);
-        if (!handle) std::cerr << "couldn't load dll: " << path << std::endl;
 #else
         handle = dlopen(path, RTLD_LAZY);
-        if (!handle) std::cerr << "couldn't load .so: " << path << std::endl;
 #endif
+        if (!handle) std::cerr << "couldn't load libary: " << path << std::endl;
     }
 
     ~LibHandler() {

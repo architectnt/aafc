@@ -11,13 +11,13 @@
 #include "dpcm.h"
 
 unsigned char* encode_dpcm(float* ptr, const AAFC_HEADER* h, size_t* audsize) {
-    size_t bsize = ((size_t)h->samplelength + 7) / 8;
-    unsigned char* dpcm = (unsigned char*)malloc(bsize);
+    const size_t bsize = ((size_t)h->samplelength + 7) / 8;
+    unsigned char* const dpcm = (unsigned char*)malloc(bsize);
     memset(dpcm, 0, bsize);
 
     unsigned char accum = 63;
     for (unsigned int i = 0; i < h->samplelength; ptr++, i++) {
-        unsigned char next = (unsigned char)(clampf((*ptr + 1.0f) * 63.5f, 0.0f, 255.0f));
+        unsigned char next = (unsigned char)(CLAMP((*ptr + 1.0f) * 63.5f, 0.0f, 255.0f));
         if (next > accum) {
             *(dpcm + (i >> 3)) |= 1 << (i & 7);
             accum++;
