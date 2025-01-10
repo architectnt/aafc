@@ -25,23 +25,10 @@ bool finished = false;
 double totalDurationInSeconds;
 unsigned int splen;
 
-
-// noooooo
-static inline double mind(double a, double b) {
-	return (a < b) ? a : b;
-}
-
-static inline double maxd(double a, double b) {
-	return (a > b) ? a : b;
-}
-
-static inline double clampd(double val, double a, double b) {
-	return maxf(minf(val, b), a);
-}
-
 static inline double lerp(double a, double b, double t) {
-	return a + (b - a) * clampd(t, 0.0f, 1.0f);
+	return a + (b - a) * CLAMP(t, 0.0, 1.0);
 }
+
 
 static int AudioHandler(const void* inp, void* otp, unsigned long frames, const PaStreamCallbackTimeInfo* tinfo, PaStreamCallbackFlags cflags, void* udata) {
 	memset(otp, 0, frames * sizeof(float));
