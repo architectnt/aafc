@@ -86,21 +86,18 @@ EXPORT AAFCOUTPUT aafc_export(float* samples, unsigned int freq, unsigned char c
 
 EXPORT AAFCDECOUTPUT aafc_import(const unsigned char* bytes) {
     AAFCDECOUTPUT output = { (AAFC_HEADER){0}, NULL };
-    size_t offset = sizeof(AAFC_HEADER);
-    if (header_valid(bytes)) {
-        output.header = *(AAFC_HEADER*)bytes; // evil
-    }
+    unsigned char offset = sizeof(AAFC_HEADER);
+    if (header_valid(bytes)) output.header = *(AAFC_HEADER*)bytes; // evil
     else if (legacy_header_valid(bytes)) {
         AAFC_LCHEADER lh = *(AAFC_LCHEADER*)bytes;
         output.header = (AAFC_HEADER){
-            AAFC_SIGNATURE, AAFCVERSION,
+            AAFC_SIGNATURE, (unsigned short)lh.version,
             lh.freq,
             lh.channels, lh.bps, lh.sampletype,
             lh.samplelength, 0, 0
         };
         offset = sizeof(AAFC_LCHEADER);
-    }
-    else {
+    } else {
         printf("AAFC: invalid aafc data\n");
         return output;
     }

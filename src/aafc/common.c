@@ -91,7 +91,7 @@ bool header_valid(const unsigned char* bytes) {
 }
 
 bool legacy_header_valid(const unsigned char* bytes) {
-    return *bytes == 'A' && *(bytes + 1) == 'A' && *(bytes + 2) == 'F' && *(bytes + 3) == 'C' && *((unsigned int*)bytes + 2) <= AAFCVERSION;
+    return bytes != NULL && *(const unsigned int*)bytes == (unsigned int)LEGACYHEADER && *((unsigned int*)bytes + 2) <= AAFCVERSION;
 }
 
 bool aftheader_valid(const unsigned char* bytes) {

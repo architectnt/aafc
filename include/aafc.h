@@ -31,6 +31,7 @@
     #endif
 #endif
 
+#define LEGACYHEADER 0x43464141u
 #define AAFC_SIGNATURE 0xAAFC // aafc fits under hexadecimal !!!
 #define AFT_SIGNATURE 0x0AF7
 
