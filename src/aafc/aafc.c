@@ -86,18 +86,31 @@ EXPORT AAFCOUTPUT aafc_export(float* samples, unsigned int freq, unsigned char c
 
 EXPORT AAFCDECOUTPUT aafc_import(const unsigned char* bytes) {
     AAFCDECOUTPUT output = { (AAFC_HEADER){0}, NULL };
-    if (!header_valid(bytes)) {
+    size_t offset = sizeof(AAFC_HEADER);
+    if (header_valid(bytes)) {
+        output.header = *(AAFC_HEADER*)bytes; // evil
+    }
+    else if (legacy_header_valid(bytes)) {
+        AAFC_LCHEADER lh = *(AAFC_LCHEADER*)bytes;
+        output.header = (AAFC_HEADER){
+            AAFC_SIGNATURE, AAFCVERSION,
+            lh.freq,
+            lh.channels, lh.bps, lh.sampletype,
+            lh.samplelength, 0, 0
+        };
+        offset = sizeof(AAFC_LCHEADER);
+    }
+    else {
         printf("AAFC: invalid aafc data\n");
         return output;
     }
-    output.header = *(AAFC_HEADER*)bytes; // evil
     if ((output.data = (float*)malloc(output.header.samplelength * sizeof(float))) == NULL) { // that's something
         printf("AAFC: FAILED ALLOCATION OF DATA\n");
         output.header = (AAFC_HEADER){ 0 };
         return output;
     }
     float* ptr = output.data;
-    const unsigned char* dt = bytes+sizeof(AAFC_HEADER);
+    const unsigned char* dt = bytes+offset;
     switch (output.header.sampletype) {
         case 1: decode_pcm(dt, ptr, &output.header); break;
         case 2:
