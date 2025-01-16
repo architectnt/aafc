@@ -71,16 +71,14 @@ EXPORT AAFCOUTPUT aafc_export(float* samples, unsigned int freq, unsigned char c
         return output;
     }
 
-    size_t tdsize = sizeof(AAFC_HEADER) + audsize;
-    unsigned char* const rst = (unsigned char*)malloc(tdsize);
+    output.size = sizeof(AAFC_HEADER) + audsize;
+    output.data = (unsigned char*)malloc(output.size);
 
-    memcpy(rst, &header, sizeof(AAFC_HEADER));
-    memcpy(rst + sizeof(AAFC_HEADER), smpl, audsize);
+    memcpy(output.data, &header, sizeof(AAFC_HEADER));
+    memcpy(output.data + sizeof(AAFC_HEADER), smpl, audsize);
     free(smpl);
     if (rsptr != samples) free(rsptr);
     rsptr = NULL;
-
-    output = (AAFCOUTPUT){ tdsize, rst };
     return output;
 }
 
