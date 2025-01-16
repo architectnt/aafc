@@ -32,49 +32,49 @@ EXPORT AAFCOUTPUT aafc_export(float* samples, unsigned int freq, unsigned char c
         return output;
     }
 
-    AAFC_HEADER* header = NULL;
-    if ((header = create_header(freq, channels, samplelength, bps, sampletype)) == NULL) {
-        printf("AAFC FATAL ERROR: could not allocate a new header.\n");
-        return output;
-    }
+    AAFC_HEADER header = (AAFC_HEADER){
+        AAFC_SIGNATURE, AAFCVERSION,
+            freq,
+            channels, bps, sampletype,
+            samplelength, 0, 0
+    };
 
     float* rsptr = samples;
 
     if (forcemono && channels != 1)
-        forceMono(rsptr, header);
+        forceMono(rsptr, &header);
     if ((samplerateoverride != 0 && samplerateoverride != freq) || pitch != 1)
-        rsptr = resampleAudio(rsptr, header, samplerateoverride, pitch, nointerp);
-    if (nm) normalize(rsptr, header);
+        rsptr = resampleAudio(rsptr, &header, samplerateoverride, pitch, nointerp);
+    if (nm) normalize(rsptr, &header);
 
     void* smpl = NULL;
     size_t audsize = 0;
 
     switch (sampletype) {
-        case 1: smpl = encode_pcm(rsptr, header, &audsize); break;
+        case 1: smpl = encode_pcm(rsptr, &header, &audsize); break;
         case 2:
-            if (channels > 1) rsptr = forceIndependentChannels(rsptr, header);
-            smpl = encode_adpcm(rsptr, header, &audsize);
+            if (channels > 1) rsptr = forceIndependentChannels(rsptr, &header);
+            smpl = encode_adpcm(rsptr, &header, &audsize);
             break;
-        case 3: smpl = encode_dpcm(rsptr, header, &audsize); break;
-        case 4: smpl = encode_sfpcm(rsptr, header, &audsize); break;
-        case 5: smpl = encode_ulaw(rsptr, header, &audsize); break;
+        case 3: smpl = encode_dpcm(rsptr, &header, &audsize); break;
+        case 4: smpl = encode_sfpcm(rsptr, &header, &audsize); break;
+        case 5: smpl = encode_ulaw(rsptr, &header, &audsize); break;
         default:             
-            free(header); free(rsptr);
+            free(rsptr);
             printf("AAFC ERROR: Invalid sample type!\n");
             return output;
     }
 
 
     if (!smpl) {
-        free(rsptr); free(header);
+        free(rsptr);
         return output;
     }
 
     size_t tdsize = sizeof(AAFC_HEADER) + audsize;
     unsigned char* const rst = (unsigned char*)malloc(tdsize);
 
-    memcpy(rst, header, sizeof(AAFC_HEADER));
-    free(header);
+    memcpy(rst, &header, sizeof(AAFC_HEADER));
     memcpy(rst + sizeof(AAFC_HEADER), smpl, audsize);
     free(smpl);
     if (rsptr != samples) free(rsptr);
@@ -89,7 +89,7 @@ EXPORT AAFCDECOUTPUT aafc_import(const unsigned char* bytes) {
     unsigned char offset = sizeof(AAFC_HEADER);
     if (header_valid(bytes)) output.header = *(AAFC_HEADER*)bytes; // evil
     else if (legacy_header_valid(bytes)) {
-        AAFC_LCHEADER lh = *(AAFC_LCHEADER*)bytes;
+        const AAFC_LCHEADER lh = *(AAFC_LCHEADER*)bytes;
         output.header = (AAFC_HEADER){
             AAFC_SIGNATURE, (unsigned short)lh.version,
             lh.freq,

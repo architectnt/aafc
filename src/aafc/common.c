@@ -21,7 +21,7 @@ float dhalf(unsigned short val) {
     return sign ? -result : result;
 }
 
-float smooth_interpol(float y0, float y1, float y2, float y3, double t) {
+float smoothInterpolate(float y0, float y1, float y2, float y3, double t) {
     float t2 = t * t, 
         t3 = t2 * t;
     float c0 = y1,
@@ -96,23 +96,6 @@ bool legacy_header_valid(const unsigned char* bytes) {
 
 bool aftheader_valid(const unsigned char* bytes) {
     return *(const unsigned short*)bytes == AFT_SIGNATURE && *((unsigned int*)bytes + 2) <= AAFCVERSION;
-}
-
-// this is what happens when you make A SINGLE STRUCT optional in your code.
-AAFC_HEADER* create_header(unsigned int freq, unsigned char channels, unsigned int samplelength, unsigned char bps, unsigned char sampletype) {
-    AAFC_HEADER* h = (AAFC_HEADER*)malloc(sizeof(AAFC_HEADER));
-    if (h == NULL) return NULL;
-
-    h->signature = AAFC_SIGNATURE;
-    h->version = AAFCVERSION;
-    h->freq = freq;
-    h->channels = channels;
-    h->samplelength = samplelength;
-    h->bps = bps;
-    h->sampletype = sampletype;
-    h->loopst = h->loopend = 0;
-
-    return h;
 }
 
 bool create_aftheader(AAFCFILETABLE* t) {

@@ -125,8 +125,6 @@ typedef struct {
 bool legacy_header_valid(const unsigned char* bytes);
 bool header_valid(const unsigned char* bytes);
 bool aftheader_valid(const unsigned char* bytes);
-
-AAFC_HEADER* create_header(unsigned int freq, unsigned char channels, unsigned int samplelength, unsigned char bps, unsigned char sampletype);
 bool create_aftheader(AAFCFILETABLE* t);
 
 // Exports

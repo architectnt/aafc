@@ -71,7 +71,7 @@ float* resampleAudio(float* input, AAFC_HEADER* header, unsigned int samplerateo
                 i2 = (idx0 + 2 < splen ? idx0 + 2 : splen - 1);
 
             for (unsigned char ch = 0; ch < header->channels; ch++)
-                rsmpled[i * header->channels + ch] = smooth_interpol(
+                rsmpled[i * header->channels + ch] = smoothInterpolate(
                     input[i0 * header->channels + ch],
                     input[idx0 * header->channels + ch],
                     input[i1 * header->channels + ch],
