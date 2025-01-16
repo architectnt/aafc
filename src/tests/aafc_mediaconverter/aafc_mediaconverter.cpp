@@ -75,6 +75,7 @@ ConversionResult convertmedia(const char* fn, const char* outpath, bool usemono,
 	free(smpl);
 
 	fclose(ofile);
+	free(out.data);
 	return s;
 }
 
