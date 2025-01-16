@@ -147,6 +147,6 @@ int main(int argc, char* argv[]) {
 	Pa_Terminate();
 	printf("\e[?25h");
 	std::cout.flush();
-
+	free(outp.data);
 	return 0;
 }
