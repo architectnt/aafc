@@ -117,6 +117,7 @@ int main(int argc, char* argv[]) {
 		}
 
 		printf("Loaded!\n\n-METADATA-\n[Sample Frequency: %d | Channels: %d | Sample Type: %s | AAFC VERSION EXPORTED: AAFC v%d] \n", outp.header.freq, outp.header.channels, stypeformat, outp.header.version);
+		free(aafcfile.data);
 	}
 	else {
 		perror("aafc player requires a specifed path argument.");
