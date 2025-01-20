@@ -97,12 +97,3 @@ bool legacy_header_valid(const unsigned char* bytes) {
 bool aftheader_valid(const unsigned char* bytes) {
     return *(const unsigned short*)bytes == AFT_SIGNATURE && *((unsigned int*)bytes + 2) <= AAFCVERSION;
 }
-
-bool create_aftheader(AAFCFILETABLE* t) {
-    if (t == NULL)
-        return false;
-
-    t->signature = AFT_SIGNATURE;
-    t->version = AFTVERSION;
-    return true;
-}

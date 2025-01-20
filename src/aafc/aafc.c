@@ -21,17 +21,11 @@ EXPORT AAFC_HEADER* aafc_getheader(const unsigned char* bytes) {
 
 EXPORT AAFCOUTPUT aafc_export(float* samples, unsigned int freq, unsigned char channels, unsigned int samplelength, unsigned char bps, unsigned char sampletype, bool forcemono, unsigned int samplerateoverride, bool nm, float pitch, bool nointerp) {
     AAFCOUTPUT output = {0,NULL};
-    if (!samples || bps == 0 || sampletype == 0) {
-        printf("AAFC FATAL ERROR: samples, bps or sample type not set\n");
+    if (!samples || bps == 0 || sampletype == 0 || samplelength < 1) {
+        printf("AAFC FATAL ERROR: invalid parameters\nensure samples, bps, sampletype and samplelength are set\n");
         return output;
     }
-
     if (pitch == 0) pitch = 1;
-    if (samplelength < 1) {
-        printf("AAFC ERROR: samplelength cannot be below 1.\n");
-        return output;
-    }
-
     AAFC_HEADER header = (AAFC_HEADER){
         AAFC_SIGNATURE, AAFCVERSION,
             freq,
@@ -64,7 +58,6 @@ EXPORT AAFCOUTPUT aafc_export(float* samples, unsigned int freq, unsigned char c
             printf("AAFC ERROR: Invalid sample type!\n");
             return output;
     }
-
 
     if (!smpl) {
         free(rsptr);
@@ -130,49 +123,10 @@ EXPORT AAFCDECOUTPUT aafc_import(const unsigned char* bytes) {
     return output;
 }
 
-EXPORT float* aafc_chunk_read(const unsigned char* bytes, int start, int end)
-{
-    float* samples = (float*)malloc(end * sizeof(float));
-    if (legacy_header_valid(bytes)) {
-        AAFC_HEADER* header = (AAFC_HEADER*)bytes;
-        int sampleCount = header->samplelength;
-        int bps = header->bps;
-        const unsigned char* smpraw = bytes + sizeof(AAFC_HEADER);
-
-        //TODO: support more sample types perhaps
-
-        if (bps == 8) {
-            const char* sptr = (const char*)smpraw;
-            for (int i = start; i < end && i >= 0 && i <= sampleCount; i++) {
-                samples[i] = sptr[i] * INT8_REC;
-            }
-        }
-        else if (bps == 16) {
-            const short* sptr = (const short*)smpraw;
-            for (int i = start; i < end && i >= 0 && i <= sampleCount; i++) {
-                samples[i] = sptr[i] * INT16_REC;
-            }
-        }
-        else if (bps == 32) {
-            const float* inputf = (const float*)smpraw;
-            for (int i = start; i < end && i >= 0 && i <= sampleCount; i++) {
-                samples[i] = inputf[i];
-            }
-        }
-        else {
-            free(samples);
-            printf("AAFC PCM IMPORT: invalid bits per sample\n");
-            return NULL;
-        }
-    }
-    else {
-        printf("AAFC does not support chunk reading for AAFC versions before AAFC v2.");
-        for (int i = 0; i < end; i++)
-        {
-            samples[i] = 0;
-        }
-    }
-    return samples;
+// TODO: REPLACE
+EXPORT float* aafc_chunk_read(const unsigned char* bytes, int start, int end) {
+    printf("deprecated function: awaiting AAFC3 STREAMS\n");
+    return NULL;
 }
 
 // compatibility layer for any subsystem that can only use integers instead of floats

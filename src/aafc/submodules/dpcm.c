@@ -11,9 +11,9 @@
 #include "dpcm.h"
 
 unsigned char* encode_dpcm(float* ptr, const AAFC_HEADER* h, size_t* audsize) {
-    const size_t bsize = ((size_t)h->samplelength + 7) / 8;
-    unsigned char* const dpcm = (unsigned char*)malloc(bsize);
-    memset(dpcm, 0, bsize);
+    *audsize = ((size_t)h->samplelength + 7) / 8;
+    unsigned char* const dpcm = (unsigned char*)malloc(*audsize);
+    memset(dpcm, 0, *audsize);
 
     unsigned char accum = 63;
     for (unsigned int i = 0; i < h->samplelength; ptr++, i++) {
@@ -30,8 +30,6 @@ unsigned char* encode_dpcm(float* ptr, const AAFC_HEADER* h, size_t* audsize) {
         if (accum > 127) accum = 127;
         if (accum < 0) accum = 0;
     }
-
-    *audsize = bsize;
     return dpcm;
 }
 

@@ -11,9 +11,8 @@
 #include "adpcm.h"
 
 signed char* encode_adpcm(float* ptr, const AAFC_HEADER* h, size_t* audsize) {
-    const size_t bsize = h->samplelength / 2;
-
-    signed char* const adpcm_base = (signed char*)malloc(bsize);
+    *audsize = h->samplelength / 2;
+    signed char* const adpcm_base = (signed char*)malloc(*audsize);
     signed char* adpcm = adpcm_base;
     short sample = 0, step = adpcmStepSize[0];
     signed char idx = 0, delta, byte = 0, sign;
@@ -58,8 +57,6 @@ signed char* encode_adpcm(float* ptr, const AAFC_HEADER* h, size_t* audsize) {
         if (i & 1) *adpcm++ = (delta & 0x0f) | byte;
         else byte = (delta << 4) & 0xf0;
     }
-
-    *audsize = bsize;
     return adpcm_base;
 }
 

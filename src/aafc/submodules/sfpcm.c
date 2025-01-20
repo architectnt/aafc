@@ -13,24 +13,21 @@
 void* encode_sfpcm(float* ptr, const AAFC_HEADER* h, size_t* audsize) {
     switch (h->bps) {
         case 8: {
+            *audsize = h->samplelength;
             unsigned char* const stbs = (unsigned char*)malloc(h->samplelength);
             unsigned char* sptr = stbs;
             for (unsigned int i = 0; i < h->samplelength; ptr++, sptr++, i++) {
                 *sptr = minifloat(CLAMP(*ptr * 127.0f, -128.0f, 127.0f));
             }
-
-            *audsize = h->samplelength;
             return stbs;
         }
         case 16: {
-            const size_t bsize = h->samplelength * sizeof(short);
-            unsigned short* const stbs = (unsigned short*)malloc(bsize);
+            *audsize = h->samplelength * sizeof(short);
+            unsigned short* const stbs = (unsigned short*)malloc(*audsize);
             unsigned short* sptr = stbs;
             for (unsigned int i = 0; i < h->samplelength; ptr++, sptr++, i++) {
                 *sptr = halfpercision(*ptr);
             }
-
-            *audsize = bsize;
             return stbs;
         }
         default: {

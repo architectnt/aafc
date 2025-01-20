@@ -32,7 +32,7 @@ ConversionResult convertmedia(const char* fn, const char* outpath, bool usemono,
 
 	SNDFILE* ifl = sf_open(fn, SFM_READ, &info);
 	if (!ifl) {
-		s.message = (char*)"failed to open file :("; // what
+		s.message = (char*)"failed to open file :("; // char cast whhh
 		s.statuscode = -1;
 		return s;
 	}
@@ -41,13 +41,13 @@ ConversionResult convertmedia(const char* fn, const char* outpath, bool usemono,
 	float* smpl = (float*)malloc(nitms * sizeof(float));
 	if (smpl == NULL) {
 		sf_close(ifl);
-		s.message = (char*)"failed to allocate memory D:"; // what
+		s.message = (char*)"failed to allocate memory D:";
 		s.statuscode = -2;
 		return s;
 	}
 
 	if (sf_readf_float(ifl, smpl, info.frames) != info.frames) {
-		s.message = (char*)"result has an unmatched sample count"; // what
+		s.message = (char*)"result has an unmatched sample count";
 		s.statuscode = 1;
 	}
 
@@ -55,7 +55,7 @@ ConversionResult convertmedia(const char* fn, const char* outpath, bool usemono,
 	if (out.data == NULL) {
 		sf_close(ifl);
 		free(smpl);
-		s.message = (char*)"EXPORT FAILED >:("; // what
+		s.message = (char*)"EXPORT FAILED >:(";
 		s.statuscode = -3;
 		return s;
 	}
@@ -64,7 +64,7 @@ ConversionResult convertmedia(const char* fn, const char* outpath, bool usemono,
 	if (ofile == NULL) {
 		sf_close(ifl);
 		free(smpl);
-		s.message = (char*)"could not open file >:((((((((((("; // what
+		s.message = (char*)"could not open file >:(((((((((((";
 		s.statuscode = -4;
 		return s;
 	}
@@ -164,9 +164,8 @@ int main(int argc, char* argv[]) {
 
 		for (unsigned int i = 0; i < batchlength; i++) {
 			rst = convertmedia(batchfiles[i], concat_path(dirp, filename_without_extension(batchfiles[i])), usemono, normalize, outbps, sampletype, resampleoverride, pitch, nointerp);
-			if (rst.statuscode == -1) {
+			if (rst.statuscode == -1)
 				continue;
-			}
 			else if (rst.statuscode < -1) {
 				free(batchfiles);
 				printf("Failed to convert media: %s [%d]\n", rst.message, rst.statuscode);
@@ -177,12 +176,9 @@ int main(int argc, char* argv[]) {
 		free(batchfiles);
 	}
 
-	if (rst.statuscode > 0) {
+	if (rst.statuscode > 0)
 		printf("conversion completed with warnings: %s [%d]\n", rst.message, rst.statuscode);
-	}
-	else {
-		printf("Completed conversion!\n");
-	}
+	else printf("Completed conversion!\n");
 
 	return 0;
 }

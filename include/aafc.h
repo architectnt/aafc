@@ -125,7 +125,7 @@ typedef struct {
 bool legacy_header_valid(const unsigned char* bytes);
 bool header_valid(const unsigned char* bytes);
 bool aftheader_valid(const unsigned char* bytes);
-bool create_aftheader(AAFCFILETABLE* t);
+
 
 // Exports
 EXPORT unsigned short aafc_getversion();
