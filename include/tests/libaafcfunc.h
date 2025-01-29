@@ -27,10 +27,10 @@
 
 typedef AAFCDECOUTPUT (*AAFCImport)(const unsigned char*);
 typedef AAFC_HEADER* (*AAFCGetHeader)(const unsigned char*);
-typedef AAFCOUTPUT (*AAFCExport)(float* samples, unsigned int freq, unsigned char channels, unsigned int samplelength, unsigned char bps, unsigned char sampletype, bool forcemono, unsigned int samplerateoverride, bool normalize, float pitch, bool nointerp);
-typedef AAFCFILETABLE (*AFTCreate)(unsigned char*** data, size_t tablelength, size_t* sizes);
-typedef AAFCOUTPUT (*AFTExport)(AAFCFILETABLE* ftable);
-typedef AAFCFILETABLE* (*AFTImport)(unsigned char* data);
+typedef AAFCOUTPUT (*AAFCExport)(float* samples, unsigned long freq, unsigned char channels, unsigned long samplelength, unsigned char bps, unsigned char sampletype, bool forcemono, unsigned long samplerateoverride, bool normalize, float pitch, bool nointerp);
+typedef AAFCTABLE (*AFTCreate)(unsigned char*** data, size_t tablelength, size_t* sizes);
+typedef AAFCOUTPUT (*AFTExport)(AAFCTABLE* ftable);
+typedef AAFCTABLE* (*AFTImport)(unsigned char* data);
 
 
 class LibHandler{
@@ -110,7 +110,7 @@ AAFCOUTPUT ExportAAFC(float* samples, unsigned int freq, unsigned int channels, 
     return aexport(samples, freq, channels, samplelength, bps, sampletype, forcemono, samplerateoverride, normalize, pitch, nointerp);
 }
 
-AAFCOUTPUT ExportAFT(AAFCFILETABLE* ftable) {
+AAFCOUTPUT ExportAFT(AAFCTABLE* ftable) {
     AFTExport aftexp = LibHandler::getInstance(LIB_AAFC_RPATH).getFunc<AFTExport>("aft_export");
     if (aftexp == NULL) {
         perror("Could not initialize AAFC functions.");

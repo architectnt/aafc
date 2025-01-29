@@ -18,7 +18,7 @@ signed char* encode_adpcm(float* ptr, const AAFC_HEADER* h, size_t* audsize) {
     signed char idx = 0, delta, byte = 0, sign;
     int diff, pred = 0, vpd;
 
-    for (unsigned int i = 0; i < h->samplelength; ptr++, i++) {
+    for (unsigned long i = 0; i < h->samplelength; ptr++, i++) {
         sample = (short)CLAMP(*ptr * 32767.0f, -32768.0f, 32767.0f);
 
         diff = sample - pred;

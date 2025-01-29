@@ -4,6 +4,6 @@
     This file is a part of AAFC and is licenced under the MIT Licence.
 */
 
-AAFCSTREAM* createStream(void* data, AAFC_HEADER header, unsigned int size);
-int readFromStream(AAFCSTREAM* str, void* out, unsigned int* length);
-int WriteToStream(AAFCSTREAM* str, void* input, unsigned int length, bool fixed);
+AAFCSTREAM* initializeStream(AAFC_HEADER header, unsigned long size);
+int readFromStream(AAFCSTREAM* str, void* out, unsigned long* length);
+int WriteToStream(AAFCSTREAM* str, void* input, unsigned long length, bool fixed);

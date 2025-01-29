@@ -15,7 +15,7 @@
 #include <dirent.h>
 #endif
 
-static char** list_files(const char* dir, unsigned int* len) {
+static char** list_files(const char* dir, unsigned long* len) {
 	char** files = NULL;
 	*len = 0;
 	char afp[512];
@@ -80,25 +80,14 @@ static const char* strip_path_last(const char* path) {
 	return lsep + 1;
 }
 
-static char* concat_path(const char* dir, const char* filename) {
-	if (dir == NULL || filename == NULL || *dir == '\0' || *filename == '\0')
+static char* concat_path_ext(const char* dir, const char* filename, const char* ext) {
+	if (!dir || !filename || !ext || *dir == '\0' || *filename == '\0' || *ext == '\0')
 		return NULL;
 
-	size_t len = (strlen(dir) + strlen(filename) + strlen(".aafc/")) + 1;
+	size_t len = strlen(dir) + 1 + strlen(filename) + 1 + strlen(ext) + 1;
 	char* result = (char*)malloc(len);
 	if (result)
-		snprintf(result, len, "%s/%s.aafc", dir, filename);
-	return result;
-}
-
-static char* concat_path_aft(const char* dir, const char* filename) {
-	if (dir == NULL || filename == NULL || *dir == '\0' || *filename == '\0')
-		return NULL;
-
-	size_t len = (strlen(dir) + strlen(filename) + strlen(".aft/")) + 1;
-	char* result = (char*)malloc(len);
-	if (result)
-		snprintf(result, len, "%s/%s.aft", dir, filename);
+		snprintf(result, len, "%s/%s.%s", dir, filename, ext);
 	return result;
 }
 

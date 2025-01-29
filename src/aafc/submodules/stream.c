@@ -10,29 +10,27 @@
 #include "stream.h"
 #include <aafc.h>
 
-AAFCSTREAM* createStream(void* data, AAFC_HEADER header, unsigned int size) {
-    if (size == 0 || !data) {
-        printf("invalid stream parameters\n");
+AAFCSTREAM* initializeStream(AAFC_HEADER header, unsigned long size) {
+    if (size == 0) {
+        printf("%s", "invalid stream parameters\n");
         return NULL;
     }
 
     AAFCSTREAM* s = (AAFCSTREAM*)malloc(sizeof(AAFCSTREAM) + size);
     if (s == NULL) {
-        printf("memory alloc failure for stream\n");
+        printf("%s", "memory alloc failure for stream\n");
         return NULL;
     }
 
     s->header = header;
     s->length = size;
-    s->data = (void*)((char*)s + sizeof(AAFCSTREAM)); // what the hell
+    s->data = malloc(size);
     s->position = 0;
-    if (data && size > 0)
-        memcpy(s->data, data, size);
 
     return s;
 }
 
-int readFromStream(AAFCSTREAM* str, void* out, unsigned int* length) {
+int readFromStream(AAFCSTREAM* str, void* out, unsigned long* length) {
     if (str == NULL || out == NULL || length == NULL)
         return 1;
     unsigned int remaining = str->length - str->position;
@@ -48,7 +46,7 @@ int readFromStream(AAFCSTREAM* str, void* out, unsigned int* length) {
     return 0;
 }
 
-int WriteToStream(AAFCSTREAM* str, void* input, unsigned int length, bool fixed) {
+int WriteToStream(AAFCSTREAM* str, void* input, unsigned long length, bool fixed) {
     if (str == NULL || input == NULL)
         return 1;
 

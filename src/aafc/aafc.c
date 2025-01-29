@@ -19,10 +19,10 @@ EXPORT AAFC_HEADER* aafc_getheader(const unsigned char* bytes) {
     return header_valid(bytes) ? (AAFC_HEADER*)bytes : NULL;
 }
 
-EXPORT AAFCOUTPUT aafc_export(float* samples, unsigned int freq, unsigned char channels, unsigned int samplelength, unsigned char bps, unsigned char sampletype, bool forcemono, unsigned int samplerateoverride, bool nm, float pitch, bool nointerp) {
+EXPORT AAFCOUTPUT aafc_export(float* samples, unsigned long freq, unsigned char channels, unsigned long samplelength, unsigned char bps, unsigned char sampletype, bool forcemono, unsigned long samplerateoverride, bool nm, float pitch, bool nointerp) {
     AAFCOUTPUT output = {0,NULL};
     if (!samples || bps == 0 || sampletype == 0 || samplelength < 1) {
-        printf("AAFC FATAL ERROR: invalid parameters\nensure samples, bps, sampletype and samplelength are set\n");
+        printf("%s", "AAFC FATAL ERROR: invalid parameters\nensure samples, bps, sampletype and samplelength are set\n");
         return output;
     }
     if (pitch == 0) pitch = 1;
@@ -47,7 +47,7 @@ EXPORT AAFCOUTPUT aafc_export(float* samples, unsigned int freq, unsigned char c
     switch (sampletype) {
         case 1: smpl = encode_pcm(rsptr, &header, &audsize); break;
         case 2:
-            if (channels > 1) rsptr = forceIndependentChannels(rsptr, &header);
+            if (header.channels > 1) rsptr = forceIndependentChannels(rsptr, &header);
             smpl = encode_adpcm(rsptr, &header, &audsize);
             break;
         case 3: smpl = encode_dpcm(rsptr, &header, &audsize); break;
@@ -55,7 +55,7 @@ EXPORT AAFCOUTPUT aafc_export(float* samples, unsigned int freq, unsigned char c
         case 5: smpl = encode_ulaw(rsptr, &header, &audsize); break;
         default:             
             free(rsptr);
-            printf("AAFC ERROR: Invalid sample type!\n");
+            printf("%s", "AAFC ERROR: Invalid sample type!\n");
             return output;
     }
 
@@ -89,11 +89,11 @@ EXPORT AAFCDECOUTPUT aafc_import(const unsigned char* bytes) {
         };
         offset = sizeof(AAFC_LCHEADER);
     } else {
-        printf("AAFC: invalid aafc data\n");
+        printf("%s", "AAFC: invalid aafc data\n");
         return output;
     }
     if ((output.data = (float*)malloc(output.header.samplelength * sizeof(float))) == NULL) { // that's something
-        printf("AAFC: FAILED ALLOCATION OF DATA\n");
+        printf("%s", "AAFC: FAILED ALLOCATION OF DATA\n");
         output.header = (AAFC_HEADER){ 0 };
         return output;
     }
@@ -116,7 +116,7 @@ EXPORT AAFCDECOUTPUT aafc_import(const unsigned char* bytes) {
         case 5: decode_ulaw(dt, ptr, &output.header); break;
         default:
             free(output.data);
-            printf("AAFC IMPORT ERROR: Invalid sample type!\n");
+            printf("%s", "AAFC IMPORT ERROR: Invalid sample type!\n");
             output.header = (AAFC_HEADER){ 0 };
             break;
     }
@@ -125,7 +125,7 @@ EXPORT AAFCDECOUTPUT aafc_import(const unsigned char* bytes) {
 
 // TODO: REPLACE
 EXPORT float* aafc_chunk_read(const unsigned char* bytes, int start, int end) {
-    printf("deprecated function: awaiting AAFC3 STREAMS\n");
+    printf("%s", "deprecated function: awaiting AAFC3 STREAMS\n");
     return NULL;
 }
 
@@ -189,7 +189,7 @@ EXPORT void* aafc_int_to_float(void* arr, long size, unsigned char type) {
     return csmpl;
 }
 
-EXPORT float* aafc_resample_data(float* input, unsigned int samplerateoverride, AAFC_HEADER* h, float pitch, bool nointerp) {
+EXPORT float* aafc_resample_data(float* input, unsigned long samplerateoverride, AAFC_HEADER* h, float pitch, bool nointerp) {
     return resampleAudio(input, h, samplerateoverride, pitch, nointerp);
 }
 
@@ -197,132 +197,148 @@ EXPORT float* aafc_normalize(float* arr, const AAFC_HEADER* h) {
     return normalize(arr, h);
 }
 
-EXPORT AAFCOUTPUT aft_export(AAFCFILETABLE* ftable) {
-    return create_filetable_stream(ftable);
+EXPORT AAFCOUTPUT aft_export(AAFCTABLE* ftable) {
+    return serializeTableContent(ftable);
 }
 
-EXPORT AAFCFILETABLE* aft_import(unsigned char* data) {
-    return decode_filetable_stream(data);
+EXPORT AAFCTABLE* aft_import(unsigned char* data) {
+    return deserializeTableContent(data);
 }
 
-EXPORT AAFCOUTPUT aft_get_clip_from_index(AAFCFILETABLE* ftable, unsigned char group, unsigned short index) {
+EXPORT AAFCOUTPUT aft_get_clip_from_index(AAFCTABLE* ftable, unsigned char group, unsigned short index) {
     AAFCOUTPUT output = { 0, NULL };
-    if (!ftable || group >= ftable->size) {
-        printf("invalid group\n");
+    if (!ftable || group >= ftable->groupsize) {
+        printf("%s", "invalid group\n");
         return output;
     }
 
-    TABLECONTENT* content = ftable->filetables + group;
-    if (index >= content->size) {
-        printf("invalid table\n");
+    TableAttribute* content = ftable->attributes + group;
+    if (index >= content->tablesize) {
+        printf("%s", "invalid table\n");
         return output;
     }
 
-    AAFCTABLEDEFINITION* def = content->table + index;
-    DATATABLE* dtb = content->data + index;
+    TableDef* def = content->table + index;
 
-    size_t csize = sizeof(AAFC_HEADER) + dtb->len;
+    size_t csize = sizeof(AAFC_HEADER) + def->size;
     unsigned char* rst = (unsigned char*)malloc(csize);
     if (!rst) {
-        printf("INTERNAL ALLOCATION ERROR\n");
+        printf("%s", "INTERNAL ALLOCATION ERROR\n");
         return output;
     }
 
     memcpy(rst, &(def->header), sizeof(AAFC_HEADER));
-    memcpy(rst + sizeof(AAFC_HEADER), dtb->data, dtb->len);
+    memcpy(rst + sizeof(AAFC_HEADER), ftable->data + def->loc, def->size);
 
     output = (AAFCOUTPUT){ csize, rst };
     return output;
 }
 
-EXPORT AAFCOUTPUT aft_get_clip_from_name(AAFCFILETABLE* ftable, unsigned char group, const char* identifier) {
+EXPORT AAFCOUTPUT aft_get_clip_from_name(AAFCTABLE* ftable, unsigned char group, const char* identifier) {
     AAFCOUTPUT output = { 0, NULL };
-    if (!ftable || !identifier || group >= ftable->size) {
-        printf("invalid inputs\n");
+    if (!ftable || !identifier || group >= ftable->groupsize) {
+        printf("%s", "invalid inputs\n");
         return output;
     }
 
-    TABLECONTENT* content = ftable->filetables + group;
-    for (unsigned short i = 0; i < content->size; i++) {
-        AAFCTABLEDEFINITION* def = content->table + i;
+    TableAttribute* content = ftable->attributes + group;
+    for (unsigned short i = 0; i < content->tablesize; i++) {
+        TableDef* def = content->table + i;
         if (strncmp(def->identifier, identifier, 255) == 0) {
-            DATATABLE* dtb = content->data + i;
+            TableDef* def = content->table + i;
 
-            size_t csize = sizeof(AAFC_HEADER) + dtb->len;
+            size_t csize = sizeof(AAFC_HEADER) + def->size;
             unsigned char* rst = (unsigned char*)malloc(csize);
             if (!rst) {
-                printf("INTERNAL ALLOCATION ERROR\n");
+                printf("%s", "INTERNAL ALLOCATION ERROR\n");
                 return output;
             }
 
-            memcpy(rst, &(def->header), sizeof(AAFC_HEADER));
-            memcpy(rst + sizeof(AAFC_HEADER), dtb->data, dtb->len);
+            memcpy(rst, &def->header, sizeof(AAFC_HEADER));
+            memcpy(rst + sizeof(AAFC_HEADER), ftable->data + def->loc, def->size);
 
             output = (AAFCOUTPUT){ csize, rst };
             return output;
         }
     }
 
-    printf("identifier invalid\n");
+    printf("%s", "identifier invalid\n");
     return output;
 }
 
-EXPORT AAFCFILETABLE aft_create(AFTINPUT data[], unsigned char grouplength) {
-    AAFCFILETABLE ftable = {};
+EXPORT AAFCTABLE aft_create(AFTInput data[], unsigned char grouplength) {
+    AAFCTABLE ftable = {};
     if (!data || grouplength == 0) {
-        printf("Invalid input\n");
+        printf("%s", "Invalid input\n");
         return ftable;
     }
 
     ftable.signature = AFT_SIGNATURE;
     ftable.version = AFTVERSION;
-    ftable.size = grouplength;
+    ftable.groupsize = grouplength;
 
-    if ((ftable.filetables = (TABLECONTENT*)malloc(grouplength * sizeof(TABLECONTENT))) == NULL) {
-        printf("Memory allocation failed\n");
-        return ftable;
-    }
+    ftable.attributes = (TableAttribute*)calloc(grouplength, sizeof(TableAttribute));
+    if (!ftable.attributes) return ftable;
+    memset(ftable.attributes, 0, grouplength * sizeof(TableAttribute));
 
-    unsigned char i;
-    unsigned short j;
-    int64_t doffset = 0;
-
-    for (i = 0; i < grouplength; i++) {
-        AFTINPUT* input = &data[i];
-        TABLECONTENT* tablecontent = &ftable.filetables[i];
-        tablecontent->size = input->len;
-
-        if ((tablecontent->table = (AAFCTABLEDEFINITION*)malloc(input->len * sizeof(AAFCTABLEDEFINITION))) == NULL
-            || (tablecontent->data = (DATATABLE*)malloc(input->len * sizeof(DATATABLE))) == NULL) {
-            free(ftable.filetables);
-            return ftable;
+    uint64_t dsize = 0;
+    for (unsigned char i = 0; i < grouplength; i++) {
+        if (data->len > 0) {
+            ftable.attributes[i].table = (TableDef*)calloc(data->len, sizeof(TableDef));
+            if (!data->len) {
+                printf("%s", "could not allocate attributes\n");
+                free(ftable.attributes);
+                return (AAFCTABLE) { 0 };
+            }
+        }
+        else {
+            printf("%s", "invalid length of tables\n");
+            free(ftable.attributes);
+            return (AAFCTABLE) { 0 };
         }
 
-        for (j = 0; j < input->len; j++) {
-            AFTSUBINPUT* subinput = &input->table[j];
-            AAFCTABLEDEFINITION* tabledef = &tablecontent->table[j];
-            DATATABLE* dtb = &tablecontent->data[j];
-            memcpy(&tabledef->header, subinput->data, sizeof(AAFC_HEADER));
-            tabledef->startloc = doffset;
-            dtb->len = subinput->len - sizeof(AAFC_HEADER);
-            if ((dtb->data = (unsigned char*)malloc(dtb->len)) == NULL) {
-                free(tablecontent->table);
-                free(tablecontent->data);
-                free(ftable.filetables);
-                return ftable;
+        uint64_t offset = 0;
+        for (unsigned short j = 0; j < data->len; j++) {
+            if (!header_valid(data->table[j].data)) {
+                printf("%s", "one of entries has invalid AAFC data, aborting.\n");
+                free(ftable.attributes);
+                return (AAFCTABLE) { 0 };
             }
-            memcpy(dtb->data, subinput->data + sizeof(AAFC_HEADER), dtb->len);
-            size_t ilen = strnlen(subinput->identifier, 255);
-            if (ilen >= 255) {
-                free(tablecontent->table);
-                free(dtb->data);
-                free(tablecontent->data);
-                free(ftable.filetables);
-                return ftable;
+
+            memcpy(
+                &ftable.attributes[i].table[j].header, 
+                (AAFC_HEADER*)data->table[j].data, sizeof(AAFC_HEADER)
+            );
+            memcpy(
+                &ftable.attributes[i].table[j].identifier,
+                (AAFC_HEADER*)data->table[j].identifier, 256
+            );
+            ftable.attributes[i].table[j].loc = offset;
+            long ln = data->table[j].len - sizeof(AAFC_HEADER); // signed to check invalid data again
+            if (ln <= 0) {
+                printf("%s", "WHAT\nlength of data became negative\n");
+                free(ftable.attributes);
+                return (AAFCTABLE) { 0 };
             }
-            memcpy(tabledef->identifier, subinput->identifier, ilen);
-            tabledef->identifier[ilen] = '\0';
-            doffset += dtb->len + sizeof(dtb->len);
+
+            ftable.attributes[i].table[j].size = ln;
+            offset += ln;
+            dsize += ln;
+        }
+    }
+
+    ftable.data = (unsigned char*)malloc(dsize);
+    unsigned char* ptr = ftable.data;
+
+    if (!ftable.data) {
+        free(ftable.attributes);
+        return ftable;
+    }
+    for (unsigned char i = 0; i < grouplength; i++) {
+        for (unsigned short j = 0; j < data->len; j++) {
+            long ln = data->table[j].len - sizeof(AAFC_HEADER);
+            memcpy(ftable.data, data->table[j].data + sizeof(AAFC_HEADER), ln);
+            ptr += ln;
         }
     }
 

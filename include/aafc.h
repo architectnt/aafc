@@ -41,17 +41,17 @@
 
 typedef struct {
     unsigned short signature, version;
-    unsigned int freq;
+    unsigned long freq;
     unsigned char channels, bps, sampletype;
-    unsigned int samplelength, loopst, loopend;
+    unsigned long samplelength, loopst, loopend;
 } AAFC_HEADER;
 
 typedef struct { // used for older versions
     char headr[5];
-    unsigned int version;
-    unsigned int freq;
+    unsigned long version;
+    unsigned long freq;
     unsigned char channels;
-    unsigned int samplelength;
+    unsigned long samplelength;
     unsigned char bps;
     unsigned char sampletype;
 } AAFC_LCHEADER;
@@ -63,8 +63,8 @@ typedef struct {
 
 typedef struct {
     AAFC_HEADER header;
-    unsigned int length;
-    unsigned int position;
+    unsigned long length;
+    unsigned long position;
     void* data;
 } AAFCSTREAM;
 
@@ -87,39 +87,63 @@ typedef struct decoutput {
     float* data;
 } AAFCDECOUTPUT;
 
-typedef struct {
-    int64_t len;
-    unsigned char* data;
-} DATATABLE;
+
+/*
+    (oh my god FINALYL)
+
+
+    Content Attribute Table (AAFC Customized) - Architect
+    This format is explicitly optimized for file/network streaming
+
+    ^order^
+    HEADER
+    - signatures
+    - group size (max 255)
+    - compression type
+
+    ATTRIBUTE
+    - table size (max 65k)
+
+    DEFINITON
+    - AAFC HEADER
+    - location offset (64 bit), content size (32 bit)
+    - name
+
+    DATA
+    - after header, attributes & definition
+*/
 
 typedef struct {
     AAFC_HEADER header;
-    int64_t startloc;
-    char identifier[];
-} AAFCTABLEDEFINITION;
+    uint64_t loc;
+    unsigned long size;
+    char identifier[256];
+} TableDef;
 
 typedef struct {
-    unsigned short size;
-    AAFCTABLEDEFINITION* table;
-    DATATABLE* data;
-} TABLECONTENT;
+    unsigned short tablesize;
+    TableDef* table;
+} TableAttribute;
 
 typedef struct {
     unsigned short signature, version;
-    unsigned char size;
-    TABLECONTENT* filetables;
-} AAFCFILETABLE;
+    unsigned char groupsize;
+    unsigned char compressiontype;
+    TableAttribute* attributes;
+    unsigned char* data;
+} AAFCTABLE;
+
 
 typedef struct {
-    int64_t len;
+    uint64_t len;
     unsigned char* data;
-    char identifier[];
-} AFTSUBINPUT;
+    char identifier[256];
+} AFTSubInput;
 
 typedef struct {
     unsigned short len;
-    AFTSUBINPUT table[];
-} AFTINPUT;
+    AFTSubInput table[];
+} AFTInput;
 
 // Compares if the input is a valid format
 bool legacy_header_valid(const unsigned char* bytes);
@@ -130,7 +154,7 @@ bool aftheader_valid(const unsigned char* bytes);
 // Exports
 EXPORT unsigned short aafc_getversion();
 EXPORT AAFC_HEADER* aafc_getheader(const unsigned char* bytes);
-EXPORT AAFCOUTPUT aafc_export(float* samples, unsigned int freq, unsigned char channels, unsigned int samplelength, unsigned char bps, unsigned char sampletype, bool forcemono, unsigned int samplerateoverride, bool nm, float pitch, bool nointerp);
+EXPORT AAFCOUTPUT aafc_export(float* samples, unsigned long freq, unsigned char channels, unsigned long samplelength, unsigned char bps, unsigned char sampletype, bool forcemono, unsigned long samplerateoverride, bool nm, float pitch, bool nointerp);
 EXPORT AAFCDECOUTPUT aafc_import(const unsigned char* bytes);
 
 EXPORT float* aafc_chunk_read(const unsigned char* bytes, int start, int end);
@@ -138,15 +162,15 @@ EXPORT float* aafc_chunk_read(const unsigned char* bytes, int start, int end);
 EXPORT void* aafc_float_to_int(float* arr, long size, unsigned char type);
 EXPORT void* aafc_int_to_float(void* arr, long size, unsigned char type);
 
-EXPORT float* aafc_resample_data(float* input, unsigned int samplerateoverride, AAFC_HEADER* h, float pitch, bool nointerp);
+EXPORT float* aafc_resample_data(float* input, unsigned long samplerateoverride, AAFC_HEADER* h, float pitch, bool nointerp);
 EXPORT float* aafc_normalize(float* arr, const AAFC_HEADER* h);
 
 
 //TODO: aafc content tables
-EXPORT AAFCFILETABLE aft_create(AFTINPUT data[], unsigned char grouplength);
-EXPORT AAFCOUTPUT aft_export(AAFCFILETABLE* ftable);
-EXPORT AAFCFILETABLE* aft_import(unsigned char* data);
-EXPORT AAFCOUTPUT aft_get_clip_from_index(AAFCFILETABLE* ftable, unsigned char group, unsigned short index);
-EXPORT AAFCOUTPUT aft_get_clip_from_name(AAFCFILETABLE* ftable, unsigned char group, const char* identifier);
+EXPORT AAFCTABLE aft_create(AFTInput data[], unsigned char grouplength);
+EXPORT AAFCOUTPUT aft_export(AAFCTABLE* ftable);
+EXPORT AAFCTABLE* aft_import(unsigned char* data);
+EXPORT AAFCOUTPUT aft_get_clip_from_index(AAFCTABLE* ftable, unsigned char group, unsigned short index);
+EXPORT AAFCOUTPUT aft_get_clip_from_name(AAFCTABLE* ftable, unsigned char group, const char* identifier);
 
 #endif // AAFC_H

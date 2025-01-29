@@ -24,7 +24,7 @@ typedef struct {
 	char* message;
 } ConversionResult;
 
-ConversionResult convertmedia(const char* fn, const char* outpath, bool usemono, bool normalize, unsigned char bps, unsigned char sampletype, unsigned int spoverride, float pitch, bool nointerp) {
+ConversionResult convertmedia(const char* fn, const char* outpath, bool usemono, bool normalize, unsigned char bps, unsigned char sampletype, unsigned long spoverride, float pitch, bool nointerp) {
 	ConversionResult s = { 0, NULL};
 
 	SF_INFO info;
@@ -83,16 +83,16 @@ int main(int argc, char* argv[]) {
 	const char* fn = "input.wav";
 	unsigned char outbps = 16;
 	bool usemono = false, nointerp = false, normalize = false;
-	unsigned int batchlength = 0;
+	unsigned long batchlength = 0;
 	char** batchfiles;
 	const char* dirnm;
 	unsigned char sampletype = 1;
-	unsigned int resampleoverride = 0;
+	unsigned long resampleoverride = 0;
 	float pitch = 1;
 	const char* outpath = "aafc_conversions";
 	char* ofn = NULL;
 
-	for (unsigned int i = 1; i < argc; i++) {
+	for (unsigned long i = 1; i < argc; i++) {
 		std::string input = std::string(argv[i]);
 		if (input == "-i" && i + 1 < argc) {
 			fn = argv[++i];
@@ -104,7 +104,7 @@ int main(int argc, char* argv[]) {
 			ofn = argv[++i];
 		}
 		else if (input == "--bps" && i + 1 < argc) {
-			outbps = (unsigned int)std::stof(argv[++i], NULL);
+			outbps = (unsigned long)std::stof(argv[++i], NULL);
 		}
 		else if (input == "-m") {
 			usemono = true;
@@ -136,7 +136,7 @@ int main(int argc, char* argv[]) {
 			printf("Batch converting files from \"%s\"\n", dirnm);
 		}
 		else if (input == "-ar" && i + 1 < argc) {
-			resampleoverride = (unsigned int)std::stof(argv[++i], NULL);
+			resampleoverride = (unsigned long)std::stof(argv[++i], NULL);
 		}
 	}
 	mkdir(outpath, 0755);
@@ -147,7 +147,7 @@ int main(int argc, char* argv[]) {
 	if (batchlength == 0) {
 		char fnc[256];
 		snprintf(fnc, sizeof(fnc), "%s", ofn == NULL || *ofn == '\0' ? filename_without_extension(fn) : filename_without_extension(ofn)); // aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-		char* c = concat_path(outpath, fnc);
+		char* c = concat_path_ext(outpath, fnc, "aafc");
 		if ((rst = convertmedia(fn, c, usemono, normalize, outbps, sampletype, resampleoverride, pitch, nointerp)).statuscode != 0) {
 			free(c);
 			printf("Failed to convert media: %s [%d]\n", rst.message, rst.statuscode);
@@ -162,8 +162,8 @@ int main(int argc, char* argv[]) {
 
 		mkdir(dirp, 0755);
 
-		for (unsigned int i = 0; i < batchlength; i++) {
-			rst = convertmedia(batchfiles[i], concat_path(dirp, filename_without_extension(batchfiles[i])), usemono, normalize, outbps, sampletype, resampleoverride, pitch, nointerp);
+		for (unsigned long i = 0; i < batchlength; i++) {
+			rst = convertmedia(batchfiles[i], concat_path_ext(dirp, filename_without_extension(batchfiles[i]), "aafc"), usemono, normalize, outbps, sampletype, resampleoverride, pitch, nointerp);
 			if (rst.statuscode == -1)
 				continue;
 			else if (rst.statuscode < -1) {
@@ -178,7 +178,7 @@ int main(int argc, char* argv[]) {
 
 	if (rst.statuscode > 0)
 		printf("conversion completed with warnings: %s [%d]\n", rst.message, rst.statuscode);
-	else printf("Completed conversion!\n");
+	else printf("%s", "Completed conversion!\n");
 
 	return 0;
 }

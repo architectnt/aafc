@@ -15,30 +15,28 @@ unsigned char* encode_dpcm(float* ptr, const AAFC_HEADER* h, size_t* audsize) {
     unsigned char* const dpcm = (unsigned char*)malloc(*audsize);
     memset(dpcm, 0, *audsize);
 
-    unsigned char accum = 63;
-    for (unsigned int i = 0; i < h->samplelength; ptr++, i++) {
+    unsigned char sum = 63;
+    for (unsigned long i = 0; i < h->samplelength; ptr++, i++) {
         unsigned char next = (unsigned char)(CLAMP((*ptr + 1.0f) * 63.5f, 0.0f, 255.0f));
-        if (next > accum) {
+        if (next > sum) {
             *(dpcm + (i >> 3)) |= 1 << (i & 7);
-            accum++;
+            sum++;
         }
         else {
             *(dpcm + (i >> 3)) &= ~(1 << (i & 7));
-            accum--;
+            sum--;
         }
 
-        if (accum > 127) accum = 127;
-        if (accum < 0) accum = 0;
+        sum = sum < 0 ? 0 : sum > 0x7F ? 0x7F : sum;
     }
     return dpcm;
 }
 
 void decode_dpcm(const unsigned char* input, float* output, const AAFC_HEADER* h) {
-    signed char accum = 0;
-    for (unsigned int i = 0; i < h->samplelength; i++) {
-        accum += ((*(input + (i >> 3)) >> (i & 7)) & 1) ? 1 : -1;
-        if (accum > 63) accum = 63;
-        if (accum < -64) accum = -64;
-        *output++ = accum * INT7_REC;
+    signed char sum = 0;
+    for (unsigned long i = 0; i < h->samplelength; i++) {
+        sum += ((*(input + (i >> 3)) >> (i & 7)) & 1) ? 1 : -1;
+        sum = sum < -0x40 ? -0x40 : sum > 0x3F ? 0x3F : sum;
+        *output++ = sum * INT7_REC;
     }
 }

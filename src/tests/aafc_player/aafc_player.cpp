@@ -16,14 +16,14 @@
 #include <aafc.h>
 #include <tests.h>
 
-unsigned int sysfreq;
+unsigned long sysfreq;
 unsigned char syschan;
 
 AAFCDECOUTPUT outp;
 double ipos = 0;
 bool finished = false;
 double totalDurationInSeconds;
-unsigned int splen;
+unsigned long splen;
 
 static inline double lerp(double a, double b, double t) {
 	return a + (b - a) * CLAMP(t, 0.0, 1.0);
@@ -36,7 +36,7 @@ static int AudioHandler(const void* inp, void* otp, unsigned long frames, const 
 	float* outspl = (float*)otp;
 	unsigned char ch;
 	const double scal = (double)outp.header.freq / sysfreq;
-	for (unsigned int i = 0; i < frames; i++) {
+	for (unsigned long i = 0; i < frames; i++) {
 		for(ch = 0; ch < syschan; ch++) {
 			float smpl = 0;
 			if(!finished) {
@@ -46,7 +46,7 @@ static int AudioHandler(const void* inp, void* otp, unsigned long frames, const 
 					finished = true;
 				}
 
-				unsigned int index = (unsigned int)spos,
+				unsigned long index = (unsigned long)spos,
 					nxind = (index + 1) % outp.header.samplelength;
 				double w = (spos - index);
 				
@@ -93,7 +93,7 @@ int main(int argc, char* argv[]) {
 	if(argc > 1) {
 		printf("\e[?25l");
 
-		printf("loading AAFC file.. ");
+		printf("%s", "loading AAFC file.. ");
 
 		AAFCOUTPUT aafcfile = ReadFile(argv[1]);
 		outp = LoadAAFC(aafcfile.data);
@@ -116,7 +116,7 @@ int main(int argc, char* argv[]) {
 			default: stypeformat = "unformated"; break;
 		}
 
-		printf("Loaded!\n\n-METADATA-\n[Sample Frequency: %d | Channels: %d | Sample Type: %s | AAFC VERSION EXPORTED: AAFC v%d] \n", outp.header.freq, outp.header.channels, stypeformat, outp.header.version);
+		printf("Loaded!\n\n-METADATA-\n[Sample Frequency: %lu | Channels: %d | Sample Type: %s | AAFC VERSION EXPORTED: AAFC v%d] \n", outp.header.freq, outp.header.channels, stypeformat, outp.header.version);
 		free(aafcfile.data);
 	}
 	else {
@@ -146,7 +146,7 @@ int main(int argc, char* argv[]) {
 	Pa_StopStream(str);
 	Pa_CloseStream(str);
 	Pa_Terminate();
-	printf("\e[?25h");
+	printf("%s", "\e[?25h");
 	std::cout.flush();
 	free(outp.data);
 	return 0;

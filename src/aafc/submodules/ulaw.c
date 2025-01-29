@@ -14,7 +14,7 @@ unsigned char* encode_ulaw(float* ptr, const AAFC_HEADER* h, size_t* audsize) {
     unsigned char* const ulaw = (unsigned char*)malloc(h->samplelength);
     unsigned char* uptr = ulaw;
 
-    for (unsigned int i = 0; i < h->samplelength; ptr++, uptr++, i++) {
+    for (unsigned long i = 0; i < h->samplelength; ptr++, uptr++, i++) {
         short sample = (short)CLAMP(*ptr * 32767.0f, -32768.0f, 32767.0f);
         unsigned char sign = (sample >> 8) & 0x80;
         if (sign != 0) sample = -sample;

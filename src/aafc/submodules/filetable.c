@@ -6,139 +6,126 @@
 #include <aafc.h>
 #include "filetable.h"
 
-AAFCOUTPUT create_filetable_stream(AAFCFILETABLE* ftable) {
+AAFCOUTPUT serializeTableContent(AAFCTABLE* ftable) {
     AAFCOUTPUT output = { 0, NULL };
     if (ftable == NULL) {
         return output;
     }
 
-    size_t tsize = sizeof(ftable->signature) + sizeof(ftable->version) + sizeof(ftable->size);
-    unsigned int i, j, k;
-    int64_t doffset = 0;
-
-    for (i = 0; i < ftable->size; i++) {
-        TABLECONTENT* tablecontent = ftable->filetables + i;
-        tsize += sizeof(tablecontent->size);
-        for (j = 0; j < tablecontent->size; j++) {
-            AAFCTABLEDEFINITION* tabledef = tablecontent->table + j;
-            tsize += sizeof(AAFC_HEADER) + sizeof(tabledef->startloc);
-            tsize += strnlen(tabledef->identifier, 255) + 1;
-        }
-        for (k = 0; k < tablecontent->size; k++) {
-            AAFCTABLEDEFINITION* tabledef = tablecontent->table + k;
-            DATATABLE* dtb = tablecontent->data + k;
-            tsize += sizeof(dtb->len) + dtb->len;
-            doffset = tsize;
-            tabledef->startloc = doffset;
-            tsize += sizeof(dtb->len) + dtb->len;
+    unsigned long len = 0;
+    unsigned short tlen = 0;
+    unsigned long i, j;
+    for (i = 0; i < ftable->groupsize; i++) {
+        for (j = 0; j < ftable->attributes[i].tablesize; j++) {
+            len += ftable->attributes[i].table[i].size - sizeof(AAFC_HEADER); // we're already passing the header to the attributes anyway
+            tlen++;
         }
     }
+
+
+    size_t tsize = 6 + (2 + ((sizeof(AAFC_HEADER) + 8 + 4 + 256) * tlen ) * ftable->groupsize) + len;
 
     unsigned char* rst = (unsigned char*)malloc(tsize);
+    memset(rst, 0, tsize); // zero out ERYryTHIG
+
     unsigned char* ptr = rst;
 
-    *(unsigned short*)ptr = ftable->signature; ptr += sizeof(ftable->signature);
-    *(unsigned short*)ptr = ftable->version; ptr += sizeof(ftable->version);
-    *(unsigned char*)ptr = ftable->size; ptr += sizeof(ftable->size);
+    *(unsigned short*)ptr = ftable->signature; ptr += 2;
+    *(unsigned short*)ptr = ftable->version; ptr += 2;
+    *(unsigned char*)ptr = ftable->groupsize; ptr++;
+    *(unsigned char*)ptr = ftable->compressiontype; ptr++;
 
-    for (i = 0; i < ftable->size; i++) {
-        TABLECONTENT* content = ftable->filetables + i;
-        *(unsigned short*)ptr = content->size; ptr += sizeof(content->size);
-        for (j = 0; j < content->size; j++) {
-            AAFCTABLEDEFINITION* tabledef = content->table + j;
-            memcpy(ptr, &(tabledef->header), sizeof(AAFC_HEADER)); ptr += sizeof(AAFC_HEADER);
-            *(int64_t*)ptr = tabledef->startloc; ptr += sizeof(tabledef->startloc);
-            size_t ilen = strnlen(tabledef->identifier, 255) + 1;
-            if (ilen >= 256) { // Just..in..case....
-                free(rst);
-                return output;
-            } 
+    uint64_t offset = 0;
+    for (i = 0; i < ftable->groupsize; i++) {
+        *(unsigned short*)ptr = ftable->attributes[i].tablesize; ptr += 2;
+        for (j = 0; j < ftable->attributes[i].tablesize; j++) {
+            *(AAFC_HEADER*)ptr = ftable->attributes[i].table[j].header; ptr += sizeof(AAFC_HEADER);
+            *(uint64_t*)ptr = offset; ptr += 8;
+            *(unsigned long*)ptr = ftable->attributes->table[j].size; ptr += 4;
+            unsigned short cln = strnlen(ftable->attributes->table[j].identifier, 255) + 1;
+            memcpy(ptr, ftable->attributes->table[j].identifier, cln); ptr += 255;
 
-            memcpy(ptr, tabledef->identifier, ilen); ptr += ilen;
-        }
-        for (k = 0; k < content->size; k++) {
-            DATATABLE* dtb = content->data + k;
-            *(int64_t*)ptr = dtb->len; ptr += sizeof(dtb->len);
-            memcpy(ptr, dtb->data, dtb->len); ptr += dtb->len;
+            offset += ftable->attributes->table[j].size;
         }
     }
+
+    memcpy(ptr, ftable, len);
 
     output = (AAFCOUTPUT){tsize, rst};
     return output;
 }
 
-AAFCFILETABLE* decode_filetable_stream(unsigned char* data) {
+AAFCTABLE* deserializeTableContent(unsigned char* data) {
     if (!aftheader_valid(data)) {
         printf("INVALID FILETABLE\n");
         return NULL;
     }
 
-    AAFCFILETABLE* ftable = (AAFCFILETABLE*)malloc(sizeof(AAFCFILETABLE));
+    AAFCTABLE* ftable = (AAFCTABLE*)malloc(sizeof(AAFCTABLE));
     if (!ftable) return NULL;
 
     unsigned char* ptr = data;
+    unsigned char err = 0;
 
-    ftable->signature = *(unsigned short*)ptr; ptr += sizeof(unsigned short);
-    ftable->version = *(unsigned short*)ptr; ptr += sizeof(unsigned short);
-    ftable->size = *(unsigned char*)ptr; ptr += sizeof(unsigned char);
+    ftable->signature = *(unsigned short*)ptr; ptr += 2;
+    ftable->version = *(unsigned short*)ptr; ptr += 2;
+    ftable->groupsize = *(unsigned char*)ptr; ptr++;
+    ftable->compressiontype = *(unsigned char*)ptr; ptr++;
+    unsigned long i, j;
 
-    if ((ftable->filetables = (TABLECONTENT*)malloc(ftable->size * sizeof(TABLECONTENT))) == NULL) {
-        free(ftable);
-        return NULL;
+    ftable->attributes = (TableAttribute*)calloc(ftable->groupsize, sizeof(TableAttribute));
+    if (!ftable->attributes) err = 1;
+
+    for (i = 0; i < ftable->groupsize && !err; i++) {
+        ftable->attributes[i].tablesize = *(unsigned short*)ptr; ptr += 2;
+
+        if (ftable->attributes[i].tablesize > 0) {
+            ftable->attributes[i].table = (TableDef*)calloc(
+                ftable->attributes[i].tablesize, sizeof(TableDef));
+            if (!ftable->attributes[i].table) {
+                err = 1;
+                break;
+            }
+        }
+        else {
+            err = 1;
+            break;
+        }
+
+        for (j = 0; j < ftable->attributes->tablesize && !err; j++) {
+            memcpy(&ftable->attributes[i].table[j].header, ptr, sizeof(AAFC_HEADER));
+            ptr += sizeof(AAFC_HEADER);
+
+            ftable->attributes[i].table[j].loc = *(uint64_t*)ptr; ptr += 8;
+            ftable->attributes[i].table[j].size = *(unsigned long*)ptr; ptr += 4;
+
+            strncpy(ftable->attributes[i].table[j].identifier, (char*)ptr, 255);
+            ftable->attributes[i].table[j].identifier[255] = '\0';
+            ptr += 255;
+        }
     }
 
-    unsigned int i, j, k;
-    int64_t doffset = 0;
+    if (!err) {
+        uint64_t data_size = (ptr - data) - (
+            6 +
+            (ftable->groupsize * 2) +
+            (ftable->groupsize * ftable->attributes[0].tablesize * (sizeof(AAFC_HEADER) + 12 + 255))
+            );
 
-    for (i = 0; i < ftable->size; i++) {
-        TABLECONTENT* content = ftable->filetables + i;
-        content->size = *(unsigned short*)ptr; ptr += sizeof(unsigned short);
-        if ((content->table = (AAFCTABLEDEFINITION*)malloc(content->size * sizeof(AAFCTABLEDEFINITION))) == NULL) {
-            free(ftable->filetables);
-            free(ftable);
-            return NULL;
-        }
+        ftable->data = (unsigned char*)malloc(data_size);
+        if (!ftable->data) err = 1;
+        else memcpy(ftable->data, ptr, data_size);
+    }
 
-        if ((content->data = (DATATABLE*)malloc(content->size * sizeof(DATATABLE))) == NULL) {
-            free(content->table);
-            free(ftable->filetables);
-            free(ftable);
-            return NULL;
-        }
-
-        for (j = 0; j < content->size; j++) {
-            AAFCTABLEDEFINITION* tabledef = content->table + j;
-            memcpy(&(tabledef->header), ptr, sizeof(AAFC_HEADER)); ptr += sizeof(AAFC_HEADER);
-            tabledef->startloc = doffset;
-            size_t ilen = strnlen((char*)ptr, 255) + 1;
-            if (ilen >= 256) { // also check here
-                free(content->data);
-                free(content->table);
-                free(ftable->filetables);
-                free(ftable);
-                return NULL;
+    if (err) {
+        if (ftable->attributes) {
+            for (unsigned i = 0; i < ftable->groupsize; i++) {
+                free(ftable->attributes[i].table);
             }
-
-            memcpy(tabledef->identifier, ptr, ilen); ptr += ilen;
+            free(ftable->attributes);
         }
-
-        for (k = 0; k < content->size; k++) {
-            DATATABLE* dtable = content->data + k;
-            dtable->len = *(int64_t*)ptr; ptr += sizeof(int64_t);
-            if ((dtable->data = (unsigned char*)malloc(dtable->len)) == NULL) {
-                for (int l = 0; l < k; l++)
-                    free(content->data[l].data);
-
-                free(content->data);
-                free(content->table);
-                free(ftable->filetables);
-                free(ftable);
-                return NULL;
-            }
-            memcpy(dtable->data, ptr, dtable->len);
-            ptr += dtable->len;
-            doffset += dtable->len + sizeof(dtable->len);
-        }
+        free(ftable);
+        return NULL;
     }
 
     return ftable;

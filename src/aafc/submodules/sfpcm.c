@@ -16,7 +16,7 @@ void* encode_sfpcm(float* ptr, const AAFC_HEADER* h, size_t* audsize) {
             *audsize = h->samplelength;
             unsigned char* const stbs = (unsigned char*)malloc(h->samplelength);
             unsigned char* sptr = stbs;
-            for (unsigned int i = 0; i < h->samplelength; ptr++, sptr++, i++) {
+            for (unsigned long i = 0; i < h->samplelength; ptr++, sptr++, i++) {
                 *sptr = minifloat(CLAMP(*ptr * 127.0f, -128.0f, 127.0f));
             }
             return stbs;
@@ -25,13 +25,13 @@ void* encode_sfpcm(float* ptr, const AAFC_HEADER* h, size_t* audsize) {
             *audsize = h->samplelength * sizeof(short);
             unsigned short* const stbs = (unsigned short*)malloc(*audsize);
             unsigned short* sptr = stbs;
-            for (unsigned int i = 0; i < h->samplelength; ptr++, sptr++, i++) {
+            for (unsigned long i = 0; i < h->samplelength; ptr++, sptr++, i++) {
                 *sptr = halfpercision(*ptr);
             }
             return stbs;
         }
         default: {
-            printf("AAFC SFPCM: invalid bits per sample. (8, 16, and 32 valid)\n");
+            printf("%s", "AAFC SFPCM: invalid bits per sample. (8, 16, and 32 valid)\n");
             return NULL;
         }
     }
@@ -54,7 +54,7 @@ void decode_sfpcm(const unsigned char* input, float* output, const AAFC_HEADER* 
             break;
         }
         default: {
-            printf("AAFC SFPCM IMPORT: invalid bits per sample\n");
+            printf("%s", "AAFC SFPCM IMPORT: invalid bits per sample\n");
             return;
         }
     }

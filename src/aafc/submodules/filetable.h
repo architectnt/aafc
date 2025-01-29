@@ -5,5 +5,5 @@
 
 #include <aafc.h>
 
-AAFCOUTPUT create_filetable_stream(AAFCFILETABLE* ftable);
-AAFCFILETABLE* decode_filetable_stream(unsigned char* data);
+AAFCOUTPUT serializeTableContent(AAFCTABLE* ftable);
+AAFCTABLE* deserializeTableContent(unsigned char* data);
