@@ -276,6 +276,7 @@ EXPORT AAFCTABLE aft_create(AFTInput data[], unsigned char grouplength) {
     ftable.signature = AFT_SIGNATURE;
     ftable.version = AFTVERSION;
     ftable.groupsize = grouplength;
+    ftable.compressiontype = 0; // not yet implemented
 
     ftable.attributes = (TableAttribute*)calloc(grouplength, sizeof(TableAttribute));
     if (!ftable.attributes) return ftable;
@@ -298,6 +299,7 @@ EXPORT AAFCTABLE aft_create(AFTInput data[], unsigned char grouplength) {
         }
 
         uint64_t offset = 0;
+        ftable.attributes[i].tablesize = data->len;
         for (unsigned short j = 0; j < data->len; j++) {
             if (!header_valid(data->table[j].data)) {
                 printf("%s", "one of entries has invalid AAFC data, aborting.\n");
@@ -337,7 +339,7 @@ EXPORT AAFCTABLE aft_create(AFTInput data[], unsigned char grouplength) {
     for (unsigned char i = 0; i < grouplength; i++) {
         for (unsigned short j = 0; j < data->len; j++) {
             long ln = data->table[j].len - sizeof(AAFC_HEADER);
-            memcpy(ftable.data, data->table[j].data + sizeof(AAFC_HEADER), ln);
+            memcpy(ptr, data->table[j].data + sizeof(AAFC_HEADER), ln);
             ptr += ln;
         }
     }

@@ -17,14 +17,13 @@ AAFCOUTPUT serializeTableContent(AAFCTABLE* ftable) {
     unsigned long i, j;
     for (i = 0; i < ftable->groupsize; i++) {
         for (j = 0; j < ftable->attributes[i].tablesize; j++) {
-            len += ftable->attributes[i].table[i].size - sizeof(AAFC_HEADER); // we're already passing the header to the attributes anyway
+            len += ftable->attributes[i].table[j].size;
             tlen++;
         }
     }
 
 
-    size_t tsize = 6 + (2 + ((sizeof(AAFC_HEADER) + 8 + 4 + 256) * tlen ) * ftable->groupsize) + len;
-
+    uint64_t tsize = 6 + (2 + ((sizeof(AAFC_HEADER) + 8 + 4 + 256) * tlen ) * ftable->groupsize) + len;
     unsigned char* rst = (unsigned char*)malloc(tsize);
     memset(rst, 0, tsize); // zero out ERYryTHIG
 
@@ -49,7 +48,7 @@ AAFCOUTPUT serializeTableContent(AAFCTABLE* ftable) {
         }
     }
 
-    memcpy(ptr, ftable, len);
+    memcpy(ptr, ftable->data, len);
 
     output = (AAFCOUTPUT){tsize, rst};
     return output;

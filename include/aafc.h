@@ -142,7 +142,7 @@ typedef struct {
 
 typedef struct {
     unsigned short len;
-    AFTSubInput table[];
+    AFTSubInput* table;
 } AFTInput;
 
 // Compares if the input is a valid format

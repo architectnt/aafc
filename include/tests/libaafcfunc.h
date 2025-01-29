@@ -28,7 +28,7 @@
 typedef AAFCDECOUTPUT (*AAFCImport)(const unsigned char*);
 typedef AAFC_HEADER* (*AAFCGetHeader)(const unsigned char*);
 typedef AAFCOUTPUT (*AAFCExport)(float* samples, unsigned long freq, unsigned char channels, unsigned long samplelength, unsigned char bps, unsigned char sampletype, bool forcemono, unsigned long samplerateoverride, bool normalize, float pitch, bool nointerp);
-typedef AAFCTABLE (*AFTCreate)(unsigned char*** data, size_t tablelength, size_t* sizes);
+typedef AAFCTABLE (*AFTCreate)(AFTInput data[], unsigned char grouplength);
 typedef AAFCOUTPUT (*AFTExport)(AAFCTABLE* ftable);
 typedef AAFCTABLE* (*AFTImport)(unsigned char* data);
 
@@ -117,6 +117,15 @@ AAFCOUTPUT ExportAFT(AAFCTABLE* ftable) {
         return {0, nullptr};
     }
     return aftexp(ftable);
+}
+
+AAFCTABLE CreateAFT(AFTInput* data, unsigned char grouplength) {
+    AFTCreate aftexp = LibHandler::getInstance(LIB_AAFC_RPATH).getFunc<AFTCreate>("aft_create");
+    if (aftexp == NULL) {
+        perror("Could not initialize AAFC functions.");
+        return { 0 };
+    }
+    return aftexp(data, grouplength);
 }
 
 #endif
