@@ -283,10 +283,11 @@ EXPORT AAFCTABLE aft_create(AFTInput data[], unsigned char grouplength) {
     memset(ftable.attributes, 0, grouplength * sizeof(TableAttribute));
 
     uint64_t dsize = 0;
+    uint64_t offset = 0;
     for (unsigned char i = 0; i < grouplength; i++) {
-        if (data->len > 0) {
-            ftable.attributes[i].table = (TableDef*)calloc(data->len, sizeof(TableDef));
-            if (!data->len) {
+        if (data[i].len > 0) {
+            ftable.attributes[i].table = (TableDef*)calloc(data[i].len, sizeof(TableDef));
+            if (!data[i].len) {
                 printf("%s", "could not allocate attributes\n");
                 free(ftable.attributes);
                 return (AAFCTABLE) { 0 };
@@ -298,10 +299,15 @@ EXPORT AAFCTABLE aft_create(AFTInput data[], unsigned char grouplength) {
             return (AAFCTABLE) { 0 };
         }
 
-        uint64_t offset = 0;
-        ftable.attributes[i].tablesize = data->len;
-        for (unsigned short j = 0; j < data->len; j++) {
-            if (!header_valid(data->table[j].data)) {
+        ftable.attributes[i].tablesize = data[i].len;
+
+        memcpy(
+            &ftable.attributes[i].identifier,
+            (char*)data[i].identifier, 64
+        );
+
+        for (unsigned short j = 0; j < data[i].len; j++) {
+            if (!header_valid(data[i].table[j].data)) {
                 printf("%s", "one of entries has invalid AAFC data, aborting.\n");
                 free(ftable.attributes);
                 return (AAFCTABLE) { 0 };
@@ -309,22 +315,22 @@ EXPORT AAFCTABLE aft_create(AFTInput data[], unsigned char grouplength) {
 
             memcpy(
                 &ftable.attributes[i].table[j].header, 
-                (AAFC_HEADER*)data->table[j].data, sizeof(AAFC_HEADER)
+                (AAFC_HEADER*)data[i].table[j].data, sizeof(AAFC_HEADER)
             );
             memcpy(
                 &ftable.attributes[i].table[j].identifier,
-                (AAFC_HEADER*)data->table[j].identifier, 256
+                (char*)data[i].table[j].identifier, 256
             );
-            ftable.attributes[i].table[j].loc = offset;
-            long ln = data->table[j].len - sizeof(AAFC_HEADER); // signed to check invalid data again
+            long ln = data[i].table[j].len - sizeof(AAFC_HEADER); // signed to check invalid data again
             if (ln <= 0) {
                 printf("%s", "WHAT\nlength of data became negative\n");
                 free(ftable.attributes);
                 return (AAFCTABLE) { 0 };
             }
 
-            ftable.attributes[i].table[j].size = ln;
+            ftable.attributes[i].table[j].loc = offset;
             offset += ln;
+            ftable.attributes[i].table[j].size = ln;
             dsize += ln;
         }
     }
@@ -337,9 +343,9 @@ EXPORT AAFCTABLE aft_create(AFTInput data[], unsigned char grouplength) {
         return ftable;
     }
     for (unsigned char i = 0; i < grouplength; i++) {
-        for (unsigned short j = 0; j < data->len; j++) {
-            long ln = data->table[j].len - sizeof(AAFC_HEADER);
-            memcpy(ptr, data->table[j].data + sizeof(AAFC_HEADER), ln);
+        for (unsigned short j = 0; j < data[i].len; j++) {
+            long ln = data[i].table[j].len - sizeof(AAFC_HEADER);
+            memcpy(ptr, data[i].table[j].data + sizeof(AAFC_HEADER), ln);
             ptr += ln;
         }
     }

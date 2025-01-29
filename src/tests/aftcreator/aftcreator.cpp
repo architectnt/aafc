@@ -4,57 +4,87 @@
 
 int main(int argc, char* argv[]) {
     char** folders = NULL;
+    unsigned long flen = 0;
+
     const char* outfilename = "fnoutp";
 
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "-o") == 0) {
-            outfilename = argv[i++];
+            if (i + 1 < argc) {
+                outfilename = argv[++i];
+                printf("creating output at \"%s\"\n", outfilename);
+            }
+            else {
+                if (folders != NULL)
+                    free(folders);
+                fprintf(stderr, "err: unspecified name\n");
+                return 1;
+            }
         }
         else {
-            folders = argv + i;
-            break;
+            folders = (char**)realloc(folders, (flen + 1) * sizeof(char*));
+            folders[flen] = argv[i];
+            flen++;
         }
     }
 
     if (folders == nullptr) {
-        std::cerr << "No folders specified." << std::endl;
+        fprintf(stderr, "No folders specified.\n");
         return 1;
     }
 
+    unsigned short imported = 0;
+    size_t size = 0;
 
-    unsigned long len;
-    char** files = list_files(folders[0], &len);
-    if (!files) {
-        std::cerr << "no files found" << std::endl;
+    AFTInput* inp = (AFTInput*)calloc(flen, sizeof(AFTInput));
+    for (unsigned char i = 0; i < flen; i++) {
+        printf("processing group %d: \"%s\"\n", i+1, folders[i]);
+        unsigned long len;
+        char** files = list_files(folders[i], &len);
+        if (files == NULL) {
+            fprintf(stderr, "no files found\n");
+            free(files);
+            continue; // skip
+        }
+
+        inp[i].table = (AFTSubInput*)calloc(len, sizeof(AFTSubInput));
+        inp[i].len = len;
+        for (unsigned short j = 0; j < inp[i].len; j++) {
+            AAFCOUTPUT dt = ReadFile(files[j]);
+            if (!dt.data) continue; // skip
+            inp[i].table[j].data = (unsigned char*)malloc(dt.size);
+            inp[i].table[j].len = dt.size;
+            char* dsc = filename_without_extension(files[j]);
+            strncpy(inp[i].table[j].identifier, dsc, 255);
+            free(dsc);
+            memcpy(inp[i].table[j].data, dt.data, dt.size);
+            imported++;
+        }
+
+        const char* groupn = strip_path_last(folders[i]);
+        strncpy(inp[i].identifier, groupn, 63); // if i put it on top clang go angy
+
+        free(files);
+    }
+    free(folders);
+
+    if (imported == 0) {
+        free(inp->table);
+        free(inp);
+        fprintf(stderr, "none inported\n");
         return 2;
     }
 
-    AFTInput* inp = (AFTInput*)calloc(1, sizeof(AFTInput)); // for now
-    inp->len = len;
-    inp->table = (AFTSubInput*)calloc(len, sizeof(AFTSubInput));
 
-    unsigned short imported = 0;
-    for (unsigned short i = 0; i < inp->len; i++) {
-        AAFCOUTPUT dt = ReadFile(files[i]);
-        if (!dt.data) continue; // skip
-        inp->table[i].data = (unsigned char*)malloc(dt.size);
-        inp->table[i].len = dt.size;
-        char* dsc = filename_without_extension(files[i]);
-        strncpy(inp->table[i].identifier, dsc, 255);
-        free(dsc);
-        memcpy(inp->table[i].data, dt.data, dt.size);
-        imported++;
-    }
-    free(files);
 
-    AAFCTABLE ftable = CreateAFT(inp, 1);
+    AAFCTABLE ftable = CreateAFT(inp, flen);
     free(inp->table);
     free(inp);
 
     AAFCOUTPUT output = ExportAFT(&ftable);
 
     if (output.data == NULL) {
-        printf("Failed.\n");
+        fprintf(stderr, "failed\n");
         return 2;
     }
 
@@ -73,6 +103,7 @@ int main(int argc, char* argv[]) {
     fwrite(output.data, 1, output.size, ofile);
     free(output.data);
 
+    fclose(ofile);
     printf("Complete!\n");
     return 0;
 }

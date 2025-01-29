@@ -114,13 +114,14 @@ typedef struct decoutput {
 */
 
 typedef struct {
+    char identifier[256];
     AAFC_HEADER header;
     uint64_t loc;
     unsigned long size;
-    char identifier[256];
 } TableDef;
 
 typedef struct {
+    char identifier[64];
     unsigned short tablesize;
     TableDef* table;
 } TableAttribute;
@@ -136,12 +137,13 @@ typedef struct {
 
 typedef struct {
     uint64_t len;
-    unsigned char* data;
     char identifier[256];
+    unsigned char* data;
 } AFTSubInput;
 
 typedef struct {
     unsigned short len;
+    char identifier[64];
     AFTSubInput* table;
 } AFTInput;
 
@@ -165,8 +167,6 @@ EXPORT void* aafc_int_to_float(void* arr, long size, unsigned char type);
 EXPORT float* aafc_resample_data(float* input, unsigned long samplerateoverride, AAFC_HEADER* h, float pitch, bool nointerp);
 EXPORT float* aafc_normalize(float* arr, const AAFC_HEADER* h);
 
-
-//TODO: aafc content tables
 EXPORT AAFCTABLE aft_create(AFTInput data[], unsigned char grouplength);
 EXPORT AAFCOUTPUT aft_export(AAFCTABLE* ftable);
 EXPORT AAFCTABLE* aft_import(unsigned char* data);

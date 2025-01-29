@@ -12,18 +12,22 @@ AAFCOUTPUT serializeTableContent(AAFCTABLE* ftable) {
         return output;
     }
 
-    unsigned long len = 0;
+    uint64_t len = 0;
     unsigned short tlen = 0;
     unsigned long i, j;
     for (i = 0; i < ftable->groupsize; i++) {
         for (j = 0; j < ftable->attributes[i].tablesize; j++) {
             len += ftable->attributes[i].table[j].size;
-            tlen++;
         }
+        tlen += ftable->attributes[i].tablesize;
     }
 
-
-    uint64_t tsize = 6 + (2 + ((sizeof(AAFC_HEADER) + 8 + 4 + 256) * tlen ) * ftable->groupsize) + len;
+    uint64_t tsize = 6;
+    for (unsigned long i = 0; i < ftable->groupsize; i++) {
+        tsize += 64 + 2;
+        tsize += (sizeof(AAFC_HEADER) + 8 + 4 + 256) * ftable->attributes[i].tablesize;
+    }
+    tsize += len; // Data section
     unsigned char* rst = (unsigned char*)malloc(tsize);
     memset(rst, 0, tsize); // zero out ERYryTHIG
 
@@ -31,20 +35,22 @@ AAFCOUTPUT serializeTableContent(AAFCTABLE* ftable) {
 
     *(unsigned short*)ptr = ftable->signature; ptr += 2;
     *(unsigned short*)ptr = ftable->version; ptr += 2;
-    *(unsigned char*)ptr = ftable->groupsize; ptr++;
-    *(unsigned char*)ptr = ftable->compressiontype; ptr++;
+    *ptr++ = ftable->groupsize;
+    *ptr++ = ftable->compressiontype;
 
     uint64_t offset = 0;
     for (i = 0; i < ftable->groupsize; i++) {
+        unsigned short cln = strnlen(ftable->attributes[i].identifier, 63) + 1;
+        memcpy(ptr, ftable->attributes[i].identifier, cln); ptr += 64;
         *(unsigned short*)ptr = ftable->attributes[i].tablesize; ptr += 2;
         for (j = 0; j < ftable->attributes[i].tablesize; j++) {
             *(AAFC_HEADER*)ptr = ftable->attributes[i].table[j].header; ptr += sizeof(AAFC_HEADER);
             *(uint64_t*)ptr = offset; ptr += 8;
-            *(unsigned long*)ptr = ftable->attributes->table[j].size; ptr += 4;
-            unsigned short cln = strnlen(ftable->attributes->table[j].identifier, 255) + 1;
-            memcpy(ptr, ftable->attributes->table[j].identifier, cln); ptr += 255;
+            *(unsigned long*)ptr = ftable->attributes[i].table[j].size; ptr += 4;
+            unsigned short cln = strnlen(ftable->attributes[i].table[j].identifier, 255) + 1;
+            memcpy(ptr, ftable->attributes[i].table[j].identifier, cln); ptr += 256;
 
-            offset += ftable->attributes->table[j].size;
+            offset += ftable->attributes[i].table[j].size;
         }
     }
 
@@ -75,9 +81,10 @@ AAFCTABLE* deserializeTableContent(unsigned char* data) {
     ftable->attributes = (TableAttribute*)calloc(ftable->groupsize, sizeof(TableAttribute));
     if (!ftable->attributes) err = 1;
 
-    for (i = 0; i < ftable->groupsize && !err; i++) {
-        ftable->attributes[i].tablesize = *(unsigned short*)ptr; ptr += 2;
+    if(ftable->attributes) 
+        memset(ftable->attributes, 0, ftable->groupsize * sizeof(TableAttribute));
 
+    for (i = 0; i < ftable->groupsize && !err; i++) {
         if (ftable->attributes[i].tablesize > 0) {
             ftable->attributes[i].table = (TableDef*)calloc(
                 ftable->attributes[i].tablesize, sizeof(TableDef));
@@ -91,6 +98,12 @@ AAFCTABLE* deserializeTableContent(unsigned char* data) {
             break;
         }
 
+        strncpy(ftable->attributes[i].identifier, (char*)ptr, 63);
+        ftable->attributes[i].identifier[63] = '\0';
+        ptr += 64;
+
+        ftable->attributes[i].tablesize = *(unsigned short*)ptr; ptr += 2;
+
         for (j = 0; j < ftable->attributes->tablesize && !err; j++) {
             memcpy(&ftable->attributes[i].table[j].header, ptr, sizeof(AAFC_HEADER));
             ptr += sizeof(AAFC_HEADER);
@@ -100,7 +113,7 @@ AAFCTABLE* deserializeTableContent(unsigned char* data) {
 
             strncpy(ftable->attributes[i].table[j].identifier, (char*)ptr, 255);
             ftable->attributes[i].table[j].identifier[255] = '\0';
-            ptr += 255;
+            ptr += 256;
         }
     }
 
