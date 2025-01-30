@@ -38,7 +38,8 @@ int main(int argc, char* argv[]) {
 
     AFTInput* inp = (AFTInput*)calloc(flen, sizeof(AFTInput));
     for (unsigned char i = 0; i < flen; i++) {
-        printf("processing group %d: \"%s\"\n", i+1, folders[i]);
+        const char* groupn = strip_path_last(folders[i]);
+        printf("processing group %d: \"%s\"\n", i+1, groupn);
         unsigned long len;
         char** files = list_files(folders[i], &len);
         if (files == NULL) {
@@ -56,12 +57,11 @@ int main(int argc, char* argv[]) {
             inp[i].table[j].len = dt.size;
             char* dsc = filename_without_extension(files[j]);
             strncpy(inp[i].table[j].identifier, dsc, 255);
-            free(dsc);
             memcpy(inp[i].table[j].data, dt.data, dt.size);
             imported++;
+            free(dt.data);
+            free(dsc);
         }
-
-        const char* groupn = strip_path_last(folders[i]);
         strncpy(inp[i].identifier, groupn, 63); // if i put it on top clang go angy
 
         free(files);
@@ -71,10 +71,11 @@ int main(int argc, char* argv[]) {
     if (imported == 0) {
         free(inp->table);
         free(inp);
-        fprintf(stderr, "none inported\n");
+        fprintf(stderr, "none imported\n");
         return 2;
     }
 
+    printf("%s", "finalizing..\n");
 
 
     AAFCTABLE ftable = CreateAFT(inp, flen);
@@ -104,6 +105,8 @@ int main(int argc, char* argv[]) {
     free(output.data);
 
     fclose(ofile);
-    printf("Complete!\n");
+    printf("%s", "Complete!\n");
+    fflush(stderr);
+    fflush(stdout);
     return 0;
 }

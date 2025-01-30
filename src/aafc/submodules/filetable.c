@@ -12,6 +12,10 @@ AAFCOUTPUT serializeTableContent(AAFCTABLE* ftable) {
         return output;
     }
 
+    if (ftable->signature != AFT_SIGNATURE) {
+        return output;
+    }
+
     uint64_t len = 0;
     unsigned short tlen = 0;
     unsigned long i, j;
@@ -27,7 +31,7 @@ AAFCOUTPUT serializeTableContent(AAFCTABLE* ftable) {
         tsize += 64 + 2;
         tsize += (sizeof(AAFC_HEADER) + 8 + 4 + 256) * ftable->attributes[i].tablesize;
     }
-    tsize += len; // Data section
+    tsize += len;
     unsigned char* rst = (unsigned char*)malloc(tsize);
     memset(rst, 0, tsize); // zero out ERYryTHIG
 

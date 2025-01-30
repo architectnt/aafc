@@ -48,10 +48,10 @@ typedef struct {
 
 typedef struct { // used for older versions
     char headr[5];
-    unsigned long version;
-    unsigned long freq;
+    unsigned int version;
+    unsigned int freq;
     unsigned char channels;
-    unsigned long samplelength;
+    unsigned int samplelength;
     unsigned char bps;
     unsigned char sampletype;
 } AAFC_LCHEADER;

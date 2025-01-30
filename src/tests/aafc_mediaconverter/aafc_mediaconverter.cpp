@@ -180,5 +180,6 @@ int main(int argc, char* argv[]) {
 		printf("conversion completed with warnings: %s [%d]\n", rst.message, rst.statuscode);
 	else printf("%s", "Completed conversion!\n");
 
+	fflush(stdout);
 	return 0;
 }
