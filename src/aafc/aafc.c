@@ -201,8 +201,8 @@ EXPORT AAFCOUTPUT aft_export(AAFCTABLE* ftable) {
     return serializeTableContent(ftable);
 }
 
-EXPORT AAFCTABLE* aft_import(unsigned char* data) {
-    return deserializeTableContent(data);
+EXPORT AAFCTABLE* aft_import(unsigned char* data, bool excludeData) {
+    return deserializeTableContent(data, excludeData);
 }
 
 EXPORT AAFCOUTPUT aft_get_clip_from_index(AAFCTABLE* ftable, unsigned char group, unsigned short index) {
@@ -329,7 +329,6 @@ EXPORT AAFCTABLE aft_create(AFTInput data[], unsigned char grouplength) {
                 free(ftable.attributes);
                 return (AAFCTABLE) { 0 };
             }
-
             memcpy(
                 &ftable.attributes[i].table[j].identifier,
                 (char*)data[i].table[j].identifier, 256

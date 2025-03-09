@@ -6,4 +6,4 @@
 #include <aafc.h>
 
 AAFCOUTPUT serializeTableContent(AAFCTABLE* ftable);
-AAFCTABLE* deserializeTableContent(unsigned char* data);
+AAFCTABLE* deserializeTableContent(unsigned char* data, bool excludeData);

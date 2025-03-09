@@ -61,13 +61,6 @@ typedef struct {
     unsigned char* data;
 } AAFCOUTPUT;
 
-typedef struct {
-    AAFC_HEADER header;
-    unsigned long length;
-    unsigned long position;
-    void* data;
-} AAFCSTREAM;
-
 typedef enum { // brought tragedy
     OUTPUT_T_FLOAT,
     OUTPUT_T_UNSIGNED_BYTE,
@@ -75,12 +68,6 @@ typedef enum { // brought tragedy
     OUTPUT_T_SHORT,
     OUTPUT_T_INT,
 } OUTPUTTYPE;
-
-typedef enum {
-    STATIC,
-    DYNAMIC,
-    VOLATILE,
-} STREAMTYPE;
 
 typedef struct decoutput {
     AAFC_HEADER header;
@@ -128,6 +115,7 @@ typedef struct {
 
 typedef struct {
     unsigned short signature, version;
+    unsigned long hsize;
     unsigned char groupsize;
     unsigned char compressiontype;
     TableAttribute* attributes;
@@ -169,7 +157,7 @@ EXPORT float* aafc_normalize(float* arr, const AAFC_HEADER* h);
 
 EXPORT AAFCTABLE aft_create(AFTInput data[], unsigned char grouplength);
 EXPORT AAFCOUTPUT aft_export(AAFCTABLE* ftable);
-EXPORT AAFCTABLE* aft_import(unsigned char* data);
+EXPORT AAFCTABLE* aft_import(unsigned char* data, bool excludeData);
 EXPORT AAFCOUTPUT aft_get_clip_from_index(AAFCTABLE* ftable, unsigned char group, unsigned short index);
 EXPORT AAFCOUTPUT aft_get_clip_from_name(AAFCTABLE* ftable, unsigned char group, const char* identifier);
 

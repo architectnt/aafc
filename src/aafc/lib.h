@@ -11,7 +11,6 @@
 #include "submodules/modifiers.h"
 #include "submodules/filetable.h"
 #include "submodules/ulaw.h"
-#include "submodules/stream.h"
 
 static inline void* allocSampleType(OUTPUTTYPE type, unsigned int sampleCount) {
 	switch (type) {

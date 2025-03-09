@@ -79,9 +79,6 @@ set(AAFC_SRC
 
 	src/aafc/submodules/ulaw.h
 	src/aafc/submodules/ulaw.c
-
-	src/aafc/submodules/stream.h
-	src/aafc/submodules/stream.c
 )
 
 if(BUILD_SHARED_LIBS)

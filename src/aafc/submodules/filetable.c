@@ -26,11 +26,12 @@ AAFCOUTPUT serializeTableContent(AAFCTABLE* ftable) {
         tlen += ftable->attributes[i].tablesize;
     }
 
-    uint64_t tsize = 6;
+    uint64_t tsize = 10;
     for (unsigned long i = 0; i < ftable->groupsize; i++) {
         tsize += 64 + 2;
         tsize += (sizeof(AAFC_HEADER) + 8 + 4 + 256) * ftable->attributes[i].tablesize;
     }
+    ftable->hsize = tsize; // allow external file streams to exclude data (if not, your ram will explode lmao)
     tsize += len;
     unsigned char* rst = (unsigned char*)malloc(tsize);
     memset(rst, 0, tsize); // zero out ERYryTHIG
@@ -39,6 +40,7 @@ AAFCOUTPUT serializeTableContent(AAFCTABLE* ftable) {
 
     *(unsigned short*)ptr = ftable->signature; ptr += 2;
     *(unsigned short*)ptr = ftable->version; ptr += 2;
+    *(unsigned long*)ptr = ftable->hsize; ptr += 4;
     *ptr++ = ftable->groupsize;
     *ptr++ = ftable->compressiontype;
 
@@ -64,7 +66,7 @@ AAFCOUTPUT serializeTableContent(AAFCTABLE* ftable) {
     return output;
 }
 
-AAFCTABLE* deserializeTableContent(unsigned char* data) {
+AAFCTABLE* deserializeTableContent(unsigned char* data, bool excludeData) {
     if (!aftheader_valid(data)) {
         printf("INVALID FILETABLE\n");
         return NULL;
@@ -87,6 +89,8 @@ AAFCTABLE* deserializeTableContent(unsigned char* data) {
 
     if(ftable->attributes) 
         memset(ftable->attributes, 0, ftable->groupsize * sizeof(TableAttribute));
+
+    ftable->data = NULL; // initialize to null JUST IN CASE
 
     for (i = 0; i < ftable->groupsize && !err; i++) {
         if (ftable->attributes[i].tablesize > 0) {
@@ -121,12 +125,12 @@ AAFCTABLE* deserializeTableContent(unsigned char* data) {
         }
     }
 
-    if (!err) {
+    if (!err && !excludeData) {
         uint64_t data_size = (ptr - data) - (
             6 +
             (ftable->groupsize * 2) +
             (ftable->groupsize * ftable->attributes[0].tablesize * (sizeof(AAFC_HEADER) + 12 + 255))
-            );
+        );
 
         ftable->data = (unsigned char*)malloc(data_size);
         if (!ftable->data) err = 1;
