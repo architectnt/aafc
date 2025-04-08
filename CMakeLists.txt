@@ -59,8 +59,6 @@ set(AAFC_SRC
 	src/aafc/lib.h
 
 	src/aafc/common.c
-	src/aafc/submodules/filetable.h
-	src/aafc/submodules/filetable.c
 
 	src/aafc/submodules/modifiers.h
 	src/aafc/submodules/modifiers.c
@@ -139,12 +137,10 @@ if(BUILD_TOOLS) # insane
 	add_executable(aud2aafc ${toolsinc} ${aafcheadr} src/tests/aafc_mediaconverter/aafc_mediaconverter.cpp)
 	target_link_libraries(aud2aafc PRIVATE SndFile::sndfile)
 
-	add_executable(aftcreator ${toolsinc} ${aafcheadr} src/tests/aftcreator/aftcreator.cpp)
-
 	include_directories(${aafc_SOURCE_DIR}/include)
 	include_directories(${PROJECT_BINARY_DIR}/include)
 
-	set(tools plyr aftcreator aud2aafc)
+	set(tools plyr aud2aafc)
 endif()
 
 if(WIN32)

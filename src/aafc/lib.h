@@ -9,7 +9,6 @@
 #include "submodules/pcm.h"
 #include "submodules/sfpcm.h"
 #include "submodules/modifiers.h"
-#include "submodules/filetable.h"
 #include "submodules/ulaw.h"
 
 static inline void* allocSampleType(OUTPUTTYPE type, unsigned int sampleCount) {
