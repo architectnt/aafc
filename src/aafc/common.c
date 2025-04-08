@@ -90,7 +90,3 @@ bool header_valid(const unsigned char* bytes) {
 bool legacy_header_valid(const unsigned char* bytes) {
     return bytes != NULL && *(const unsigned int*)bytes == (unsigned long)LEGACYHEADER && *((unsigned long*)bytes + 2) <= AAFCVERSION;
 }
-
-bool aftheader_valid(const unsigned char* bytes) {
-    return *(const unsigned short*)bytes == AFT_SIGNATURE && *((unsigned int*)bytes + 2) <= AAFCVERSION;
-}

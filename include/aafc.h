@@ -74,71 +74,9 @@ typedef struct decoutput {
     float* data;
 } AAFCDECOUTPUT;
 
-
-/*
-    (oh my god FINALYL)
-
-
-    Content Attribute Table (AAFC Customized) - Architect
-    This format is explicitly optimized for file/network streaming
-
-    ^order^
-    HEADER
-    - signatures
-    - group size (max 255)
-    - compression type
-
-    ATTRIBUTE
-    - table size (max 65k)
-
-    DEFINITON
-    - AAFC HEADER
-    - location offset (64 bit), content size (32 bit)
-    - name
-
-    DATA
-    - after header, attributes & definition
-*/
-
-typedef struct {
-    char identifier[256];
-    AAFC_HEADER header;
-    uint64_t loc;
-    unsigned long size;
-} TableDef;
-
-typedef struct {
-    char identifier[64];
-    unsigned short tablesize;
-    TableDef* table;
-} TableAttribute;
-
-typedef struct {
-    unsigned short signature, version;
-    unsigned long hsize;
-    unsigned char groupsize;
-    unsigned char compressiontype;
-    TableAttribute* attributes;
-    unsigned char* data;
-} AAFCTABLE;
-
-
-typedef struct {
-    uint64_t len;
-    char identifier[256];
-    unsigned char* data;
-} AFTSubInput;
-
-typedef struct {
-    unsigned short len;
-    char identifier[64];
-    AFTSubInput* table;
-} AFTInput;
-
 // Compares if the input is a valid format
 bool legacy_header_valid(const unsigned char* bytes);
 bool header_valid(const unsigned char* bytes);
-bool aftheader_valid(const unsigned char* bytes);
 
 
 // Exports
