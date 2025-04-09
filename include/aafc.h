@@ -91,4 +91,7 @@ EXPORT void* aafc_int_to_float(void* arr, long size, unsigned char type);
 EXPORT float* aafc_resample_data(float* input, unsigned long samplerateoverride, AAFC_HEADER* h, float pitch, bool nointerp);
 EXPORT float* aafc_normalize(float* arr, const AAFC_HEADER* h);
 
+// use if you're using AAFC as a shared library that isn't C/C++
+EXPORT void aafc_nativefree(void* ptr);
+
 #endif // AAFC_H

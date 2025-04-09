@@ -190,3 +190,9 @@ EXPORT float* aafc_resample_data(float* input, unsigned long samplerateoverride,
 EXPORT float* aafc_normalize(float* arr, const AAFC_HEADER* h) {
     return normalize(arr, h);
 }
+
+// LKJDSKLAHNFKJLHSKAJHKJLDFHSKJAHFKLJSA MinGW LKDFHSAJLKFHKLJXHLCKJZHNJKCNHKLJNHakljdhaskh DOTNET fslkhcjkxhzknhclznckjzhnxcz
+// pain and suffering
+EXPORT void aafc_nativefree(void* ptr) {
+    free(ptr);
+}
