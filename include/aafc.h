@@ -41,9 +41,9 @@
 
 typedef struct {
     unsigned short signature, version;
-    unsigned long freq;
+    unsigned int freq;
     unsigned char channels, bps, sampletype;
-    unsigned long samplelength, loopst, loopend;
+    unsigned int samplelength, loopst, loopend;
 } AAFC_HEADER;
 
 typedef struct { // used for older versions
