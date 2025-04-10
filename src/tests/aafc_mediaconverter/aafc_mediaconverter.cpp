@@ -83,16 +83,16 @@ int main(int argc, char* argv[]) {
 	const char* fn = "input.wav";
 	unsigned char outbps = 16;
 	bool usemono = false, nointerp = false, normalize = false;
-	unsigned long batchlength = 0;
+	unsigned int batchlength = 0;
 	char** batchfiles;
 	const char* dirnm;
 	unsigned char sampletype = 1;
-	unsigned long resampleoverride = 0;
+	unsigned int resampleoverride = 0;
 	float pitch = 1;
 	const char* outpath = "aafc_conversions";
 	char* ofn = NULL;
 
-	for (unsigned long i = 1; i < argc; i++) {
+	for (unsigned int i = 1; i < argc; i++) {
 		std::string input = std::string(argv[i]);
 		if (input == "-i" && i + 1 < argc) {
 			fn = argv[++i];
@@ -104,7 +104,7 @@ int main(int argc, char* argv[]) {
 			ofn = argv[++i];
 		}
 		else if (input == "--bps" && i + 1 < argc) {
-			outbps = (unsigned long)std::stof(argv[++i], NULL);
+			outbps = (unsigned char)std::stof(argv[++i], NULL);
 		}
 		else if (input == "-m") {
 			usemono = true;
@@ -136,7 +136,7 @@ int main(int argc, char* argv[]) {
 			printf("Batch converting files from \"%s\"\n", dirnm);
 		}
 		else if (input == "-ar" && i + 1 < argc) {
-			resampleoverride = (unsigned long)std::stof(argv[++i], NULL);
+			resampleoverride = (unsigned int)std::stof(argv[++i], NULL);
 		}
 	}
 	mkdir(outpath, 0755);
@@ -162,7 +162,7 @@ int main(int argc, char* argv[]) {
 
 		mkdir(dirp, 0755);
 
-		for (unsigned long i = 0; i < batchlength; i++) {
+		for (unsigned int i = 0; i < batchlength; i++) {
 			rst = convertmedia(batchfiles[i], concat_path_ext(dirp, filename_without_extension(batchfiles[i]), "aafc"), usemono, normalize, outbps, sampletype, resampleoverride, pitch, nointerp);
 			if (rst.statuscode == -1)
 				continue;

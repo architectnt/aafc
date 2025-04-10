@@ -27,7 +27,7 @@
 
 typedef AAFCDECOUTPUT (*AAFCImport)(const unsigned char*);
 typedef AAFC_HEADER* (*AAFCGetHeader)(const unsigned char*);
-typedef AAFCOUTPUT (*AAFCExport)(float* samples, unsigned long freq, unsigned char channels, unsigned long samplelength, unsigned char bps, unsigned char sampletype, bool forcemono, unsigned long samplerateoverride, bool normalize, float pitch, bool nointerp);
+typedef AAFCOUTPUT (*AAFCExport)(float* samples, unsigned int freq, unsigned char channels, unsigned int samplelength, unsigned char bps, unsigned char sampletype, bool forcemono, unsigned int samplerateoverride, bool normalize, float pitch, bool nointerp);
 
 
 class LibHandler{
@@ -98,7 +98,7 @@ AAFC_HEADER* GrabHeader(const unsigned char* data) {
     return aheader(data);
 }
 
-AAFCOUTPUT ExportAAFC(float* samples, unsigned int freq, unsigned int channels, unsigned int samplelength, unsigned char bps = 16, unsigned char sampletype = 1, bool forcemono = false, unsigned int samplerateoverride = 0, bool normalize = false, float pitch = 1, bool nointerp = false) {
+AAFCOUTPUT ExportAAFC(float* samples, unsigned int freq, unsigned char channels, unsigned int samplelength, unsigned char bps = 16, unsigned char sampletype = 1, bool forcemono = false, unsigned int samplerateoverride = 0, bool normalize = false, float pitch = 1, bool nointerp = false) {
     AAFCExport aexport = LibHandler::getInstance(LIB_AAFC_RPATH).getFunc<AAFCExport>("aafc_export");
     if (aexport == NULL) {
         perror("Could not initialize AAFC functions.");

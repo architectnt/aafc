@@ -18,7 +18,7 @@ void* encode_pcm(float* ptr, const AAFC_HEADER* h, size_t* audsize) {
             unsigned char* const stbs = (unsigned char*)malloc(*audsize);
             memset(stbs, 0, *audsize);
 
-            for (unsigned long i = 0; i < h->samplelength; ptr++, i++)
+            for (unsigned int i = 0; i < h->samplelength; ptr++, i++)
                 *(stbs + (i >> 3)) |= (*ptr > 0) << (i & 7);
             return stbs;
         }
@@ -28,7 +28,7 @@ void* encode_pcm(float* ptr, const AAFC_HEADER* h, size_t* audsize) {
             unsigned char* const stbs = (unsigned char*)malloc(*audsize);
             unsigned char* sptr = stbs;
 
-            for (unsigned long i = 0; i < h->samplelength; ptr += 2, i += 2) {
+            for (unsigned int i = 0; i < h->samplelength; ptr += 2, i += 2) {
                 int smp1 = (int)round(CLAMP(*ptr * 3.0f, -4.0f, 3.0f));
                 smp1 = smp1 < 0 ? smp1 + 8 : smp1;
 
@@ -48,7 +48,7 @@ void* encode_pcm(float* ptr, const AAFC_HEADER* h, size_t* audsize) {
             unsigned char* const stbs = (unsigned char*)malloc(*audsize);
             unsigned char* sptr = stbs;
 
-            for (unsigned long i = 0; i < h->samplelength; ptr += 2, i += 2) {
+            for (unsigned int i = 0; i < h->samplelength; ptr += 2, i += 2) {
                 int smp1 = (int)round(CLAMP(*ptr * 7.0f, -8.0f, 7.0f));
                 smp1 = smp1 < 0 ? smp1 + 16 : smp1;
 
@@ -66,7 +66,7 @@ void* encode_pcm(float* ptr, const AAFC_HEADER* h, size_t* audsize) {
             *audsize = h->samplelength;
             signed char* const stbs = (signed char*)malloc(h->samplelength);
             signed char* sptr = stbs;
-            for (unsigned long i = 0; i < h->samplelength; ptr++, sptr++, i++) {
+            for (unsigned int i = 0; i < h->samplelength; ptr++, sptr++, i++) {
                 *sptr = (signed char)round(CLAMP(*ptr * 127.0f, -128.0f, 127.0f));
             }
             return stbs;
@@ -77,7 +77,7 @@ void* encode_pcm(float* ptr, const AAFC_HEADER* h, size_t* audsize) {
             unsigned char* sptr = stbs;
 
             // i don't know what to say about this
-            for (unsigned long i = 0; i < h->samplelength; i += 4) {
+            for (unsigned int i = 0; i < h->samplelength; i += 4) {
                 int sample1 = (int)round(CLAMP(*(ptr + i) * 511.0f, -512.0f, 511.0f));
                 int sample2 = (i + 1 < h->samplelength) ? (int)round(CLAMP(*(ptr + i + 1) * 511.0f, -512.0f, 511.0f)) : 0;
                 int sample3 = (i + 2 < h->samplelength) ? (int)round(CLAMP(*(ptr + i + 2) * 511.0f, -512.0f, 511.0f)) : 0;
@@ -96,7 +96,7 @@ void* encode_pcm(float* ptr, const AAFC_HEADER* h, size_t* audsize) {
             char* stbs = (char*)malloc(*audsize);
             char* sptr = stbs;
 
-            for (unsigned long i = 0; i < h->samplelength; i += 2) {
+            for (unsigned int i = 0; i < h->samplelength; i += 2) {
                 int sample1 = (int)CLAMP(*(ptr + i) * 2047.0f, -2048.0f, 2047.0f);
                 if (sample1 < 0) sample1 = 0xFFF + sample1 + 1;
 
@@ -114,7 +114,7 @@ void* encode_pcm(float* ptr, const AAFC_HEADER* h, size_t* audsize) {
             *audsize = h->samplelength * sizeof(short);
             short* const stbs = (short*)malloc(*audsize);
             short* sptr = stbs;
-            for (unsigned long i = 0; i < h->samplelength; ptr++, sptr++, i++) {
+            for (unsigned int i = 0; i < h->samplelength; ptr++, sptr++, i++) {
                 *sptr = (short)CLAMP(*ptr * 32767.0f, -32768.0f, 32767.0f);
             }
             return stbs;
@@ -124,7 +124,7 @@ void* encode_pcm(float* ptr, const AAFC_HEADER* h, size_t* audsize) {
             
             char* const stbs = (char*)malloc(*audsize);
             char* sptr = stbs;
-            for (unsigned long i = 0; i < h->samplelength; ptr++, i++) {
+            for (unsigned int i = 0; i < h->samplelength; ptr++, i++) {
                 int spl24 = (int)CLAMP(*ptr * 8388607.0f, -8388608.0f, 8388607.0f);
     
                 if (spl24 < 0) {
@@ -155,14 +155,14 @@ void decode_pcm(const unsigned char* smpraw, float* output, const AAFC_HEADER* h
         case 1: {
             printf("%s", "L O L\n");
             float mixvol = 0.4;
-            for (unsigned long i = 0; i < h->samplelength; i++) {
+            for (unsigned int i = 0; i < h->samplelength; i++) {
                 *output++ = ((*(smpraw + (i >> 3)) >> (i & 7)) & 1) ? mixvol : -mixvol;
             }
             break;
         }
         case 3: {
             printf("%s", "h       a          h          a\n");
-            for (unsigned long i = 0; i < h->samplelength; smpraw++, i += 2) {
+            for (unsigned int i = 0; i < h->samplelength; smpraw++, i += 2) {
                 int smp1 = (*smpraw) & 0x07;
                 if (smp1 > 3) smp1 -= 8;
 
@@ -180,7 +180,7 @@ void decode_pcm(const unsigned char* smpraw, float* output, const AAFC_HEADER* h
         case 4: {
             printf("LOL\n");
             int sp = 0, sl = 0;
-            for (unsigned long i = 0; i < h->samplelength; smpraw++, i += 2) {
+            for (unsigned int i = 0; i < h->samplelength; smpraw++, i += 2) {
                 sp = *smpraw & 0x0F;
                 if (sp > 7) sp -= 16;
                 *output++ = sp * INT4_REC;
@@ -197,7 +197,7 @@ void decode_pcm(const unsigned char* smpraw, float* output, const AAFC_HEADER* h
             break;
         }
         case 10: {
-            for (unsigned long i = 0; i < h->samplelength; output += 4, i += 4) {
+            for (unsigned int i = 0; i < h->samplelength; output += 4, i += 4) {
                 // no comment. D:
                 int sample1 = (*smpraw) | ((*(smpraw + 1) & 0x03) << 8);
                 int sample2 = ((*(smpraw + 1) & 0xFC) >> 2) | ((*(smpraw + 2) & 0x0F) << 6);
@@ -219,7 +219,7 @@ void decode_pcm(const unsigned char* smpraw, float* output, const AAFC_HEADER* h
             break;
         }
         case 12: {
-            for (unsigned long i = 0; i < h->samplelength; output += 2, i += 2) {
+            for (unsigned int i = 0; i < h->samplelength; output += 2, i += 2) {
                 int sample1 = (*smpraw | ((*(smpraw + 1) & 0x0F) << 8)) & 0xFFF;
 
                 if (sample1 & 0x800) sample1 |= 0xFFFFF000;
@@ -241,7 +241,7 @@ void decode_pcm(const unsigned char* smpraw, float* output, const AAFC_HEADER* h
             break;
         }
         case 24: {
-            for (unsigned long i = 0; i < h->samplelength; output++, i++) {
+            for (unsigned int i = 0; i < h->samplelength; output++, i++) {
                 int s24 = (int)((*(smpraw + 3 * i)) & 0xFF) | ((int)(*(smpraw + 3 * i + 1)) & 0xFF) << 8 | ((int)(*(smpraw + 3 * i + 2)) & 0xFF) << 16;
                 if (s24 & 0x800000) {
                     s24 |= 0xFF000000;

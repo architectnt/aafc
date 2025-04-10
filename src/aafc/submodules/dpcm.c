@@ -16,7 +16,7 @@ unsigned char* encode_dpcm(float* ptr, const AAFC_HEADER* h, size_t* audsize) {
     memset(dpcm, 0, *audsize);
 
     unsigned char sum = 63;
-    for (unsigned long i = 0; i < h->samplelength; ptr++, i++) {
+    for (unsigned int i = 0; i < h->samplelength; ptr++, i++) {
         unsigned char next = (unsigned char)(CLAMP((*ptr + 1.0f) * 63.5f, 0.0f, 255.0f));
         if (next > sum) {
             *(dpcm + (i >> 3)) |= 1 << (i & 7);
@@ -34,7 +34,7 @@ unsigned char* encode_dpcm(float* ptr, const AAFC_HEADER* h, size_t* audsize) {
 
 void decode_dpcm(const unsigned char* input, float* output, const AAFC_HEADER* h) {
     signed char sum = 0;
-    for (unsigned long i = 0; i < h->samplelength; i++) {
+    for (unsigned int i = 0; i < h->samplelength; i++) {
         sum += ((*(input + (i >> 3)) >> (i & 7)) & 1) ? 1 : -1;
         sum = sum < -0x40 ? -0x40 : sum > 0x3F ? 0x3F : sum;
         *output++ = sum * INT7_REC;

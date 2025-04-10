@@ -82,13 +82,13 @@ bool header_valid(const unsigned char* bytes);
 // Exports
 EXPORT unsigned short aafc_getversion();
 EXPORT AAFC_HEADER* aafc_getheader(const unsigned char* bytes);
-EXPORT AAFCOUTPUT aafc_export(float* samples, unsigned long freq, unsigned char channels, unsigned long samplelength, unsigned char bps, unsigned char sampletype, bool forcemono, unsigned long samplerateoverride, bool nm, float pitch, bool nointerp);
+EXPORT AAFCOUTPUT aafc_export(float* samples, unsigned int freq, unsigned char channels, unsigned int samplelength, unsigned char bps, unsigned char sampletype, bool forcemono, unsigned int samplerateoverride, bool nm, float pitch, bool nointerp);
 EXPORT AAFCDECOUTPUT aafc_import(const unsigned char* bytes);
 
 EXPORT void* aafc_float_to_int(float* arr, long size, unsigned char type);
 EXPORT void* aafc_int_to_float(void* arr, long size, unsigned char type);
 
-EXPORT float* aafc_resample_data(float* input, unsigned long samplerateoverride, AAFC_HEADER* h, float pitch, bool nointerp);
+EXPORT float* aafc_resample_data(float* input, unsigned int samplerateoverride, AAFC_HEADER* h, float pitch, bool nointerp);
 EXPORT float* aafc_normalize(float* arr, const AAFC_HEADER* h);
 
 // use if you're using AAFC as a shared library that isn't used in a C/C++ project

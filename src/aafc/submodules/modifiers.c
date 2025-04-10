@@ -13,11 +13,11 @@
 void forceMono(float* input, AAFC_HEADER* h) {
     if (h->channels < 2) return;
 
-    const unsigned long splen = h->samplelength / h->channels;
+    const unsigned int splen = h->samplelength / h->channels;
     unsigned char chn;
     float accu;
     const float scale = 1.0f / h->channels;
-    for (unsigned long i = 0; i < splen; i++)
+    for (unsigned int i = 0; i < splen; i++)
     {
         for (chn = 0, accu = 0; chn < h->channels; chn++)
             accu += *(input + (i * h->channels + chn));
@@ -27,7 +27,7 @@ void forceMono(float* input, AAFC_HEADER* h) {
     h->channels = 1;
 }
 
-float* resampleAudio(float* input, AAFC_HEADER* header, unsigned long samplerateoverride, float pitch, bool nointerp) {
+float* resampleAudio(float* input, AAFC_HEADER* header, unsigned int samplerateoverride, float pitch, bool nointerp) {
     if (header == NULL) {
         return NULL;
     }
@@ -42,10 +42,10 @@ float* resampleAudio(float* input, AAFC_HEADER* header, unsigned long samplerate
         samplerateoverride = header->freq;
 
     const double ratio = ((double)samplerateoverride / header->freq) / pitch, iratio = 1.0 / ratio;
-    const unsigned long splen = header->samplelength / header->channels,
-        resampledlen = (unsigned long)(header->samplelength * ratio),
-        resampledlenc = (unsigned long)(splen * ratio);
-    unsigned long i, ind, idx0;
+    const unsigned int splen = header->samplelength / header->channels,
+        resampledlen = (unsigned int)(header->samplelength * ratio),
+        resampledlenc = (unsigned int)(splen * ratio);
+    unsigned int i, ind, idx0;
     double oindx, mu;
 
     float* rsmpled = (float*)malloc(resampledlen * sizeof(float));
@@ -53,7 +53,7 @@ float* resampleAudio(float* input, AAFC_HEADER* header, unsigned long samplerate
 
     if (nointerp) { // eh whatevs we save the branch predictor anyways
         for (i = 0; i < resampledlenc; i++) {
-            ind = (unsigned long)(i * iratio),
+            ind = (unsigned int)(i * iratio),
                 idx0 = (ind < splen) ? ind : splen - 1;
 
             for (unsigned char ch = 0; ch < header->channels; ch++)
@@ -63,10 +63,10 @@ float* resampleAudio(float* input, AAFC_HEADER* header, unsigned long samplerate
     else {
         for (i = 0; i < resampledlenc; i++) {
             oindx = i * iratio;
-            idx0 = (unsigned long)oindx;
+            idx0 = (unsigned int)oindx;
             mu = oindx - idx0;
 
-            const unsigned long i0 = (idx0 > 0 ? idx0 - 1 : 0),
+            const unsigned int i0 = (idx0 > 0 ? idx0 - 1 : 0),
                 i1 = (idx0 + 1 < splen ? idx0 + 1 : splen - 1),
                 i2 = (idx0 + 2 < splen ? idx0 + 2 : splen - 1);
 
@@ -90,8 +90,8 @@ float* resampleAudio(float* input, AAFC_HEADER* header, unsigned long samplerate
 float* forceIndependentChannels(float* input, const AAFC_HEADER* h) {
     float* output = (float*)malloc(h->samplelength * sizeof(float));
 
-    const unsigned long splen = h->samplelength / h->channels;
-    unsigned long i;
+    const unsigned int splen = h->samplelength / h->channels;
+    unsigned int i;
     for (unsigned char ch = 0; ch < h->channels; ch++) {
         for (i = 0; i < splen; i++)
             *(output + (i + splen * ch)) = *(input + (i * h->channels + ch));
@@ -130,9 +130,9 @@ float* forceInterleaveChannels(float* input, const AAFC_HEADER* h) {
     if (!output)
         return NULL;
 
-    unsigned long splen = h->samplelength / h->channels;
+    unsigned int splen = h->samplelength / h->channels;
     unsigned char ch;
-    for (unsigned long i = 0; i < splen; i++) {
+    for (unsigned int i = 0; i < splen; i++) {
         for (ch = 0; ch < h->channels; ch++)
             *(output + (i * h->channels + ch)) = *(input + (i + splen * ch));
     }

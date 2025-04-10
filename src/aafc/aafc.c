@@ -19,7 +19,7 @@ EXPORT AAFC_HEADER* aafc_getheader(const unsigned char* bytes) {
     return header_valid(bytes) ? (AAFC_HEADER*)bytes : NULL;
 }
 
-EXPORT AAFCOUTPUT aafc_export(float* samples, unsigned long freq, unsigned char channels, unsigned long samplelength, unsigned char bps, unsigned char sampletype, bool forcemono, unsigned long samplerateoverride, bool nm, float pitch, bool nointerp) {
+EXPORT AAFCOUTPUT aafc_export(float* samples, unsigned int freq, unsigned char channels, unsigned int samplelength, unsigned char bps, unsigned char sampletype, bool forcemono, unsigned int samplerateoverride, bool nm, float pitch, bool nointerp) {
     AAFCOUTPUT output = {0,NULL};
     if (!samples || bps == 0 || sampletype == 0 || samplelength < 1) {
         printf("%s", "AAFC FATAL ERROR: invalid parameters\nensure samples, bps, sampletype and samplelength are set\n");
@@ -183,7 +183,7 @@ EXPORT void* aafc_int_to_float(void* arr, long size, unsigned char type) {
     return csmpl;
 }
 
-EXPORT float* aafc_resample_data(float* input, unsigned long samplerateoverride, AAFC_HEADER* h, float pitch, bool nointerp) {
+EXPORT float* aafc_resample_data(float* input, unsigned int samplerateoverride, AAFC_HEADER* h, float pitch, bool nointerp) {
     return resampleAudio(input, h, samplerateoverride, pitch, nointerp);
 }
 

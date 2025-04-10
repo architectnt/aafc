@@ -16,14 +16,14 @@
 #include <aafc.h>
 #include <tests.h>
 
-unsigned long sysfreq;
+unsigned int sysfreq;
 unsigned char syschan;
 
 AAFCDECOUTPUT outp;
 double ipos = 0;
 bool finished = false;
 double totalDurationInSeconds;
-unsigned long splen;
+unsigned int splen;
 
 static inline double lerp(double a, double b, double t) {
 	return a + (b - a) * CLAMP(t, 0.0, 1.0);
@@ -36,7 +36,7 @@ static int AudioHandler(const void* inp, void* otp, unsigned long frames, const 
 	float* outspl = (float*)otp;
 	unsigned char ch;
 	const double scal = (double)outp.header.freq / sysfreq;
-	for (unsigned long i = 0; i < frames; i++) {
+	for (unsigned int i = 0; i < frames; i++) {
 		for(ch = 0; ch < syschan; ch++) {
 			float smpl = 0;
 			if(!finished) {
@@ -46,7 +46,7 @@ static int AudioHandler(const void* inp, void* otp, unsigned long frames, const 
 					finished = true;
 				}
 
-				unsigned long index = (unsigned long)spos,
+				unsigned int index = (unsigned int)spos,
 					nxind = (index + 1) % outp.header.samplelength;
 				double w = (spos - index);
 				

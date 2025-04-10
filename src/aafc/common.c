@@ -30,8 +30,8 @@ float smoothInterpolate(float y0, float y1, float y2, float y3, double t) {
 
 unsigned char minifloat(float val) {
     if (val == 0.0f) return 0;
-    unsigned long bits = *(unsigned long*)&val;
-    unsigned long sgn = (bits >> 31) & 0x01;
+    unsigned int bits = *(unsigned int*)&val;
+    unsigned int sgn = (bits >> 31) & 0x01;
     int exp = ((bits >> 23) & 0xFF) - 127 + 6;
     exp = (exp > 15) ? 15 : (exp < 0) ? 0 : exp;
     unsigned int fraction;
@@ -47,8 +47,8 @@ unsigned char minifloat(float val) {
 }
 
 unsigned short halfpercision(float val) {
-    unsigned long eger = *(unsigned int*)&val; // int eger (humor)
-    unsigned long sgn = (eger >> 31) & 0x1;
+    unsigned int eger = *(unsigned int*)&val; // int eger (humor)
+    unsigned int sgn = (eger >> 31) & 0x1;
     int exp = ((eger >> 23) & 0xFF) - 127 + 15;
     int mantissa = eger & 0x7FFFFF;
     int overflow = (exp >= 31) ? 1 : 0;
@@ -88,5 +88,5 @@ bool header_valid(const unsigned char* bytes) {
 }
 
 bool legacy_header_valid(const unsigned char* bytes) {
-    return bytes != NULL && *(const unsigned int*)bytes == (unsigned long)LEGACYHEADER && *((unsigned long*)bytes + 2) <= AAFCVERSION;
+    return bytes != NULL && *(const unsigned int*)bytes == (unsigned int)LEGACYHEADER && *((unsigned int*)bytes + 2) <= AAFCVERSION;
 }

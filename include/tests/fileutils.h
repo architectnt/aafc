@@ -15,7 +15,7 @@
 #include <dirent.h>
 #endif
 
-static char** list_files(const char* dir, unsigned long* len) {
+static char** list_files(const char* dir, unsigned int* len) {
 	char** files = NULL;
 	*len = 0;
 	char afp[512];
