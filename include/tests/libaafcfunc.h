@@ -34,7 +34,7 @@ static void UnloadAAFC() {
 #ifdef _WIN32
         FreeLibrary((HMODULE)afh);
 #else
-        dlclose(instance.handle);
+        dlclose(afh);
 #endif
         afh = NULL;
     }

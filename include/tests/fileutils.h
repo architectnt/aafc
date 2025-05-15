@@ -42,7 +42,7 @@ static char** list_files(const char* dir, unsigned int* len) {
 
 #else
 	DIR* dirc;
-	dirent* entry;
+	struct dirent* entry;
 
 	if (!(dirc = opendir(dir)))
 		return NULL;
