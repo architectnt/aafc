@@ -5,8 +5,6 @@
 */
 
 #include <aafc.h>
-#include <string>
-#include <iostream>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -25,72 +23,74 @@
 #ifndef LIBAAFCFUNC_H
 #define LIBAAFCFUNC_H 1
 
+void* afh;
+
 typedef AAFCDECOUTPUT (*AAFCImport)(const unsigned char*);
 typedef AAFC_HEADER* (*AAFCGetHeader)(const unsigned char*);
 typedef AAFCOUTPUT (*AAFCExport)(float* samples, unsigned int freq, unsigned char channels, unsigned int samplelength, unsigned char bps, unsigned char sampletype, bool forcemono, unsigned int samplerateoverride, bool normalize, float pitch, bool nointerp);
 
-
-class LibHandler{
-private:
-    void* handle;
-
-    LibHandler(const char* path) : handle(nullptr) {
+static void UnloadAAFC() {
+    if (afh) {
 #ifdef _WIN32
-        handle = LoadLibrary(path);
+        FreeLibrary((HMODULE)afh);
 #else
-        handle = dlopen(path, RTLD_LAZY);
+        dlclose(instance.handle);
 #endif
-        if (!handle) std::cerr << "couldn't load libary: " << path << std::endl;
+        afh = NULL;
     }
+}
 
-    ~LibHandler() {
-        if (handle) {
+static int LoadAAFCLib() {
 #ifdef _WIN32
-            FreeLibrary((HMODULE)handle);
+    afh = LoadLibraryA(LIB_AAFC_RPATH);
 #else
-            dlclose(handle);
+    afh = dlopen(LIB_AAFC_RPATH, RTLD_LAZY);
 #endif
-        }
+    if (afh) {
+        atexit(UnloadAAFC);
+        return 1;
     }
-
-    LibHandler(const LibHandler&) = delete;
-    LibHandler& operator=(const LibHandler&) = delete;
-public:
-    static LibHandler& getInstance(const char* path) {
-        static LibHandler instance(path);
-        return instance;
+    else {
+        fprintf(stderr, "%s", "failed to load aafc.\n");
+        return 0;
     }
+}
 
-    // o        h                .                   .
-    template<typename T> T getFunc(const char* name) {
-        if (!handle)
-            return nullptr;
+void* LoadAAFCFunc(void* handle, const char* n) {
+    if (!afh) {
+        fprintf(stderr, "%s", "AAFC is NOT loaded! Please call LoadAAFCLib() before you call LoadAAFCFunc().\n");
+        return NULL;
+    }
 #ifdef _WIN32
-        T func = (T)GetProcAddress((HMODULE)handle, name);
-        if (!func) std::cerr << "function get failure: " << name << std::endl;
-#else
-        T func = (T)dlsym(handle, name);
-        const char* error = dlerror();
-        if (error) {
-            std::cerr << "function get failure: " << name << " - " << error << std::endl;
-            func = nullptr;
-        }
-#endif
-        return func;
+    FARPROC func = GetProcAddress((HMODULE)afh, n);
+    if (!func) {
+        fprintf(stderr, "AAFC func get error: %s\n", n);
+        return NULL;
     }
-};
+    return (void*)func;
+#else
+    dlerror(); // Clear previous errors
+    void* func = dlsym(afh, n);
+    const char* error = dlerror();
+    if (error) {
+        fprintf(stderr, "AAFC func get error: %s\n(%s)\n", n, error);
+        return NULL;
+    }
+    return func;
+#endif
+}
 
 AAFCDECOUTPUT LoadAAFC(const unsigned char* data) {
-    AAFCImport aimport = LibHandler::getInstance(LIB_AAFC_RPATH).getFunc<AAFCImport>("aafc_import");
+    AAFCImport aimport = (AAFCImport)LoadAAFCFunc(afh, "aafc_import");
     if (!aimport) {
         perror("Could not initialize AAFC functions.");
-        return {};
+        return (AAFCDECOUTPUT) { (AAFC_HEADER) { 0 }, NULL };
     }
     return aimport(data);
 }
 
 AAFC_HEADER* GrabHeader(const unsigned char* data) {
-    AAFCGetHeader aheader = LibHandler::getInstance(LIB_AAFC_RPATH).getFunc<AAFCGetHeader>("aafc_getheader");
+    AAFCGetHeader aheader = (AAFCGetHeader)LoadAAFCFunc(afh, "aafc_getheader");
     if (aheader == NULL) {
         perror("Could not initialize AAFC functions.");
         return NULL;
@@ -98,11 +98,11 @@ AAFC_HEADER* GrabHeader(const unsigned char* data) {
     return aheader(data);
 }
 
-AAFCOUTPUT ExportAAFC(float* samples, unsigned int freq, unsigned char channels, unsigned int samplelength, unsigned char bps = 16, unsigned char sampletype = 1, bool forcemono = false, unsigned int samplerateoverride = 0, bool normalize = false, float pitch = 1, bool nointerp = false) {
-    AAFCExport aexport = LibHandler::getInstance(LIB_AAFC_RPATH).getFunc<AAFCExport>("aafc_export");
+AAFCOUTPUT ExportAAFC(float* samples, unsigned int freq, unsigned char channels, unsigned int samplelength, unsigned char bps, unsigned char sampletype, bool forcemono, unsigned int samplerateoverride, bool normalize, float pitch, bool nointerp) {
+    AAFCExport aexport = (AAFCExport)LoadAAFCFunc(afh, "aafc_export");
     if (aexport == NULL) {
         perror("Could not initialize AAFC functions.");
-        return {0, nullptr};
+        return (AAFCOUTPUT){0, NULL};
     }
     return aexport(samples, freq, channels, samplelength, bps, sampletype, forcemono, samplerateoverride, normalize, pitch, nointerp);
 }

@@ -119,11 +119,11 @@ static char* filename_without_extension(const char* path) {
 	return result;
 }
 
-static AAFCOUTPUT ReadFile(const char* path) {
+static AAFCOUTPUT ReadAAFCFile(const char* path) {
 	FILE* file = fopen(path, "rb");
 	if (file == NULL) {
 		perror("cant open aafc file :(");
-		return {};
+		return (AAFCOUTPUT) { 0, NULL };
 	}
 
 	fseek(file, 0, SEEK_END);
@@ -134,15 +134,15 @@ static AAFCOUTPUT ReadFile(const char* path) {
 	if (data == NULL) {
 		perror("MEMORY ALLOC INTERNAL ERROR");
 		fclose(file);
-		return {};
+		return (AAFCOUTPUT) { 0, NULL };
 	}
 
 	if (fread(data, 1, fsize, file) != fsize) {
 		perror("error trying to load the file");
 		fclose(file);
-		return {};
+		return (AAFCOUTPUT) { 0, NULL };
 	}
 
 	fclose(file);
-	return {fsize, data};
+	return (AAFCOUTPUT) {fsize, data};
 }

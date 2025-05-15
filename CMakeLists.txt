@@ -132,10 +132,10 @@ if(BUILD_TOOLS) # insane
 		include/tests/libaafcfunc.h
 	)
 
-	add_executable(plyr ${toolsinc} ${aafcheadr} src/tests/aafc_player/aafc_player.cpp)
+	add_executable(plyr ${toolsinc} ${aafcheadr} src/tests/aafc_player/aafc_player.c)
 	target_link_libraries(plyr PRIVATE portaudio_static)
 
-	add_executable(aud2aafc ${toolsinc} ${aafcheadr} src/tests/aafc_mediaconverter/aafc_mediaconverter.cpp)
+	add_executable(aud2aafc ${toolsinc} ${aafcheadr} src/tests/aafc_mediaconverter/aafc_mediaconverter.c)
 	target_link_libraries(aud2aafc PRIVATE SndFile::sndfile)
 
 	include_directories(${aafc_SOURCE_DIR}/include)

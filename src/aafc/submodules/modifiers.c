@@ -46,7 +46,7 @@ float* resampleAudio(float* input, AAFC_HEADER* header, unsigned int samplerateo
         resampledlen = (unsigned int)(header->samplelength * ratio),
         resampledlenc = (unsigned int)(splen * ratio);
     unsigned int i, ind, idx0;
-    double oindx, mu;
+    double mu;
 
     float* rsmpled = (float*)malloc(resampledlen * sizeof(float));
     if (!rsmpled) return input;
@@ -61,10 +61,12 @@ float* resampleAudio(float* input, AAFC_HEADER* header, unsigned int samplerateo
         }
     }
     else {
+        const double step = (header->freq * pitch) / (double)samplerateoverride;
+        const uint64_t pstep = (uint64_t)(step * (1LL<<32) + 0.5);
+        uint64_t p = 0;
         for (i = 0; i < resampledlenc; i++) {
-            oindx = i * iratio;
-            idx0 = (unsigned int)oindx;
-            mu = oindx - idx0;
+            idx0 = p >> 32;
+            mu = (double)(p & 0xFFFFFFFF) / (1LL<<32);
 
             const unsigned int i0 = (idx0 > 0 ? idx0 - 1 : 0),
                 i1 = (idx0 + 1 < splen ? idx0 + 1 : splen - 1),
@@ -78,6 +80,7 @@ float* resampleAudio(float* input, AAFC_HEADER* header, unsigned int samplerateo
                     input[i2 * header->channels + ch],
                     mu
                 );
+            p += pstep;
         }
     }
 
