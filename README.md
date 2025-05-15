@@ -30,9 +30,16 @@ your average cmake project **:D**\
 *(make sure you have cmake installed)*
 
 ### WINDOWS - MSVC
-This works best with Visual Studio instead of building through CLI as of now.\
 ``Open a local folder > somewhere where AAFC is located > Select Folder``\
 ``Build > Install``
+
+### WINDOWS - MinGW
+```
+mkdir build
+cd build
+cmake -G "MinGW Makefiles" ..
+mingw32-make
+```
 
 ### Unix-like
 ```
