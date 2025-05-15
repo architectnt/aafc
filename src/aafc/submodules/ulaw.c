@@ -8,6 +8,7 @@
 
 #include <aafc.h>
 #include "ulaw.h"
+#include "../helpers.h"
 
 unsigned char* encode_ulaw(float* ptr, const AAFC_HEADER* h, size_t* audsize) {
     *audsize = h->samplelength;

@@ -9,6 +9,8 @@
 
 #include <aafc.h>
 #include "dpcm.h"
+#include "../helpers.h"
+#include "../common.h"
 
 unsigned char* encode_dpcm(float* ptr, const AAFC_HEADER* h, size_t* audsize) {
     *audsize = ((size_t)h->samplelength + 7) / 8;

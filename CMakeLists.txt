@@ -50,12 +50,12 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 set(aafcheadr 
 	include/aafc.h
-	include/aafc/common.h
-	include/aafc/helpers.h
 )
 
 set(AAFC_SRC
 	${aafcheadr}
+	src/aafc/common.h
+	src/aafc/helpers.h
 	src/aafc/aafc.c
 	src/aafc/lib.h
 

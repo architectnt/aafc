@@ -9,6 +9,8 @@
 
 #include <aafc.h>
 #include "sfpcm.h"
+#include "../helpers.h"
+#include "../common.h"
 
 void* encode_sfpcm(float* ptr, const AAFC_HEADER* h, size_t* audsize) {
     switch (h->bps) {

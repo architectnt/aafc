@@ -13,8 +13,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include <aafc/helpers.h>
-#include <aafc/common.h>
 
 
 #ifdef _WIN32

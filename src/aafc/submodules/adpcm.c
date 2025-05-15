@@ -9,6 +9,8 @@
 
 #include <aafc.h>
 #include "adpcm.h"
+#include "../helpers.h"
+#include "../common.h"
 
 signed char* encode_adpcm(float* ptr, const AAFC_HEADER* h, size_t* audsize) {
     *audsize = h->samplelength / 2;

@@ -9,6 +9,8 @@
 
 #include <aafc.h>
 #include "pcm.h"
+#include "../helpers.h"
+#include "../common.h"
 
 void* encode_pcm(float* ptr, const AAFC_HEADER* h, size_t* audsize) {
     switch (h->bps) {

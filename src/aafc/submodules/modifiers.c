@@ -9,6 +9,7 @@
 
 #include <aafc.h>
 #include "modifiers.h"
+#include "../common.h"
 
 void forceMono(float* input, AAFC_HEADER* h) {
     if (h->channels < 2) return;

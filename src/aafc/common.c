@@ -9,6 +9,7 @@
 
 
 #include <aafc.h>
+#include "common.h"
 
 float dhalf(unsigned short val) {
     if (val == 0) return 0.0f;

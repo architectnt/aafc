@@ -69,7 +69,7 @@ void* LoadAAFCFunc(void* handle, const char* n) {
     }
     return (void*)func;
 #else
-    dlerror(); // Clear previous errors
+    dlerror();
     void* func = dlsym(afh, n);
     const char* error = dlerror();
     if (error) {

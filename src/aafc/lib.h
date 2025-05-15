@@ -4,6 +4,8 @@
 */
 
 #include <aafc.h>
+#include "helpers.h"
+#include "common.h"
 #include "submodules/adpcm.h"
 #include "submodules/dpcm.h"
 #include "submodules/pcm.h"
