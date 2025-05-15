@@ -31,16 +31,11 @@ void* encode_pcm(float* ptr, const AAFC_HEADER* h, size_t* audsize) {
             unsigned char* sptr = stbs;
 
             for (unsigned int i = 0; i < h->samplelength; ptr += 2, i += 2) {
-                int smp1 = (int)round(CLAMP(*ptr * 3.0f, -4.0f, 3.0f));
-                smp1 = smp1 < 0 ? smp1 + 8 : smp1;
-
-                int smp2 = 0;
-                if (i + 1 < h->samplelength) {
-                    smp2 = (int)round(CLAMP(*(ptr + 1) * 3.0f, -4.0f, 3.0f));
-                    smp2 = smp2 < 0 ? smp2 + 8 : smp2;
-                }
-
-                *sptr++ = (smp1 & 0x07) | ((smp2 & 0x07) << 3);
+                unsigned char smp1 = (int)round(CLAMP(*ptr * 3.0f, -4.0f, 3.0f)) & 0x07;
+                unsigned char smp2 = ((i + 1 < h->samplelength)
+                    ? (int)round(CLAMP(*(ptr + 1) * 3.0f, -4.0f, 3.0f))
+                    : 0) & 0x07;
+                *sptr++ = (smp1) | (smp2 << 3);
             }
             return stbs;
         }
@@ -51,16 +46,12 @@ void* encode_pcm(float* ptr, const AAFC_HEADER* h, size_t* audsize) {
             unsigned char* sptr = stbs;
 
             for (unsigned int i = 0; i < h->samplelength; ptr += 2, i += 2) {
-                int smp1 = (int)round(CLAMP(*ptr * 7.0f, -8.0f, 7.0f));
-                smp1 = smp1 < 0 ? smp1 + 16 : smp1;
+                unsigned char smp1 = (int)round(CLAMP(*ptr * 7.0f, -8.0f, 7.0f)) & 0x0F;
+                unsigned char smp2 = ((i + 1 < h->samplelength) 
+                    ? (int)round(CLAMP(*(ptr + 1) * 7.0f, -8.0f, 7.0f)) 
+                    : 0) & 0x0F;
 
-                int smp2 = 0;
-                if (i + 1 < h->samplelength) {
-                    smp2 = (int)round(CLAMP(*(ptr + 1) * 7.0f, -8.0f, 7.0f));
-                    smp2 = smp2 < 0 ? smp2 + 16 : smp2;
-                }
-
-                *sptr++ = (smp1 & 0x0F) | (smp2 << 4);
+                *sptr++ = (smp1) | (smp2 << 4);
             }
             return stbs;
         }
@@ -99,16 +90,15 @@ void* encode_pcm(float* ptr, const AAFC_HEADER* h, size_t* audsize) {
             char* sptr = stbs;
 
             for (unsigned int i = 0; i < h->samplelength; i += 2) {
-                int sample1 = (int)CLAMP(*(ptr + i) * 2047.0f, -2048.0f, 2047.0f);
-                if (sample1 < 0) sample1 = 0xFFF + sample1 + 1;
+                short s1 = (short)CLAMP(*(ptr + i) * 2047.0f, -2048.0f, 2047.0f) & 0xFFF;
 
+                short s2 = ((i < h->samplelength) 
+                    ? (short)CLAMP(*(ptr + i + 1) * 2047.0f, -2048.0f, 2047.0f) 
+                    : 0) & 0xFFF;
 
-                int sample2 = (i < h->samplelength) ? (int)CLAMP(*(ptr + i + 1) * 2047.0f, -2048.0f, 2047.0f) : 0;
-                if (sample2 < 0) sample1 = 0xFFF + sample1 + 1;
-
-                *sptr++ = (sample1 & 0xFF);
-                *sptr++ = ((sample1 >> 8) & 0x0F) | ((sample2 & 0x0F) << 4);
-                *sptr++ = (sample2 >> 4);
+                *sptr++ = (s1 & 0xFF);
+                *sptr++ = ((s1 >> 8) & 0x0F) | ((s2 & 0x0F) << 4);
+                *sptr++ = (s2 >> 4) & 0xFF;
             }
             return stbs;
         }
@@ -127,15 +117,10 @@ void* encode_pcm(float* ptr, const AAFC_HEADER* h, size_t* audsize) {
             char* const stbs = (char*)malloc(*audsize);
             char* sptr = stbs;
             for (unsigned int i = 0; i < h->samplelength; ptr++, i++) {
-                int spl24 = (int)CLAMP(*ptr * 8388607.0f, -8388608.0f, 8388607.0f);
-    
-                if (spl24 < 0) {
-                   spl24 = 0xFFFFFF + spl24 + 1;
-                }
-
-                *sptr++ = (spl24 & 0xFF);
-                *sptr++ = ((spl24 >> 8) & 0xFF);
-                *sptr++ = ((spl24 >> 16) & 0xFF);
+                int s = (int)CLAMP(*ptr * 8388607.0f, -8388608.0f, 8388607.0f) & 0xFFFFF;
+                *sptr++ = (s & 0xFF);
+                *sptr++ = ((s >> 8) & 0xFF);
+                *sptr++ = ((s >> 16) & 0xFF);
             }
             return stbs;
         }
@@ -156,7 +141,7 @@ void decode_pcm(const unsigned char* smpraw, float* output, const AAFC_HEADER* h
     switch (h->bps) {
         case 1: {
             printf("%s", "L O L\n");
-            float mixvol = 0.4;
+            float mixvol = 0.4; // save your hearing.
             for (unsigned int i = 0; i < h->samplelength; i++) {
                 *output++ = ((*(smpraw + (i >> 3)) >> (i & 7)) & 1) ? mixvol : -mixvol;
             }
@@ -164,24 +149,20 @@ void decode_pcm(const unsigned char* smpraw, float* output, const AAFC_HEADER* h
         }
         case 3: {
             printf("%s", "h       a          h          a\n");
+            signed char sp = 0, sl = 0;
             for (unsigned int i = 0; i < h->samplelength; smpraw++, i += 2) {
-                int smp1 = (*smpraw) & 0x07;
-                if (smp1 > 3) smp1 -= 8;
-
-                *output++ = smp1 * INT3_REC;
-
-                if (i + 1 < h->samplelength) {
-                    int smp2 = ((*smpraw) >> 3) & 0x07;
-                    if (smp2 > 3) smp2 -= 8;
-
-                    *output++ = smp2 * INT3_REC;
-                }
+                sp = *smpraw & 0x07;
+                if (sp > 3) sp -= 8;
+                *output++ = sp * INT3_REC;
+                sl = (*smpraw >> 3) & 0x07;
+                if (sl > 3) sl -= 8;
+                *output++ = sl * INT3_REC;
             }
             break;
         }
         case 4: {
             printf("LOL\n");
-            int sp = 0, sl = 0;
+            signed char sp = 0, sl = 0;
             for (unsigned int i = 0; i < h->samplelength; smpraw++, i += 2) {
                 sp = *smpraw & 0x0F;
                 if (sp > 7) sp -= 16;
