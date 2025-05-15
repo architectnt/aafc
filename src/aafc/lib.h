@@ -15,10 +15,15 @@
 
 static inline void* allocSampleType(OUTPUTTYPE type, unsigned int sampleCount) {
 	switch (type) {
-		case OUTPUT_T_FLOAT: return malloc(sampleCount * sizeof(float));
-		case OUTPUT_T_UNSIGNED_BYTE: return malloc(sampleCount);
-		case OUTPUT_T_BYTE: return malloc(sampleCount);
-		case OUTPUT_T_SHORT: return malloc(sampleCount * sizeof(short));
-		case OUTPUT_T_INT: return malloc(sampleCount * sizeof(int));
+		case OUTPUT_T_FLOAT: 
+			return (float*)malloc(sampleCount * sizeof(float));
+		case OUTPUT_T_UNSIGNED_BYTE:
+			return (unsigned char*)malloc(sampleCount);
+		case OUTPUT_T_BYTE: 
+			return (signed char*)malloc(sampleCount);
+		case OUTPUT_T_SHORT: 
+			return (short*)malloc(sampleCount * sizeof(short));
+		case OUTPUT_T_INT: 
+			return (int*)malloc(sampleCount * sizeof(int));
 	}
 };

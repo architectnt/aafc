@@ -28,9 +28,9 @@ EXPORT AAFCOUTPUT aafc_export(float* samples, unsigned int freq, unsigned char c
     if (pitch == 0) pitch = 1;
     AAFC_HEADER header = (AAFC_HEADER){
         AAFC_SIGNATURE, AAFCVERSION,
-            freq,
-            channels, bps, sampletype,
-            samplelength, 0, 0
+        freq,
+        channels, bps, sampletype,
+        samplelength, 0, 0
     };
 
     float* rsptr = samples;
@@ -67,8 +67,9 @@ EXPORT AAFCOUTPUT aafc_export(float* samples, unsigned int freq, unsigned char c
     output.size = sizeof(AAFC_HEADER) + audsize;
     output.data = (unsigned char*)malloc(output.size);
 
-    memcpy(output.data, &header, sizeof(AAFC_HEADER));
+    *(AAFC_HEADER*)output.data = header;
     memcpy(output.data + sizeof(AAFC_HEADER), smpl, audsize);
+
     free(smpl);
     if (rsptr != samples) free(rsptr);
     rsptr = NULL;
