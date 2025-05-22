@@ -3,7 +3,7 @@
     This file is a part of AAFC and is licenced under the MIT Licence.
 */
 
-#include <aafc.h>
+#include "aafc.h"
 #include "helpers.h"
 #include "common.h"
 #include "submodules/adpcm.h"

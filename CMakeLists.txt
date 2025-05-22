@@ -24,7 +24,7 @@ function(msvc_set_flags)
 endfunction()
 
 function(gcc_clang_set_flags)
-    set(RELFLAGS "-O3 -flto -s")
+    set(RELFLAGS "-O3 -flto=auto -s")
     set(DFLAGS "-g")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fvisibility=hidden" PARENT_SCOPE)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hidden" PARENT_SCOPE)
@@ -48,12 +48,8 @@ endif()
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-set(aafcheadr 
-	include/aafc.h
-)
-
 set(AAFC_SRC
-	${aafcheadr}
+	src/aafc/aafc.h
 	src/aafc/common.h
 	src/aafc/helpers.h
 	src/aafc/aafc.c
@@ -93,8 +89,6 @@ add_library(AAFC::aafc ALIAS aafc)
 
 target_include_directories(aafc
 	PUBLIC
-		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
 		$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 	PRIVATE
 		src
@@ -102,7 +96,7 @@ target_include_directories(aafc
 )
 
 set_target_properties(aafc PROPERTIES
-	PUBLIC_HEADER "${aafcheadr}"
+	PREFIX "" # un "lib"aafc
 )
 
 if(BUILD_TOOLS) # insane
@@ -127,19 +121,15 @@ if(BUILD_TOOLS) # insane
 	FetchContent_MakeAvailable(libsndfile)
 
 	set(toolsinc
-		include/tests.h
-		include/tests/fileutils.h
-		include/tests/libaafcfunc.h
+		src/tests/fileutils.h
+		src/tests/libaafcfunc.h
 	)
 
-	add_executable(plyr ${toolsinc} ${aafcheadr} src/tests/aafc_player/aafc_player.c)
+	add_executable(plyr ${toolsinc} src/aafc/aafc.h src/tests/aafc_player/aafc_player.c)
 	target_link_libraries(plyr PRIVATE portaudio_static)
 
-	add_executable(aud2aafc ${toolsinc} ${aafcheadr} src/tests/aafc_mediaconverter/aafc_mediaconverter.c)
+	add_executable(aud2aafc ${toolsinc} src/aafc/aafc.h src/tests/aafc_mediaconverter/aafc_mediaconverter.c)
 	target_link_libraries(aud2aafc PRIVATE SndFile::sndfile)
-
-	include_directories(${aafc_SOURCE_DIR}/include)
-	include_directories(${PROJECT_BINARY_DIR}/include)
 
 	set(tools plyr aud2aafc)
 endif()

@@ -7,7 +7,7 @@
     This file is a part of AAFC and is licenced under the MIT Licence.
 */
 
-#include <aafc.h>
+#include "../aafc.h"
 #include "modifiers.h"
 #include "../common.h"
 
@@ -21,8 +21,8 @@ void forceMono(float* input, AAFC_HEADER* h) {
     for (unsigned int i = 0; i < splen; i++)
     {
         for (chn = 0, accu = 0; chn < h->channels; chn++)
-            accu += *(input + (i * h->channels + chn));
-        *(input + i) = accu * scale;
+            accu += input[i * h->channels + chn];
+        input[i] = accu * scale;
     }
     h->samplelength = splen;
     h->channels = 1;
@@ -98,7 +98,7 @@ float* forceIndependentChannels(float* input, const AAFC_HEADER* h) {
     unsigned int i;
     for (unsigned char ch = 0; ch < h->channels; ch++) {
         for (i = 0; i < splen; i++)
-            *(output + (i + splen * ch)) = *(input + (i * h->channels + ch));
+            output[i + splen * ch] = input[i * h->channels + ch];
     }
 
     return output;
@@ -138,7 +138,7 @@ float* forceInterleaveChannels(float* input, const AAFC_HEADER* h) {
     unsigned char ch;
     for (unsigned int i = 0; i < splen; i++) {
         for (ch = 0; ch < h->channels; ch++)
-            *(output + (i * h->channels + ch)) = *(input + (i + splen * ch));
+            output[i * h->channels + ch] = input[i + splen * ch];
     }
     return output;
 }

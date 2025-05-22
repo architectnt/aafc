@@ -7,7 +7,7 @@
     This file is a part of AAFC and is licenced under the MIT Licence.
 */
 
-#include <aafc.h>
+#include "../aafc.h"
 #include "pcm.h"
 #include "../helpers.h"
 #include "../common.h"
@@ -15,40 +15,37 @@
 void* encode_pcm(float* ptr, const AAFC_HEADER* h, size_t* audsize) {
     switch (h->bps) {
         case 1: { // unlol-ing all of this will break everything
-            printf("%s", ":>\n");
             *audsize = ((size_t)h->samplelength + 7) / 8;
             unsigned char* const stbs = (unsigned char*)malloc(*audsize);
             memset(stbs, 0, *audsize);
 
             for (unsigned int i = 0; i < h->samplelength; ptr++, i++)
-                *(stbs + (i >> 3)) |= (*ptr > 0) << (i & 7);
+                stbs[i >> 3] |= (*ptr > 0) << (i & 7);
             return stbs;
         }
         case 3: {
-            printf("%s", "why would you use this LOL\n");
             *audsize = ((size_t)h->samplelength + 1) / 2;
             unsigned char* const stbs = (unsigned char*)malloc(*audsize);
             unsigned char* sptr = stbs;
 
             for (unsigned int i = 0; i < h->samplelength; ptr += 2, i += 2) {
-                unsigned char smp1 = (int)round(CLAMP(*ptr * 3.0f, -4.0f, 3.0f)) & 0x07;
+                unsigned char smp1 = (unsigned char)round(CLAMP(*ptr * 3.0f, -4.0f, 3.0f)) & 0x07;
                 unsigned char smp2 = ((i + 1 < h->samplelength)
-                    ? (int)round(CLAMP(*(ptr + 1) * 3.0f, -4.0f, 3.0f))
+                    ? (unsigned char)round(CLAMP(*(ptr + 1) * 3.0f, -4.0f, 3.0f))
                     : 0) & 0x07;
                 *sptr++ = (smp1) | (smp2 << 3);
             }
             return stbs;
         }
         case 4: { // LOL
-            printf("%s", ";)\n");
             *audsize = ((size_t)h->samplelength + 1) / 2;
             unsigned char* const stbs = (unsigned char*)malloc(*audsize);
             unsigned char* sptr = stbs;
 
             for (unsigned int i = 0; i < h->samplelength; ptr += 2, i += 2) {
-                unsigned char smp1 = (int)round(CLAMP(*ptr * 7.0f, -8.0f, 7.0f)) & 0x0F;
+                unsigned char smp1 = (unsigned char)round(CLAMP(*ptr * 7.0f, -8.0f, 7.0f)) & 0x0F;
                 unsigned char smp2 = ((i + 1 < h->samplelength) 
-                    ? (int)round(CLAMP(*(ptr + 1) * 7.0f, -8.0f, 7.0f)) 
+                    ? (unsigned char)round(CLAMP(*(ptr + 1) * 7.0f, -8.0f, 7.0f)) 
                     : 0) & 0x0F;
 
                 *sptr++ = (smp1) | (smp2 << 4);
@@ -140,7 +137,6 @@ void* encode_pcm(float* ptr, const AAFC_HEADER* h, size_t* audsize) {
 void decode_pcm(const unsigned char* smpraw, float* output, const AAFC_HEADER* h) {
     switch (h->bps) {
         case 1: {
-            printf("%s", "L O L\n");
             float mixvol = 0.4; // save your hearing.
             for (unsigned int i = 0; i < h->samplelength; i++) {
                 *output++ = ((*(smpraw + (i >> 3)) >> (i & 7)) & 1) ? mixvol : -mixvol;
@@ -148,7 +144,6 @@ void decode_pcm(const unsigned char* smpraw, float* output, const AAFC_HEADER* h
             break;
         }
         case 3: {
-            printf("%s", "h       a          h          a\n");
             signed char sp = 0, sl = 0;
             for (unsigned int i = 0; i < h->samplelength; smpraw++, i += 2) {
                 sp = *smpraw & 0x07;
@@ -161,7 +156,6 @@ void decode_pcm(const unsigned char* smpraw, float* output, const AAFC_HEADER* h
             break;
         }
         case 4: {
-            printf("LOL\n");
             signed char sp = 0, sl = 0;
             for (unsigned int i = 0; i < h->samplelength; smpraw++, i += 2) {
                 sp = *smpraw & 0x0F;

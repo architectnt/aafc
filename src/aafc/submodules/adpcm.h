@@ -3,7 +3,7 @@
     This file is a part of AAFC and is licenced under the MIT Licence.
 */
 
-#include <aafc.h>
+#include "../aafc.h"
 
 // The index table of ADPCM
 static  const signed char adpcmIndexTable[16] = {
@@ -24,5 +24,5 @@ static const short adpcmStepSize[89] = {
     15289, 16818, 18500, 20350, 22385, 24623, 27086, 29794, 32767
 };
 
-signed char* encode_adpcm(float* ptr, const AAFC_HEADER* h, size_t* audsize);
+signed char* encode_adpcm(float* ptr, AAFC_HEADER* h, size_t* audsize);
 void decode_adpcm(const unsigned char* input, float* output, const AAFC_HEADER* h);

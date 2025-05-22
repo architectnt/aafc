@@ -7,12 +7,13 @@
     This file is a part of AAFC and is licenced under the MIT Licence.
 */
 
-#include <aafc.h>
+#include "../aafc.h"
 #include "adpcm.h"
 #include "../helpers.h"
 #include "../common.h"
 
-signed char* encode_adpcm(float* ptr, const AAFC_HEADER* h, size_t* audsize) {
+signed char* encode_adpcm(float* ptr, AAFC_HEADER* h, size_t* audsize) {
+    h->bps = 4; // reflect
     *audsize = h->samplelength / 2;
     signed char* const adpcm_base = (signed char*)malloc(*audsize);
     signed char* adpcm = adpcm_base;

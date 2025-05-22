@@ -3,7 +3,7 @@
     This file is a part of AAFC and is licenced under the MIT Licence.
 */
 
-#include <aafc.h>
+#include "../aafc.h"
 
 #define BIAS 0x84
 #define CLIP 32635
@@ -29,5 +29,5 @@ static const short expLut[256] = {
 
 static const short expLutd[8] = {0, 132, 396, 924, 1980, 4092, 8316, 16764};
 
-unsigned char* encode_ulaw(float* ptr, const AAFC_HEADER* h, size_t* audsize);
+unsigned char* encode_ulaw(float* ptr, AAFC_HEADER* h, size_t* audsize);
 void decode_ulaw(const unsigned char* input, float* output, const AAFC_HEADER* h);

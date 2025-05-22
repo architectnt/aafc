@@ -8,18 +8,85 @@
 */
 
 
-#include <aafc.h>
+#include "aafc.h"
 #include "common.h"
 
-float dhalf(unsigned short val) {
-    if (val == 0) return 0.0f;
+unsigned char header_valid(const unsigned char* bytes) {
+    return bytes != NULL 
+        && *(unsigned short*)bytes == AAFC_SIGNATURE 
+        && *((unsigned short*)bytes + 1) <= 300; // mitigate to not collide with the compact header
+}
 
-    int sign = (val >> 15) & 0x1;
-    int exponent = ((val >> 10) & 0x1F) - 15;
-    float significand = (val & 0x3FF) / 1024.0f + 1.0f;
+unsigned char legacy_header_valid(const unsigned char* bytes) {
+    return bytes != NULL 
+        && *(const unsigned int*)bytes == (unsigned int)LEGACYHEADER 
+        && *((unsigned int*)bytes + 2) <= AAFCVERSION;
+}
 
-    float result = pow(2, exponent) * significand;
-    return sign ? -result : result;
+void compactHeader(unsigned char* dt, AAFC_HEADER h) {
+    unsigned char* p = dt;
+
+    // SIGNATURE
+    *(unsigned short*)p = h.signature; p += 2;
+    *(unsigned short*)p = h.version; p += 2;
+
+    // FREQ
+    *p++ = (h.freq & 0xFF);
+    *p++ = ((h.freq >> 8) & 0xFF);
+    *p++ = ((h.freq >> 16) & 0xFF);
+
+    // DEFS
+    *p++ = (h.channels & 0x0F) | (h.sampletype & 0x0f) << 4;
+    *p++ = h.bps;
+
+    // SAMPLE LENGTH & LOOP POINTS
+    *(unsigned int*)p = h.samplelength; p += 4;
+    *(unsigned int*)p = h.loopst; p += 4;
+    *(unsigned int*)p = h.loopend;
+}
+
+AAFC_HEADER parseHeader(const unsigned char* bytes, unsigned char* offset) {
+    if (bytes == NULL)
+        return (AAFC_HEADER) {0};
+
+    const unsigned short sig = *(unsigned short*)bytes;
+    const unsigned short ver = *((unsigned short*)bytes + 1);
+
+    if (sig == AAFC_SIGNATURE && ver > 300 && ver <= AAFCVERSION) {
+        *offset = HEADERSIZE;
+        const unsigned char* p = bytes;
+        AAFC_HEADER h = { 0 };
+        h.signature = *(unsigned short*)p; p += 2;
+        h.version = *(unsigned short*)p; p += 2;
+        h.freq = *p | (p[1] << 8) | (p[2] << 16); p += 3;
+
+        h.channels = *p & 0x0F;
+        h.sampletype = (*p >> 4) & 0x0F;
+        h.bps = *p++;
+        p++;
+
+        h.samplelength = *(unsigned int*)p; p += 4;
+        h.loopst = *(unsigned int*)p; p += 4;
+        h.loopend = *(unsigned int*)p;
+        return h;
+    }
+    else if (sig == AAFC_SIGNATURE && ver <= 300) {
+        *offset = sizeof(AAFC_HEADER);
+        return *(AAFC_HEADER*)bytes;
+    }
+    else if (*(unsigned int*)bytes == (unsigned int)LEGACYHEADER
+        && *((unsigned int*)bytes + 2) <= AAFCVERSION) 
+    {
+        *offset = sizeof(AAFC_LCHEADER);
+        const AAFC_LCHEADER lh = *(AAFC_LCHEADER*)bytes;
+        return (AAFC_HEADER) {
+            AAFC_SIGNATURE, (unsigned short)lh.version,
+                lh.freq,
+                lh.channels, lh.bps, lh.sampletype,
+                lh.samplelength, 0, 0
+        };
+    }
+    return (AAFC_HEADER) {0};
 }
 
 float smoothInterpolate(float y0, float y1, float y2, float y3, double t) {
@@ -30,24 +97,37 @@ float smoothInterpolate(float y0, float y1, float y2, float y3, double t) {
 }
 
 unsigned char minifloat(float val) {
-    if (val == 0.0f) return 0;
-    unsigned int bits = *(unsigned int*)&val;
-    unsigned int sgn = (bits >> 31) & 0x01;
-    int exp = ((bits >> 23) & 0xFF) - 127 + 6;
-    exp = (exp > 15) ? 15 : (exp < 0) ? 0 : exp;
-    unsigned int fraction;
-    if (exp < 0) {
-        fraction = (bits >> (23 + exp)) & 0x07;
-        exp = 0;
-    }
-    else {
-        exp = (exp > 15) ? 15 : exp;
-        fraction = (bits >> (23 - 3)) & 0x07;
-    }
-    return (sgn << 7) | (exp << 3) | fraction;
+    unsigned int eger = *(unsigned int*)&val; // HAHhaHAhahHAhhh..hah...heh..
+    int exp = ((eger >> 23) & 0xFF) - 121;
+    exp = exp < 0 ? 0 : (exp > 15 ? 15 : exp);
+    unsigned char fr = (eger >> 20) & 0x07;
+    return ((eger >> 31) << 7) | (exp << 3) | fr;
 }
 
-unsigned short halfpercision(float val) {
+float dminif(unsigned char val) {
+    int stexp = (val >> 3) & 0xF;
+    int mt = val & 0x07;
+    int exp;
+    float sig;
+    if(stexp == 0){
+        exp = -6;
+        sig = mt / 8.0f;
+    }else{
+        exp = stexp - 6;
+        sig = 1.0f + mt / 8.0f;
+    }
+    float result = ldexp(sig, exp);
+    return (val & 0x80) ? -result : result;
+}
+
+float dhalf(unsigned short val) {
+    int exponent = ((val >> 10) & 0x1F) - 15;
+    float significand = (val & 0x3FF) / 1024.0f + 1.0f;
+    float result = pow(2, exponent) * significand;
+    return ((val >> 15) & 1) ? -result : result;
+}
+
+unsigned short halfpercision(float val) { // stupidly inefficient
     unsigned int eger = *(unsigned int*)&val; // int eger (humor)
     unsigned int sgn = (eger >> 31) & 0x1;
     int exp = ((eger >> 23) & 0xFF) - 127 + 15;
@@ -66,28 +146,4 @@ unsigned short halfpercision(float val) {
     exp = (rmants == 0x400) ? (exp + 1) : exp;
     rmants &= 0x3FF;
     return (sgn << 15) | (exp << 10) | (rmants);
-}
-
-float dminif(unsigned char val) {
-    if (val == 0) return 0.0f;
-    int sign = (val >> 7) & 0x1;
-    int exponent = ((val >> 3) & 0xF) - 6;
-    float significand = (val & 0x07) / 8.0f + 0.5f;
-
-    if (((val >> 3) & 0xF) == 0) {
-        significand /= 8.0f;
-    } else {
-        significand += 0.5f;
-    }
-
-    float result = pow(2, exponent) * significand;
-    return sign ? -result : result;
-}
-
-bool header_valid(const unsigned char* bytes) {
-    return bytes != NULL && *(unsigned short*)bytes == AAFC_SIGNATURE && *((unsigned short*)bytes + 1) <= AAFCVERSION;
-}
-
-bool legacy_header_valid(const unsigned char* bytes) {
-    return bytes != NULL && *(const unsigned int*)bytes == (unsigned int)LEGACYHEADER && *((unsigned int*)bytes + 2) <= AAFCVERSION;
 }

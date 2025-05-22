@@ -8,7 +8,7 @@
     This file is a part of AAFC and is licenced under the MIT Licence.
 */
 
-#include <aafc.h>
+#include "aafc.h"
 #include "lib.h"
 
 EXPORT unsigned short aafc_getversion() {
@@ -16,10 +16,13 @@ EXPORT unsigned short aafc_getversion() {
 }
 
 EXPORT AAFC_HEADER* aafc_getheader(const unsigned char* bytes) {
-    return header_valid(bytes) ? (AAFC_HEADER*)bytes : NULL;
+    AAFC_HEADER h = parseHeader(bytes, NULL);
+    return (h.signature != 0 || bytes != NULL) 
+        ? (AAFC_HEADER*)memcpy(malloc(sizeof(h)), &h, sizeof(h)) // this is a weird thing to ever do but oh well
+        : NULL;
 }
 
-EXPORT AAFCOUTPUT aafc_export(float* samples, unsigned int freq, unsigned char channels, unsigned int samplelength, unsigned char bps, unsigned char sampletype, bool forcemono, unsigned int samplerateoverride, bool nm, float pitch, bool nointerp) {
+EXPORT AAFCOUTPUT aafc_export(float* samples, unsigned int freq, unsigned char channels, unsigned int samplelength, unsigned char bps, unsigned char sampletype, bool forcemono, unsigned int samplerateoverride, bool nm, float pitch, bool nointerp, unsigned int lstart, unsigned int lend) {
     AAFCOUTPUT output = {0,NULL};
     if (!samples || bps == 0 || sampletype == 0 || samplelength < 1) {
         printf("%s", "AAFC FATAL ERROR: invalid parameters\nensure samples, bps, sampletype and samplelength are set\n");
@@ -30,7 +33,7 @@ EXPORT AAFCOUTPUT aafc_export(float* samples, unsigned int freq, unsigned char c
         AAFC_SIGNATURE, AAFCVERSION,
         freq,
         channels, bps, sampletype,
-        samplelength, 0, 0
+        samplelength, lstart, lend
     };
 
     float* rsptr = samples;
@@ -63,12 +66,11 @@ EXPORT AAFCOUTPUT aafc_export(float* samples, unsigned int freq, unsigned char c
         free(rsptr);
         return output;
     }
+    output.data = (unsigned char*)malloc((output.size = HEADERSIZE + audsize));
+    memset(output.data, 0, output.size);
 
-    output.size = sizeof(AAFC_HEADER) + audsize;
-    output.data = (unsigned char*)malloc(output.size);
-
-    *(AAFC_HEADER*)output.data = header;
-    memcpy(output.data + sizeof(AAFC_HEADER), smpl, audsize);
+    compactHeader(output.data, header);
+    memcpy(output.data + HEADERSIZE, smpl, audsize);
 
     free(smpl);
     if (rsptr != samples) free(rsptr);
@@ -78,18 +80,8 @@ EXPORT AAFCOUTPUT aafc_export(float* samples, unsigned int freq, unsigned char c
 
 EXPORT AAFCDECOUTPUT aafc_import(const unsigned char* bytes) {
     AAFCDECOUTPUT output = { (AAFC_HEADER){0}, NULL };
-    unsigned char offset = sizeof(AAFC_HEADER);
-    if (header_valid(bytes)) output.header = *(AAFC_HEADER*)bytes; // evil
-    else if (legacy_header_valid(bytes)) {
-        const AAFC_LCHEADER lh = *(AAFC_LCHEADER*)bytes;
-        output.header = (AAFC_HEADER){
-            AAFC_SIGNATURE, (unsigned short)lh.version,
-            lh.freq,
-            lh.channels, lh.bps, lh.sampletype,
-            lh.samplelength, 0, 0
-        };
-        offset = sizeof(AAFC_LCHEADER);
-    } else {
+    unsigned char offset = 0;
+    if ((output.header = parseHeader(bytes, &offset)).signature == 0) {
         printf("%s", "AAFC: invalid aafc data\n");
         return output;
     }

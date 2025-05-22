@@ -12,9 +12,10 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include "aafc.h"
 #include <sndfile.h>
-#include "tests.h"
+#include "../../aafc/aafc.h"
+#include "../fileutils.h"
+#include "../libaafcfunc.h"
 
 typedef struct {
 	int statuscode;
@@ -48,7 +49,7 @@ ConversionResult convertmedia(const char* fn, const char* outpath, bool usemono,
 		s.statuscode = 1;
 	}
 
-	AAFCOUTPUT out = ExportAAFC(smpl, info.samplerate, info.channels, nitms, bps, sampletype, usemono, spoverride, normalize, pitch, nointerp);
+	AAFCOUTPUT out = ExportAAFC(smpl, info.samplerate, info.channels, nitms, bps, sampletype, usemono, spoverride, normalize, pitch, nointerp, 0, 0);
 	if (out.data == NULL) {
 		sf_close(ifl);
 		free(smpl);

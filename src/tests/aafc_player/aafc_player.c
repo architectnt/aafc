@@ -12,8 +12,17 @@
 
 #include <portaudio.h>
 #include <stdio.h>
-#include <aafc.h>
-#include <tests.h>
+#include "../../aafc/aafc.h"
+#include "../fileutils.h"
+#include "../libaafcfunc.h"
+
+#ifdef _WIN32
+#include <windows.h>
+#define sleep(ms) Sleep
+#else
+#include <unistd.h>
+#define sleep(ms) usleep(ms * 1000)
+#endif
 
 unsigned int sysfreq;
 unsigned char syschan;
@@ -21,7 +30,6 @@ unsigned char syschan;
 AAFCDECOUTPUT outp;
 double ipos = 0;
 unsigned char finished = 0;
-double totalDurationInSeconds;
 unsigned int splen;
 
 static int AudioHandler(const void* inp, void* otp, unsigned long frames, const PaStreamCallbackTimeInfo* tinfo, PaStreamCallbackFlags cflags, void* udata) {
@@ -52,62 +60,60 @@ static int AudioHandler(const void* inp, void* otp, unsigned long frames, const 
 	return finished ? paComplete : paContinue;
 }
 
-static void drawProgressBar(double esec, double tsec) {
+static void drawProgressBar() {
 	const unsigned char barWidth = 32;
-
-	double progress = esec / tsec;
-	unsigned char pos = barWidth * progress;
+	unsigned char pos = barWidth * (ipos / (float)splen);
+	unsigned int tl = splen / outp.header.freq, 
+		el = ((int)ipos) / outp.header.freq;
 
 	printf("%s", "\r[");
 	for (unsigned char i = 0; i++ < barWidth;)
 		printf("%s", ((i <= pos) ? "=" : " "));
 	printf("%s", "] ");
 
-	int min = esec / 60,
-		sec = (int)esec % 60,
-		tmin = tsec / 60,
-		tsecs = (int)tsec % 60;
-
-	printf("%02d:%02d / %02d:%02d", min, sec, tmin, tsecs);
+	printf("%02d:%02d / %02d:%02d", 
+		el / 60, // elapsed m
+		el % 60, // s
+		tl / 60, // total m
+		tl % 60 // s
+	);
 }
 
 int main(int argc, char* argv[]) {
-	if(argc > 1) {
-		if (!LoadAAFCLib()) {
-			perror("aafc lib load failure");
-			return 255;
-		}
-		printf("%s", "loading AAFC file.. ");
-
-		AAFCOUTPUT aafcfile = ReadAAFCFile(argv[1]);
-		if ((outp = LoadAAFC(aafcfile.data)).data == NULL) {
-			fprintf(stderr, "Failed to load AAFC\n");
-			return -1;
-		}
-
-		const char* stypeformat;
-		switch (outp.header.sampletype) {
-			case 1: stypeformat = "PCM"; break;
-			case 2: stypeformat = "ADPCM"; break;
-			case 3: stypeformat = "DPCM"; break;
-			case 4: stypeformat = "SFPCM"; break;
-			case 5: stypeformat = "uLaw"; break;
-			default: stypeformat = "unformated"; break;
-		}
-
-		printf("Loaded!\n\n-METADATA-\n[Sample Frequency: %d | Channels: %d | Sample Type: %s | AAFC VERSION EXPORTED: AAFC v%d] \n", outp.header.freq, outp.header.channels, stypeformat, outp.header.version);
-		free(aafcfile.data);
-
-		splen = outp.header.samplelength / outp.header.channels;
-		totalDurationInSeconds = ((double)splen) / outp.header.freq;
-	}
-	else {
+	if (argc <= 1) {
 		perror("aafc player requires a specifed path argument.");
 		return -2;
 	}
 
-	Pa_Initialize();
+	if (!LoadAAFCLib()) {
+		perror("aafc lib load failure");
+		return 255;
+	}
+	printf("%s", "loading AAFC file.. ");
+
+	AAFCOUTPUT aafcfile = ReadAAFCFile(argv[1]);
+	if ((outp = LoadAAFC(aafcfile.data)).data == NULL) {
+		fprintf(stderr, "Failed to load AAFC\n");
+		return -1;
+	}
+	free(aafcfile.data);
+
+	splen = outp.header.samplelength / outp.header.channels;
+
+	const char* stypeformat;
+	switch (outp.header.sampletype) {
+		case 1: stypeformat = "PCM"; break;
+		case 2: stypeformat = "ADPCM"; break;
+		case 3: stypeformat = "DPCM"; break;
+		case 4: stypeformat = "SFPCM"; break;
+		case 5: stypeformat = "uLaw"; break;
+		default: stypeformat = "unformated"; break;
+	}
+
+	printf("\r-AAFC (clip version v%d) METADATA-\n[Sample Rate: %d | Channels: %d | Sample Type: %s] \n", outp.header.version, outp.header.freq, outp.header.channels, stypeformat);
+
 	PaStream* str;
+	Pa_Initialize();
 	if (Pa_OpenDefaultStream(&str, 0, 2, paFloat32, 48000, 256, AudioHandler, NULL) != paNoError) {
 		perror("aafc player failed to load PortAudio subsystem");
 		return -1;
@@ -118,18 +124,19 @@ int main(int argc, char* argv[]) {
 		sysfreq = (unsigned int)stri->sampleRate;
 		syschan = 2;
 	}
+
 	Pa_StartStream(str);
 
 	printf("\e[?25l"); // hide cursor here because why see it traverse everywhere for no reason
 	while (!finished) {
-		drawProgressBar(ipos / outp.header.freq, totalDurationInSeconds);
-		Pa_Sleep(100);
+		drawProgressBar();
+		sleep(100);
 	}
 
 	Pa_StopStream(str);
 	Pa_CloseStream(str);
 	Pa_Terminate();
-	printf("%s", "\e[?25h \n");
+	printf("%s", "\e[?25l\n");
 	free(outp.data);
 	return 0;
 }

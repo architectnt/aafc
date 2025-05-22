@@ -3,7 +3,7 @@
     This file is a part of AAFC and is licenced under the MIT Licence.
 */
 
-#include <aafc.h>
+#include "../aafc.h"
 
 void forceMono(float* input, AAFC_HEADER* h);
 float* resampleAudio(float* input, AAFC_HEADER* header, unsigned int samplerateoverride, float pitch, bool nointerp);

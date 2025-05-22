@@ -6,11 +6,12 @@
     This file is a part of AAFC and is licenced under the MIT Licence.
 */
 
-#include <aafc.h>
+#include "../aafc.h"
 #include "ulaw.h"
 #include "../helpers.h"
 
-unsigned char* encode_ulaw(float* ptr, const AAFC_HEADER* h, size_t* audsize) {
+unsigned char* encode_ulaw(float* ptr, AAFC_HEADER* h, size_t* audsize) {
+    h->bps = 8; // uLaw is always 8 bits per sample to say the least
     *audsize = h->samplelength;
     unsigned char* const ulaw = (unsigned char*)malloc(h->samplelength);
     unsigned char* uptr = ulaw;
