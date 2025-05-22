@@ -92,7 +92,7 @@ int main(int argc, char* argv[]) {
 	printf("%s", "loading AAFC file.. ");
 
 	AAFCOUTPUT aafcfile = ReadAAFCFile(argv[1]);
-	if ((outp = LoadAAFC(aafcfile.data)).data == NULL) {
+	if ((outp = LoadAAFC(aafcfile.data)).header.signature == 0) {
 		fprintf(stderr, "Failed to load AAFC\n");
 		return -1;
 	}
