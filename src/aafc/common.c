@@ -53,7 +53,7 @@ AAFC_HEADER parseHeader(const unsigned char* bytes, unsigned char* offset) {
     const unsigned short ver = *((unsigned short*)bytes + 1);
 
     if (sig == AAFC_SIGNATURE && ver > 300 && ver <= AAFCVERSION) {
-        *offset = HEADERSIZE;
+        if(offset) *offset = HEADERSIZE;
         const unsigned char* p = bytes;
         AAFC_HEADER h = { 0 };
         h.signature = *(unsigned short*)p; p += 2;
@@ -71,13 +71,13 @@ AAFC_HEADER parseHeader(const unsigned char* bytes, unsigned char* offset) {
         return h;
     }
     else if (sig == AAFC_SIGNATURE && ver <= 300) {
-        *offset = sizeof(AAFC_HEADER);
+        if (offset) *offset = sizeof(AAFC_HEADER);
         return *(AAFC_HEADER*)bytes;
     }
     else if (*(unsigned int*)bytes == (unsigned int)LEGACYHEADER
         && *((unsigned int*)bytes + 2) <= AAFCVERSION) 
     {
-        *offset = sizeof(AAFC_LCHEADER);
+        if (offset) *offset = sizeof(AAFC_LCHEADER);
         const AAFC_LCHEADER lh = *(AAFC_LCHEADER*)bytes;
         return (AAFC_HEADER) {
             AAFC_SIGNATURE, (unsigned short)lh.version,
