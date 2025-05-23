@@ -20,11 +20,11 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Architect Enterprises"
             VALUE "FileDescription", "Standard to AAFC converter"
-            VALUE "FileVersion", "3.0.0.0"
+            VALUE "FileVersion", "3.0.1.0"
             VALUE "InternalName", "Audio2aafc"
             VALUE "OriginalFilename", "aud2aafc.exe"
             VALUE "ProductName", "AAFC"
-            VALUE "ProductVersion", "3.0.0.0"
+            VALUE "ProductVersion", "3.0.1.0"
         END
     END
     BLOCK "VarFileInfo"

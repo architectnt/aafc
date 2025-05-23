@@ -16,11 +16,11 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Architect Enterprises"
             VALUE "FileDescription", "Lightweight Audio Interface"
-            VALUE "FileVersion", "3.0.0.0"
+            VALUE "FileVersion", "3.0.1.0"
             VALUE "InternalName", "ArchitectAudioClipFormat"
             VALUE "OriginalFilename", "aafc.dll"
             VALUE "ProductName", "AAFC"
-            VALUE "ProductVersion", "3.0.0.0"
+            VALUE "ProductVersion", "3.0.1.0"
         END
     END
     BLOCK "VarFileInfo"

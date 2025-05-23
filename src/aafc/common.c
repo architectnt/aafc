@@ -11,18 +11,6 @@
 #include "aafc.h"
 #include "common.h"
 
-unsigned char header_valid(const unsigned char* bytes) {
-    return bytes != NULL 
-        && *(unsigned short*)bytes == AAFC_SIGNATURE 
-        && *((unsigned short*)bytes + 1) <= 300; // mitigate to not collide with the compact header
-}
-
-unsigned char legacy_header_valid(const unsigned char* bytes) {
-    return bytes != NULL 
-        && *(const unsigned int*)bytes == (unsigned int)LEGACYHEADER 
-        && *((unsigned int*)bytes + 2) <= AAFCVERSION;
-}
-
 void compactHeader(unsigned char* dt, AAFC_HEADER h) {
     unsigned char* p = dt;
 
@@ -62,10 +50,9 @@ AAFC_HEADER parseHeader(const unsigned char* bytes, unsigned char* offset) {
 
         h.channels = *p & 0x0F;
         h.sampletype = (*p >> 4) & 0x0F;
-        h.bps = *p++;
-        p++;
+        h.bps = *++p;
 
-        h.samplelength = *(unsigned int*)p; p += 4;
+        h.samplelength = *(unsigned int*)++p; p += 4;
         h.loopst = *(unsigned int*)p; p += 4;
         h.loopend = *(unsigned int*)p;
         return h;

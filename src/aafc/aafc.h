@@ -71,9 +71,6 @@ typedef struct decoutput {
     float* data;
 } AAFCDECOUTPUT;
 
-// Compares if the input is a valid format
-unsigned char legacy_header_valid(const unsigned char* bytes);
-unsigned char header_valid(const unsigned char* bytes);
 
 AAFC_HEADER parseHeader(const unsigned char* bytes, unsigned char* offset);
 
