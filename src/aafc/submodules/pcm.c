@@ -114,7 +114,7 @@ void* encode_pcm(float* ptr, const AAFC_HEADER* h, size_t* audsize) {
             char* const stbs = (char*)malloc(*audsize);
             char* sptr = stbs;
             for (unsigned int i = 0; i < h->samplelength; ptr++, i++) {
-                int s = (int)CLAMP(*ptr * 8388607.0f, -8388608.0f, 8388607.0f) & 0xFFFFF;
+                int s = (int)CLAMP(*ptr * 8388607.0f, -8388608.0f, 8388607.0f) & 0xFFFFFF;
                 *sptr++ = (s & 0xFF);
                 *sptr++ = ((s >> 8) & 0xFF);
                 *sptr++ = ((s >> 16) & 0xFF);

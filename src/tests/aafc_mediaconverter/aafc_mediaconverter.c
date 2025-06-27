@@ -176,8 +176,10 @@ int main(int argc, char* argv[]) {
 				return -128;
 			}
 			free(batchfiles[i]);
+			printf("\r%s %d/%d", "converted", i + 1, batchlength);
 		}
 		free(batchfiles);
+		printf("\r");
 	}
 
 	if (rst.statuscode > 0)

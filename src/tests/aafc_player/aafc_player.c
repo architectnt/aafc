@@ -110,7 +110,7 @@ int main(int argc, char* argv[]) {
 		default: stypeformat = "unformated"; break;
 	}
 
-	printf("\r-AAFC (clip version v%d) METADATA-\n[Sample Rate: %d | Channels: %d | Sample Type: %s] \n", outp.header.version, outp.header.freq, outp.header.channels, stypeformat);
+	printf("\r-AAFC (clip version v%d) METADATA-\n[Sample Rate: %d | Channels: %d | Sample Type: %s @ %d bps] \n", outp.header.version, outp.header.freq, outp.header.channels, stypeformat, outp.header.bps);
 
 	PaStream* str;
 	Pa_Initialize();
