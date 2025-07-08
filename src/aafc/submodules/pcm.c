@@ -25,7 +25,7 @@ void* encode_pcm(float* ptr, const AAFC_HEADER* h, size_t* audsize) {
         }
         case 3: {
             *audsize = ((size_t)h->samplelength + 1) / 2;
-            signed char* const stbs = (unsigned char*)malloc(*audsize);
+            signed char* const stbs = (signed char*)malloc(*audsize);
             signed char* sptr = stbs;
 
             for (unsigned int i = 0; i < h->samplelength; ptr += 2, i += 2) {
