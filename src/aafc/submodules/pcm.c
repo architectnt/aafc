@@ -25,13 +25,13 @@ void* encode_pcm(float* ptr, const AAFC_HEADER* h, size_t* audsize) {
         }
         case 3: {
             *audsize = ((size_t)h->samplelength + 1) / 2;
-            unsigned char* const stbs = (unsigned char*)malloc(*audsize);
-            unsigned char* sptr = stbs;
+            signed char* const stbs = (unsigned char*)malloc(*audsize);
+            signed char* sptr = stbs;
 
             for (unsigned int i = 0; i < h->samplelength; ptr += 2, i += 2) {
-                unsigned char smp1 = (unsigned char)round(CLAMP(*ptr * 3.0f, -4.0f, 3.0f)) & 0x07;
-                unsigned char smp2 = ((i + 1 < h->samplelength)
-                    ? (unsigned char)round(CLAMP(*(ptr + 1) * 3.0f, -4.0f, 3.0f))
+                signed char smp1 = (signed char)round(CLAMP(*ptr * 3.0f, -4.0f, 3.0f)) & 0x07;
+                signed char smp2 = ((i + 1 < h->samplelength)
+                    ? (signed char)round(CLAMP(*(ptr + 1) * 3.0f, -4.0f, 3.0f))
                     : 0) & 0x07;
                 *sptr++ = (smp1) | (smp2 << 3);
             }
@@ -39,13 +39,13 @@ void* encode_pcm(float* ptr, const AAFC_HEADER* h, size_t* audsize) {
         }
         case 4: { // LOL
             *audsize = ((size_t)h->samplelength + 1) / 2;
-            unsigned char* const stbs = (unsigned char*)malloc(*audsize);
-            unsigned char* sptr = stbs;
+            signed char* const stbs = (signed char*)malloc(*audsize);
+            signed char* sptr = stbs;
 
             for (unsigned int i = 0; i < h->samplelength; ptr += 2, i += 2) {
-                unsigned char smp1 = (unsigned char)round(CLAMP(*ptr * 7.0f, -8.0f, 7.0f)) & 0x0F;
-                unsigned char smp2 = ((i + 1 < h->samplelength) 
-                    ? (unsigned char)round(CLAMP(*(ptr + 1) * 7.0f, -8.0f, 7.0f)) 
+                signed char smp1 = (signed char)round(CLAMP(*ptr * 7.0f, -8.0f, 7.0f)) & 0x0F;
+                signed char smp2 = ((i + 1 < h->samplelength) 
+                    ? (signed char)round(CLAMP(*(ptr + 1) * 7.0f, -8.0f, 7.0f)) 
                     : 0) & 0x0F;
 
                 *sptr++ = (smp1) | (smp2 << 4);

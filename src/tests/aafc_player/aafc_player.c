@@ -16,14 +16,6 @@
 #include "../fileutils.h"
 #include "../libaafcfunc.h"
 
-#ifdef _WIN32
-#include <windows.h>
-#define sleep(ms) Sleep
-#else
-#include <unistd.h>
-#define sleep(ms) usleep(ms * 1000)
-#endif
-
 unsigned int sysfreq;
 unsigned char syschan;
 
@@ -130,7 +122,7 @@ int main(int argc, char* argv[]) {
 	printf("\e[?25l"); // hide cursor here because why see it traverse everywhere for no reason
 	while (!finished) {
 		drawProgressBar();
-		sleep(100);
+		Pa_Sleep(100);
 	}
 
 	Pa_StopStream(str);
